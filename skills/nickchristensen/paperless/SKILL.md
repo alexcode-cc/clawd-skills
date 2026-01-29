@@ -2,173 +2,113 @@
 name: paperless
 description: Interact with Paperless-NGX document management system via ppls CLI. Search, retrieve, upload, and organize documents.
 emoji: 📄
-metadata: {"clawdbot":{"requires":{"bins":["ppls"]},"install":[{"id":"node","kind":"node","package":"@nickchristensen/ppls","bins":["ppls"],"label":"Install ppls CLI (npm/bun)"}]}}
+metadata: {"clawdbot":{"requires":{"bins":["ppls"],"env":["PPLS_HOSTNAME","PPLS_TOKEN"]},"install":[{"id":"node","kind":"node","package":"@nickchristensen/ppls","bins":["ppls"],"label":"Install ppls CLI (npm/bun)"}]}}
 ---
 
 # Paperless-NGX CLI
 
-Search and manage documents in your Paperless-NGX installation using the `ppls` CLI.
-
-## What is Paperless-NGX?
-
-[Paperless-NGX](https://docs.paperless-ngx.com/) is a document management system that scans, OCRs, and organizes your documents. The `ppls` CLI provides command-line access to search, download, upload, and manage your paperless library.
+Search and manage documents in Paperless-NGX using `ppls`.
 
 ## Setup
 
-Install via npm/bun:
-
 ```bash
 npm install -g @nickchristensen/ppls
-# or
-bun add -g @nickchristensen/ppls
-```
-
-Configure connection:
-
-```bash
 ppls config set hostname http://your-paperless-host
 ppls config set token your-api-token
 ```
 
-Or use environment variables:
-```bash
-export PPLS_HOSTNAME=http://your-paperless-host
-export PPLS_TOKEN=your-api-token
-```
-
-## Common Commands
-
-### Search Documents
+## Searching Documents
 
 ```bash
-# Search by name/title
+# By name
 ppls documents list --name-contains "invoice" --json
 
-# Search by specific IDs
-ppls documents list --id-in 1234,5678 --json
+# By date range
+ppls documents list --created-after 2024-01-01 --created-before 2024-12-31 --json
 
-# Paginate results
-ppls documents list --page 2 --page-size 50 --json
+# By tag (OR — any of these tags)
+ppls documents list --tag 5 --tag 12 --json
 
-# Sort results
-ppls documents list --sort created --json
+# By tag (AND — must have all)
+ppls documents list --tag-all 5,12 --json
+
+# Exclude tags
+ppls documents list --tag-not 3 --json
+
+# By correspondent
+ppls documents list --correspondent 7 --json
+
+# By document type
+ppls documents list --document-type 2 --json
+
+# Documents missing metadata
+ppls documents list --no-correspondent --json
+ppls documents list --no-tag --json
+
+# Recently added/modified
+ppls documents list --added-after 2024-06-01 --json
+ppls documents list --modified-after 2024-06-01 --json
+
+# Combine filters
+ppls documents list --correspondent 7 --created-after 2024-01-01 --tag 5 --json
 ```
 
-### Get Document Details
+## Viewing & Downloading
 
 ```bash
-# Show full document metadata (including OCR'd content)
+# Get full document details (includes OCR content)
 ppls documents show 1234 --json
 
-# Get just the basics
-ppls documents show 1234 --plain
-```
-
-### Download Documents
-
-```bash
-# Download single file
-ppls documents download 1234
-
-# Download to path
-ppls documents download 1234 --output /tmp/document.pdf
+# Download single document
+ppls documents download 1234 --output ~/Downloads/doc.pdf
 
 # Download multiple documents
-ppls documents download 1234,5678
+ppls documents download 1234 5678 --output-dir ~/Downloads
 
-# Download multiple documents to path
-ppls documents download 1234,5678 --output-dir ~/tmp
+# Download original (pre-processed) version
+ppls documents download 1234 --original
 ```
 
-### Upload Documents
+## Uploading Documents
 
 ```bash
-# Upload with metadata
+# Simple upload (Paperless auto-processes)
+ppls documents add scan.pdf
+
+# With metadata
 ppls documents add receipt.pdf \
   --title "Store Receipt" \
   --correspondent 5 \
   --document-type 2 \
   --tag 10
-
-# Upload without metadata (will be processed by Paperless)
-ppls documents add scan.pdf
 ```
 
-### Manage Tags
+## Managing Metadata
 
 ```bash
-# List all tags
+# List tags/correspondents/document-types
 ppls tags list --json
-
-# Create a new tag
-ppls tags add "Tax Documents" --color "#ff0000"
-
-# Search tags by name
-ppls tags list --name-contains "tax" --json
-```
-
-### Manage Correspondents
-
-```bash
-# List all correspondents
 ppls correspondents list --json
+ppls document-types list --json
 
-# Create new correspondent
+# Create new
+ppls tags add "Tax 2024" --color "#ff0000"
 ppls correspondents add "New Vendor"
+ppls document-types add "Contract"
+
+# Update document metadata
+ppls documents update 1234 --title "New Title" --correspondent 5 --tag 10
 ```
-
-## Common Use Cases
-
-### "Find documents with 'tax' in the name"
-
-```bash
-ppls documents list --name-contains "tax" --json
-```
-
-### "Show me all invoices"
-
-```bash
-ppls documents list --name-contains "invoice" --json
-```
-
-### "Download a specific document"
-
-```bash
-ppls documents show 1234 --json  # Get details first
-ppls documents download 1234 --output doc.pdf
-```
-
-### "Add a scanned receipt with metadata"
-
-```bash
-ppls documents add receipt.pdf --title "Grocery Receipt" --tag 25 --correspondent 5
-```
-
-### "Search for specific text in OCR'd content"
-
-```bash
-# Get all docs, then search the content field
-ppls documents list --json | jq '.[] | select(.content | contains("warranty"))'
-```
-
-## Output Formats
-
-ppls supports multiple output formats:
-
-- `--json` - Machine-readable JSON (best for scripts/AI)
-- `--plain` - Plain text (simple, parseable)
-- `--table` - Formatted table (human-readable)
-
-**For AI/automation, always use `--json`**
 
 ## Tips
 
-- **JSON output:** Parse with `jq` for complex queries
-- **Date format:** Customize with `--date-format` (uses date-fns tokens)
-- **Pagination:** Use `--page-size` and `--page` for large result sets
-- **IDs:** Most commands accept numeric IDs (tags, correspondents, documents)
+- **Always use `--json`** for AI/automation — it's the most parseable format
+- **Date formats:** `YYYY-MM-DD` or full ISO 8601
+- **IDs are numeric** — use `list --json` commands to find them
+- **Filters are repeatable:** `--tag 1 --tag 2` or `--tag 1,2` both work
+- **Pagination:** Use `--page` and `--page-size` for large result sets
 
 ## Links
 
-- **ppls GitHub:** https://github.com/NickChristensen/ppls
-- **Paperless-NGX Docs:** https://docs.paperless-ngx.com/
+- [ppls on GitHub](https://github.com/NickChristensen/ppls)
+- [Paperless-NGX Docs](https://docs.paperless-ngx.com/)
