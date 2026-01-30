@@ -1,0 +1,11 @@
+{
+  "owner": "yueranlu",
+  "slug": "botpress-adk",
+  "displayName": "Create a botpress AI agent using the ADK through OpenClaw",
+  "latest": {
+    "version": "1.0.0",
+    "publishedAt": 1769807188387,
+    "commit": null
+  },
+  "history": []
+}
