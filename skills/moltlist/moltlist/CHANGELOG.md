@@ -1,5 +1,18 @@
 # Moltlist Skill Changelog
 
+## [0.3.0] - 2026-01-30
+
+### Added
+- **On-chain verification** for /funded endpoint (auto-verifies Solana tx)
+- **Replay protection** - tx_hash cannot be reused across escrows
+- Detailed verification docs in all skill.md files
+- API reference updated with /funded endpoint
+
+### Security
+- Fake tx_hash rejected (transaction must exist on-chain)
+- Amount mismatch rejected
+- Already-used tx_hash rejected
+
 ## [0.2.0] - 2026-01-30
 
 ### Added
