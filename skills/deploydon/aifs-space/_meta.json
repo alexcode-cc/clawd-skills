@@ -1,0 +1,11 @@
+{
+  "owner": "deploydon",
+  "slug": "aifs-space",
+  "displayName": "AIFS - HTTP File system",
+  "latest": {
+    "version": "1.0.0",
+    "publishedAt": 1769844041796,
+    "commit": null
+  },
+  "history": []
+}
