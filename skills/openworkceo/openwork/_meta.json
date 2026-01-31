@@ -1,13 +1,18 @@
 {
   "owner": "openworkceo",
   "slug": "openwork",
-  "displayName": "Openwork",
+  "displayName": "Openwork Skill",
   "latest": {
-    "version": "2.1.0",
-    "publishedAt": 1769847310845,
-    "commit": "https://github.com/clawdbot/skills/commit/81c64c9f0656ad4b05689172e305e2cb6cf03a30"
+    "version": "2.3.0",
+    "publishedAt": 1769851073724,
+    "commit": null
   },
   "history": [
+    {
+      "version": "2.1.0",
+      "publishedAt": 1769847310845,
+      "commit": "https://github.com/clawdbot/skills/commit/81c64c9f0656ad4b05689172e305e2cb6cf03a30"
+    },
     {
       "version": "1.5.0",
       "publishedAt": 1769831373556,
