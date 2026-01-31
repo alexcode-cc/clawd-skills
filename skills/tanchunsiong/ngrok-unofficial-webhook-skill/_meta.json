@@ -3,11 +3,16 @@
   "slug": "ngrok-unofficial-webhook-skill",
   "displayName": "Ngrok Unofficial Webhook Skill",
   "latest": {
-    "version": "0.1.4",
-    "publishedAt": 1769761729429,
-    "commit": "https://github.com/clawdbot/skills/commit/9fcae85238d004d53ab17aa8e31102a45737619f"
+    "version": "0.1.3",
+    "publishedAt": 1769596219484,
+    "commit": null
   },
   "history": [
+    {
+      "version": "0.1.4",
+      "publishedAt": 1769761729429,
+      "commit": "https://github.com/clawdbot/skills/commit/9fcae85238d004d53ab17aa8e31102a45737619f"
+    },
     {
       "version": "0.1.3",
       "publishedAt": 1769596219484,
