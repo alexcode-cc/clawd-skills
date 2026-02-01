@@ -1,0 +1,11 @@
+{
+  "owner": "relayintel",
+  "slug": "relay-for-telegram",
+  "displayName": "Relay for Telegram",
+  "latest": {
+    "version": "1.0.0",
+    "publishedAt": 1769911101116,
+    "commit": null
+  },
+  "history": []
+}
