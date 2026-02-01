@@ -4,7 +4,7 @@ set -e
 # ==========================================
 # Simple Backup Script
 # ==========================================
-# Backs up Clawdbot brain, body, and skills to local folder + rclone remote.
+# Backs up OpenClaw brain, body, and skills to local folder + rclone remote.
 # ==========================================
 
 # Ensure PATH includes homebrew
@@ -24,8 +24,8 @@ HOURLY_RETENTION_HOURS="${HOURLY_RETENTION_HOURS:-24}"
 
 # Source directories to backup
 BRAIN_DIR="${BRAIN_DIR:-$HOME/clawd}"
-BODY_DIR="${BODY_DIR:-$HOME/.clawdbot}"
-SKILLS_DIR="${SKILLS_DIR:-$HOME/clawdbot/skills}"
+BODY_DIR="${BODY_DIR:-$HOME/.openclaw}"
+SKILLS_DIR="${SKILLS_DIR:-$HOME/openclaw/skills}"
 
 # --- Dependency Check ---
 for cmd in tar gpg rclone; do
@@ -39,7 +39,7 @@ done
 # 1. Try Env Var
 # 2. Try Standard Credential File
 if [ -z "$BACKUP_PASSWORD" ]; then
-    KEY_FILE="$HOME/.clawdbot/credentials/backup.key"
+    KEY_FILE="$HOME/.openclaw/credentials/backup.key"
     if [ -f "$KEY_FILE" ]; then
         BACKUP_PASSWORD=$(cat "$KEY_FILE" | tr -d '\n')
     else
@@ -54,6 +54,7 @@ TIMESTAMP=$(date +%Y%m%d-%H%M)
 TODAY=$(date +%Y%m%d)
 CURRENT_HOUR=$(date +%H)
 STAGING_DIR=$(mktemp -d)
+ARCHIVE_DIR=$(mktemp -d)
 
 mkdir -p "$BACKUP_ROOT"
 
@@ -70,6 +71,8 @@ fi
 
 ARCHIVE_NAME="backup-${TIMESTAMP}-${LABEL}.tgz"
 ENCRYPTED_NAME="${ARCHIVE_NAME}.gpg"
+ARCHIVE_PATH="$ARCHIVE_DIR/$ARCHIVE_NAME"
+ENCRYPTED_PATH="$ARCHIVE_DIR/$ENCRYPTED_NAME"
 
 echo "📦 Starting backup: ${TIMESTAMP} (${LABEL})"
 echo "   Root: $BACKUP_ROOT"
@@ -77,7 +80,7 @@ echo "   Root: $BACKUP_ROOT"
 # --- 1. Stage Files ---
 echo "   Staging files..."
 mkdir -p "$STAGING_DIR/clawd"
-mkdir -p "$STAGING_DIR/.clawdbot"
+mkdir -p "$STAGING_DIR/.openclaw"
 mkdir -p "$STAGING_DIR/skills"
 
 # Copy Brain (Workspace)
@@ -89,7 +92,7 @@ fi
 
 # Copy Body (State)
 if [ -d "$BODY_DIR" ]; then
-    rsync -a --exclude 'logs' --exclude 'media' --exclude 'browser' "$BODY_DIR/" "$STAGING_DIR/.clawdbot/"
+    rsync -a --exclude 'logs' --exclude 'media' --exclude 'browser' "$BODY_DIR/" "$STAGING_DIR/.openclaw/"
 else
     echo "   Warning: Body dir not found at $BODY_DIR"
 fi
@@ -103,18 +106,18 @@ fi
 
 # --- 2. Compress ---
 echo "   Compressing..."
-tar -czf "$STAGING_DIR/$ARCHIVE_NAME" -C "$STAGING_DIR" .
+tar -czf "$ARCHIVE_PATH" -C "$STAGING_DIR" .
 
 # --- 3. Encrypt ---
 echo "   Encrypting..."
-gpg --batch --yes --passphrase "$BACKUP_PASSWORD" --symmetric --cipher-algo AES256 -o "$STAGING_DIR/$ENCRYPTED_NAME" "$STAGING_DIR/$ARCHIVE_NAME"
+gpg --batch --yes --passphrase "$BACKUP_PASSWORD" --symmetric --cipher-algo AES256 -o "$ENCRYPTED_PATH" "$ARCHIVE_PATH"
 
 # --- 4. Move to Local Storage ---
-mv "$STAGING_DIR/$ENCRYPTED_NAME" "$BACKUP_ROOT/"
+mv "$ENCRYPTED_PATH" "$BACKUP_ROOT/"
 echo "   Saved to $BACKUP_ROOT/$ENCRYPTED_NAME"
 
 # --- 5. Cleanup Staging ---
-rm -rf "$STAGING_DIR"
+rm -rf "$STAGING_DIR" "$ARCHIVE_DIR"
 
 # --- 6. Prune Local Backups ---
 echo "   Pruning old local backups (keeping $MAX_DAYS daily days, $HOURLY_RETENTION_HOURS hourly hours)..."

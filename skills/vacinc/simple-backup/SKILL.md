@@ -1,13 +1,13 @@
 ---
 name: simple-backup
 description: Backup agent brain (workspace) and body (state) to local folder and optionally sync to cloud via rclone.
-metadata: {"clawdbot":{"emoji":"💾","requires":{"bins":["rclone","gpg","tar"]}}}
+metadata: {"openclaw":{"emoji":"💾","requires":{"bins":["rclone","gpg","tar"]}}}
 ---
 
 # Simple Backup
 
 A robust backup script that:
-1.  **Stages:** Copies `~/clawd` (workspace), `~/.clawdbot` (state), and `skills/`.
+1.  **Stages:** Copies `~/clawd` (workspace), `~/.openclaw` (state), and `skills/`.
 2.  **Compresses:** Creates a `.tgz` archive.
 3.  **Encrypts:** AES256 encryption using GPG (password required).
 4.  **Prunes:** Rotates backups (Daily/Hourly retention).
@@ -18,7 +18,7 @@ A robust backup script that:
 1.  **Dependencies:** Ensure `rclone` and `gpg` are installed (`brew install rclone gnupg`).
 2.  **Password:** Set the encryption password:
     *   Env Var: `export BACKUP_PASSWORD="my-secret-password"`
-    *   File: `~/.clawdbot/credentials/backup.key`
+    *   File: `~/.openclaw/credentials/backup.key`
 3.  **Cloud (Optional):** Configure an rclone remote:
     ```bash
     rclone config

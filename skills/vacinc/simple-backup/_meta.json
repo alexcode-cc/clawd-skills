@@ -3,11 +3,16 @@
   "slug": "simple-backup",
   "displayName": "Simple Backup",
   "latest": {
-    "version": "1.0.3",
-    "publishedAt": 1768148987889,
-    "commit": "https://github.com/clawdbot/skills/commit/d1323c483660f9f9aa006275f3a15db439962a23"
+    "version": "1.0.5",
+    "publishedAt": 1769967990001,
+    "commit": null
   },
   "history": [
+    {
+      "version": "1.0.3",
+      "publishedAt": 1768148987889,
+      "commit": "https://github.com/clawdbot/skills/commit/d1323c483660f9f9aa006275f3a15db439962a23"
+    },
     {
       "version": "1.0.0",
       "publishedAt": 1768062736818,
