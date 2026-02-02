@@ -1,0 +1,11 @@
+{
+  "owner": "tsheasha",
+  "slug": "reverse-proxy-local",
+  "displayName": "Reverse proxy from internet to open claw",
+  "latest": {
+    "version": "1.0.1",
+    "publishedAt": 1770024446910,
+    "commit": null
+  },
+  "history": []
+}
