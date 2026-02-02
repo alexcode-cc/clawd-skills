@@ -58,11 +58,11 @@ solana-toolkit execute "https://share.raydium.io/dialect/actions/swap/info"
 | Borrow | `/api/v0/borrow/...` | ⚠️ Needs testing |
 | Repay | `/api/v0/repay/...` | ⚠️ Needs testing |
 
-**Vault slugs:** `usdc-main`, `sol-main`, `usdg-prime`, etc.
+**Vault slugs:** `usdc-prime`, `jlp-core`, `sol-core`, etc.
 
 **Example:**
 ```bash
-blinks execute "https://kamino.dial.to/api/v0/lend/usdc-main/deposit" --amount=100
+blinks execute "https://kamino.dial.to/api/v0/lend/usdc-prime/deposit?amount=0.1"
 ```
 
 ---
