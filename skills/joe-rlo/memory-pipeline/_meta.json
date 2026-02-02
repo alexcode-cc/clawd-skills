@@ -1,13 +1,18 @@
 {
   "owner": "joe-rlo",
   "slug": "memory-pipeline",
-  "displayName": "Memory Pipeline + Performance Routine",
+  "displayName": "Memory Pipeline",
   "latest": {
-    "version": "0.3.0",
-    "publishedAt": 1769916469729,
-    "commit": "https://github.com/clawdbot/skills/commit/9c3eb73bb98c49a1e459bc1ec311cd30e3a7f29c"
+    "version": "0.4.0",
+    "publishedAt": 1770036749512,
+    "commit": null
   },
   "history": [
+    {
+      "version": "0.3.0",
+      "publishedAt": 1769916469729,
+      "commit": "https://github.com/clawdbot/skills/commit/9c3eb73bb98c49a1e459bc1ec311cd30e3a7f29c"
+    },
     {
       "version": "0.2.0",
       "publishedAt": 1769892255752,

@@ -3,280 +3,162 @@ name: memory-pipeline
 description: Complete agent memory + performance system. Extracts structured facts, builds knowledge graphs, generates briefings, and enforces execution discipline via pre-game routines, tool policies, result compression, and after-action reviews. Includes external knowledge ingestion (ChatGPT exports, etc.) into searchable memory. Use when working on memory management, briefing generation, knowledge consolidation, external data ingestion, agent consistency, or improving execution quality across sessions.
 ---
 
-# Memory Pipeline + Performance Routine
+# Memory Pipeline
 
-A complete memory and performance system for AI agents. Two subsystems, one package:
+**Give your AI agent a memory that actually works.**
 
-- **Memory Pipeline** (Python scripts) — Extracts facts, builds knowledge graphs, generates daily briefings
-- **Knowledge Ingestion** (Python scripts) — Imports external data (ChatGPT exports, etc.) into searchable memory
-- **Performance Routine** (TypeScript hooks) — Pre-game briefing injection, tool discipline, output compression, after-action review
+AI agents wake up blank every session. Memory Pipeline fixes that — it extracts what matters from past conversations, connects the dots, and generates a daily briefing so your agent starts each session primed instead of clueless.
 
-## What This Does
+## What It Does
 
-### Memory Pipeline (Between Sessions)
+| Component | When it runs | What it does |
+|-----------|-------------|--------------|
+| **Extract** | Between sessions | Pulls structured facts (decisions, preferences, learnings) from daily notes and transcripts |
+| **Link** | Between sessions | Builds a knowledge graph — connects related facts, flags contradictions |
+| **Brief** | Between sessions | Generates a compact `BRIEFING.md` loaded at session start |
+| **Ingest** | On demand | Imports external knowledge (ChatGPT exports, etc.) into searchable memory |
+| **Performance Hooks** | During sessions | Pre-game briefing injection, tool discipline, output compression, after-action review |
 
-A three-stage system that helps AI agents maintain long-term memory:
+## Why This Is Different
 
-1. **Extract** — Pulls structured facts (decisions, preferences, learnings, commitments) from daily notes and session transcripts using LLM extraction
-2. **Link** — Builds a knowledge graph with embeddings and bidirectional links between related facts, identifies contradictions
-3. **Briefing** — Generates a compact BRIEFING.md file loaded at session start with personality reminders, active projects, recent decisions, and key context
+Most "memory" solutions are just vector search over chat logs. This is a **cognitive architecture** — inspired by how human memory actually works:
 
-### Performance Routine (Within Sessions)
-
-Four lifecycle hooks that enforce consistency during agent runs:
-
-1. **Pre-Game Routine** (`before_agent_start`) — Assembles a bounded briefing packet from memory files + checklist, injects into system prompt
-2. **Tool Discipline** (`before_tool_call`) — Enforces deny lists, normalizes params, prevents unsafe tool calls
-3. **Output Compression** (`tool_result_persist`) — Head+tail compression of large tool results to prevent context bloat
-4. **After-Action Review** (`agent_end`) — Writes durable notes about what happened, tools used, and outcomes
+- **Extraction over accumulation** — Instead of dumping everything into a database, it identifies what's worth remembering: decisions, preferences, learnings, commitments. The rest is noise.
+- **Knowledge graph, not just embeddings** — Facts get linked to each other with bidirectional relationships. Your agent doesn't just find similar text — it understands that a decision about your tech stack relates to a project deadline relates to a preference you stated three weeks ago.
+- **Briefing over retrieval** — Rather than hoping the right context gets retrieved at query time, your agent starts every session with a curated cheat sheet. Active projects, recent decisions, personality reminders. Zero cold-start lag.
+- **No mid-swing coaching** — Borrowed from performance psychology. Corrections happen *between* sessions, not during. The after-action review feeds into the next briefing. The loop is closed — just not mid-execution.
 
 ## Quick Start
 
-### One-Command Setup
+### Install
 
 ```bash
-clawhub install memory-pipeline
+clawdhub install memory-pipeline
+```
+
+### Setup
+
+```bash
 bash skills/memory-pipeline/scripts/setup.sh
 ```
 
-The setup script will:
-- Detect your workspace automatically
-- Check for Python 3 and an LLM API key
-- Create the `memory/` directory
-- Find existing notes or help you create a starter note
-- Run the full pipeline (extract → link → briefing)
-- Show you what was generated and what to do next
+The setup script will detect your workspace, check dependencies (Python 3 + any LLM API key), create the `memory/` directory, and run the full pipeline.
 
 ### Requirements
 
-**Python 3** and **at least one LLM API key**:
-- OpenAI (`OPENAI_API_KEY` or `~/.config/openai/api_key`)
-- Anthropic (`ANTHROPIC_API_KEY` or `~/.config/anthropic/api_key`)
-- Gemini (`GEMINI_API_KEY` or `~/.config/gemini/api_key`)
+- **Python 3**
+- **At least one LLM API key** (auto-detected):
+  - OpenAI (`OPENAI_API_KEY` or `~/.config/openai/api_key`)
+  - Anthropic (`ANTHROPIC_API_KEY` or `~/.config/anthropic/api_key`)
+  - Gemini (`GEMINI_API_KEY` or `~/.config/gemini/api_key`)
 
-The scripts auto-detect whichever key is available.
+### Run Manually
 
-### Manual Usage
-
-If you prefer to run steps individually:
 ```bash
+# Full pipeline
 python3 skills/memory-pipeline/scripts/memory-extract.py
 python3 skills/memory-pipeline/scripts/memory-link.py
 python3 skills/memory-pipeline/scripts/memory-briefing.py
 ```
 
-## External Knowledge Ingestion
+### Automate via Heartbeat
 
-Import data from external sources into the memory system. Ingested files land in `memory/knowledge/` and are automatically indexed by Clawdbot's semantic search (`memory_search`).
+Add to your `HEARTBEAT.md` for daily automatic runs:
+
+```markdown
+### Daily Memory Pipeline
+- **Frequency:** Once per day (morning)
+- **Action:** Run the memory pipeline:
+  1. `python3 skills/memory-pipeline/scripts/memory-extract.py`
+  2. `python3 skills/memory-pipeline/scripts/memory-link.py`
+  3. `python3 skills/memory-pipeline/scripts/memory-briefing.py`
+```
+
+## Import External Knowledge
+
+Already have years of conversations in ChatGPT? Import them so your agent knows what you know.
 
 ### ChatGPT Export
 
-**Script:** `ingest-chatgpt.py`
-
-Parses a ChatGPT data export and converts conversations into searchable markdown files.
-
-**Usage:**
 ```bash
-# From a zip (direct from ChatGPT export email)
+# 1. Export from ChatGPT: Settings → Data Controls → Export Data
+# 2. Drop the zip in your workspace
+# 3. Run:
 python3 skills/memory-pipeline/scripts/ingest-chatgpt.py ~/imports/chatgpt-export.zip
 
-# From extracted conversations.json
-python3 skills/memory-pipeline/scripts/ingest-chatgpt.py ~/imports/conversations.json
-
-# Preview without writing files
-python3 skills/memory-pipeline/scripts/ingest-chatgpt.py ~/imports/conversations.json --dry-run
-
-# Keep everything (no filtering)
-python3 skills/memory-pipeline/scripts/ingest-chatgpt.py ~/imports/conversations.json --keep-all
-
-# Stricter filtering (5+ turns, 500+ chars)
-python3 skills/memory-pipeline/scripts/ingest-chatgpt.py ~/imports/conversations.json --min-turns 5 --min-length 500
+# Preview first (recommended):
+python3 skills/memory-pipeline/scripts/ingest-chatgpt.py ~/imports/chatgpt-export.zip --dry-run
 ```
-
-**How to export from ChatGPT:**
-1. Go to ChatGPT → Settings → Data Controls → Export Data
-2. OpenAI emails you a zip file
-3. Download and pass the zip (or extracted `conversations.json`) to the script
 
 **What it does:**
-- Parses the conversation tree structure from ChatGPT's export format
-- Extracts title, date, and full Q&A content from each conversation
-- Filters out short/throwaway conversations (configurable thresholds)
-- Supports topic exclusion filters (edit `EXCLUDE_PATTERNS` in the script to skip unwanted topics)
-- Generates clean markdown files with date-prefixed slugified filenames
-- Outputs to `memory/knowledge/chatgpt/`
+- Parses ChatGPT's conversation tree format
+- Filters out throwaway conversations (configurable: `--min-turns`, `--min-length`)
+- Supports topic exclusion (edit `EXCLUDE_PATTERNS` to skip unwanted topics)
+- Outputs clean, dated markdown files to `memory/knowledge/chatgpt/`
+- Files are automatically indexed by OpenClaw's semantic search
 
-**Output format:**
-```markdown
-# Conversation Title
-**Source:** ChatGPT | **Date:** 2025-03-15 | **Turns:** 8
-
-## Q: User's question here
-...
-
-Assistant's response here
-...
-```
-
-**Topic exclusion:** The script includes an `EXCLUDE_PATTERNS` list for filtering out conversations by keyword (checked against title + first few user messages). Edit the list in the script to customize which topics get excluded.
-
-**After ingestion:** Files in `memory/knowledge/` are automatically picked up by Clawdbot's memory indexer on the next sync cycle. Once indexed, all conversations become searchable via `memory_search`.
+**Options:**
+- `--dry-run` — Preview without writing files
+- `--keep-all` — Skip all filtering
+- `--min-turns N` — Minimum user messages to keep (default: 2)
+- `--min-length N` — Minimum total characters (default: 200)
 
 ### Adding Other Sources
 
-The ingestion pattern is extensible. To add a new source (e.g., Google Search history, Notion exports, browser bookmarks):
+The pattern is extensible. Create `ingest-<source>.py`, parse the format, write markdown to `memory/knowledge/<source>/`. The indexer handles the rest.
 
-1. Create a new `ingest-<source>.py` script in `scripts/`
-2. Parse the source format into structured entries
-3. Write markdown files to `memory/knowledge/<source>/`
-4. Follow the same format: title, date, source metadata, content
+## How the Pipeline Works
 
-The key principle: **chunk by topic, write as markdown, let the indexer handle search.**
-
----
-
-## Pipeline Stages
-
-### Stage 1: Extract Facts
+### Stage 1: Extract
 
 **Script:** `memory-extract.py`
 
-Reads from (in priority order):
-1. Daily memory files (`{workspace}/memory/YYYY-MM-DD.md`) — today or yesterday
-2. Session transcripts (`~/.clawdbot/agents/main/sessions/*.jsonl`)
+Reads daily notes (`memory/YYYY-MM-DD.md`) and session transcripts, then uses an LLM to extract structured facts:
 
-Extracts structured facts:
-- **Type**: decision, preference, learning, commitment, fact
-- **Content**: The actual information
-- **Subject**: What it's about (auto-detected from context)
-- **Confidence**: 0.0-1.0 reliability score
+```json
+{"type": "decision", "content": "Use Rust for the backend", "subject": "Project Architecture", "confidence": 0.9}
+{"type": "preference", "content": "Prefers Google Drive over Notion", "subject": "Tools", "confidence": 0.95}
+```
 
-**Output:** `{workspace}/memory/extracted.jsonl` — One JSON fact per line, deduplicated
+**Output:** `memory/extracted.jsonl`
 
-### Stage 2: Build Knowledge Graph
+### Stage 2: Link
 
 **Script:** `memory-link.py`
 
-Takes extracted facts and:
-- Generates embeddings (if OpenAI key available, else uses keyword similarity)
+Takes extracted facts and builds a knowledge graph:
+- Generates embeddings for semantic similarity
 - Creates bidirectional links between related facts
 - Detects contradictions and marks superseded facts
-- Auto-generates domain tags from content
+- Auto-generates domain tags
 
-**Output:**
-- `{workspace}/memory/knowledge-graph.json` — Full graph with nodes and links
-- `{workspace}/memory/knowledge-summary.md` — Human-readable summary
+**Output:** `memory/knowledge-graph.json` + `memory/knowledge-summary.md`
 
-### Stage 3: Generate Briefing
+### Stage 3: Briefing
 
 **Script:** `memory-briefing.py`
 
-Creates a compact daily briefing loaded at session start.
+Generates a compact daily briefing (< 2000 chars) combining:
+- Personality traits (from `SOUL.md`)
+- User context (from `USER.md`)
+- Active projects and recent decisions
+- Open todos
 
-Combines:
-- Personality traits (from SOUL.md if exists)
-- User context (from USER.md if exists)
-- Active projects (top subjects from recent facts)
-- Recent decisions and preferences
-- Active todos (from any todos*.md files)
+**Output:** `BRIEFING.md` (workspace root)
 
-**Output:** `{workspace}/BRIEFING.md` — Under 2000 chars, LLM-generated or template-based
+## Performance Hooks (Optional)
 
-## Wiring Into HEARTBEAT.md
-
-To run automatically, add to your workspace's `HEARTBEAT.md`:
-
-```markdown
-# Heartbeat Tasks
-
-## Daily (once per day, morning)
-- Run memory extraction: `cd {workspace} && python3 skills/memory-pipeline/scripts/memory-extract.py`
-- Build knowledge graph: `cd {workspace} && python3 skills/memory-pipeline/scripts/memory-link.py`
-- Generate briefing: `cd {workspace} && python3 skills/memory-pipeline/scripts/memory-briefing.py`
-
-## Weekly (Sunday evening)
-- Review `memory/knowledge-summary.md` for insights
-- Clean up old daily notes (optional)
-```
-
-## Loading BRIEFING.md
-
-**Important:** BRIEFING.md needs to be loaded as workspace context at session start. This requires the OpenClaw context loading feature (currently in development).
-
-Once available, configure your agent to load BRIEFING.md along with SOUL.md, USER.md, and AGENTS.md at the start of each session.
-
-## Output Files
-
-All files are created in `{workspace}/memory/`:
-
-- **extracted.jsonl** — All extracted facts (append-only)
-- **knowledge-graph.json** — Full knowledge graph with embeddings and links
-- **knowledge-summary.md** — Human-readable summary of the graph
-- **BRIEFING.md** (in workspace root) — Daily context cheat sheet
-
-## Customization
-
-### Changing Models
-
-Edit the model names in each script:
-- `memory-extract.py`: Lines with `"model": "gpt-4o-mini"` (or claude/gemini equivalents)
-- `memory-link.py`: Line with `"model": "text-embedding-3-small"`
-- `memory-briefing.py`: Lines with `"model": "gpt-4o-mini"`
-
-### Adjusting Extraction
-
-In `memory-extract.py`, modify the extraction prompt (lines ~75-85) to focus on different types of information or change the output format.
-
-### Link Threshold
-
-In `memory-link.py`, change the similarity threshold for creating links (currently 0.3 at line ~195).
-
-## Troubleshooting
-
-**No facts extracted:**
-- Check that daily notes or transcripts exist
-- Verify API key is set correctly
-- Check script output for LLM errors
-
-**Low-quality links:**
-- Add OpenAI API key for embedding-based similarity (more accurate than keyword matching)
-- Adjust similarity threshold in `memory-link.py`
-
-**Briefing too long:**
-- Reduce number of facts included in template (edit `generate_fallback_briefing`)
-- LLM-generated briefings are automatically constrained to 2000 chars
-
-## Performance Routine (Hook System)
-
-The performance routine is implemented as OpenClaw lifecycle hooks in `src/`. It applies a core principle from performance psychology: **separate thinking from doing**. Athletes don't redesign their technique mid-game — they prepare (purposeful thinking), then execute trained sequences (reactive execution). The only exception is genuine error handling.
-
-For agents, this means: front-load all context, constraints, and memory retrieval into a briefing packet *before* inference starts. Keep execution clean. Write the after-action review *after*. Never inject corrections mid-run.
-
-### Architecture
+Four lifecycle hooks that enforce execution discipline during sessions. Based on a principle from performance psychology: **separate preparation from execution**.
 
 ```
-User Message → Gateway → Agent Loop
-  ├── before_agent_start → Briefing Packet (checklist + memory + constraints)
-  ├── LLM Inference (clean context, no mid-run corrections)
-  ├── before_tool_call → Policy enforcement (deny list)
-  ├── Tool Execution → Result
-  ├── tool_result_persist → Compression (head+tail, bounded)
-  └── agent_end → After-Action Review → durable memory for next run
+User Message → Agent Loop
+  ├── before_agent_start  →  Briefing packet (memory + checklist)
+  ├── before_tool_call    →  Policy enforcement (deny list)
+  ├── tool_result_persist →  Output compression (prevent context bloat)
+  └── agent_end           →  After-action review (durable notes)
 ```
-
-### The Core Idea: No Mid-Swing Coaching
-
-Constant correction during execution degrades output. Mid-run prompt patches create instruction collision — two competing directives the agent must reconcile instead of executing. The alternative:
-
-1. **Capture corrections** — don't inject them into the current run
-2. **Condense into deltas** — merge all corrections into a clean update
-3. **Inject next run** — the next briefing packet includes the corrected instructions
-
-The after-action review (`agent_end`) feeds back into the next briefing (`before_agent_start`). The loop is closed — just not during execution.
 
 ### Configuration
-
-Configure via `openclaw.plugin.json` or your agent config:
 
 ```json
 {
@@ -304,36 +186,38 @@ Configure via `openclaw.plugin.json` or your agent config:
 
 ### Hook Details
 
-**`before_agent_start` — Briefing Packet**
-- Loads configured memory files from workspace
-- Builds bounded packet: task hint + checklist + retrieved memory
-- Injects into system prompt (respects `maxChars` limit)
-- Missing memory files are silently skipped
+| Hook | What it does |
+|------|-------------|
+| `before_agent_start` | Loads memory files, builds bounded briefing packet, injects into system prompt |
+| `before_tool_call` | Checks tool against deny list, prevents unsafe calls |
+| `tool_result_persist` | Head (60%) + tail (30%) compression of large results |
+| `agent_end` | Appends session summary to memory file with tools used and outcomes |
 
-**`before_tool_call` — Tool Discipline**
-- Checks tool name against `deny` list
-- Throws error if denied (prevents execution)
-- Extensible for param normalization
+## Output Files
 
-**`tool_result_persist` — Output Compression**
-- Keeps results under `maxToolResultChars` (default 12K)
-- Uses head (60%) + tail (30%) strategy
-- Preserves structure for JSON results
+| File | Location | Purpose |
+|------|----------|---------|
+| `BRIEFING.md` | Workspace root | Daily context cheat sheet |
+| `extracted.jsonl` | `memory/` | All extracted facts (append-only) |
+| `knowledge-graph.json` | `memory/` | Full graph with embeddings and links |
+| `knowledge-summary.md` | `memory/` | Human-readable graph summary |
+| `knowledge/chatgpt/*.md` | `memory/` | Ingested ChatGPT conversations |
 
-**`after_action_review` — Durable Notes**
-- Appends session summary to configured memory file
-- Extracts key bullets from final answer
-- Logs tools used (with failure flags)
-- Creates directories automatically
+## Customization
 
-### Source Files
+- **Change LLM models** — Edit model names in each script (supports OpenAI, Anthropic, Gemini)
+- **Adjust extraction** — Modify the extraction prompt in `memory-extract.py` to focus on different fact types
+- **Tune link sensitivity** — Change the similarity threshold in `memory-link.py` (default: 0.3)
+- **Filter ingestion** — Edit `EXCLUDE_PATTERNS` in `ingest-chatgpt.py` for topic exclusion
 
-- `src/index.ts` — Hook registration and wiring
-- `src/briefing.ts` — Briefing packet builder
-- `src/compress.ts` — Tool result compressor
-- `src/memory.ts` — Memory file loader + after-action writer
+## Troubleshooting
+
+| Problem | Fix |
+|---------|-----|
+| No facts extracted | Check that daily notes or transcripts exist; verify API key |
+| Low-quality links | Add OpenAI key for embedding-based similarity; adjust threshold |
+| Briefing too long | Reduce facts in template or let LLM generation handle it (auto-constrained to 2000 chars) |
 
 ## See Also
 
 - [Setup Guide](references/setup.md) — Detailed installation and configuration
-- [Blog Post Draft](../../drafts/blog-pregame-routine.md) — Full writeup of the performance routine concept
