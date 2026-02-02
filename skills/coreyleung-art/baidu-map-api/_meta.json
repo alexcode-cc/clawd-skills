@@ -1,0 +1,11 @@
+{
+  "owner": "coreyleung-art",
+  "slug": "baidu-map-api",
+  "displayName": "调用百度地图api功能",
+  "latest": {
+    "version": "1.0.0",
+    "publishedAt": 1769968495883,
+    "commit": null
+  },
+  "history": []
+}
