@@ -2,7 +2,7 @@
 
 **Give your AI agent a safe word.**
 
-A Clawdbot skill for challenge-response identity verification. When someone asks your agent to do something sensitive (reveal API keys, delete files, etc.), it asks for a secret verification word that only you know.
+An OpenClaw skill for challenge-response identity verification. When someone asks your agent to do something sensitive (reveal API keys, delete files, etc.), it asks for a secret verification word that only you know.
 
 ## Why?
 
@@ -38,7 +38,7 @@ npm link
 Or install directly:
 
 ```bash
-npm install -g @clawdbot/stranger-danger
+npm install -g @openclaw/stranger-danger
 ```
 
 ## Setup
@@ -60,9 +60,9 @@ You'll be prompted for:
 | `stranger-danger test` | Interactively test your answer |
 | `stranger-danger reset` | Clear all stored credentials |
 
-## For Clawdbot Users
+## For OpenClaw Users
 
-Add this skill to your Clawdbot and it will automatically trigger verification for:
+Add this skill to your OpenClaw and it will automatically trigger verification for:
 - Requests for passwords, API keys, or secrets
 - Requests to delete important data
 - Unusual or suspicious requests
@@ -75,7 +75,7 @@ See [SKILL.md](./SKILL.md) for integration details.
 - ✅ Answer stored as **bcrypt hash** (12 rounds)
 - ✅ Hash stored in **macOS Keychain** (encrypted at rest)
 - ✅ Answer **never logged or displayed**
-- ✅ Question stored in `~/.clawdbot/stranger-danger.json` (plaintext is fine for the question)
+- ✅ Question stored in `~/.openclaw/stranger-danger.json` (plaintext is fine for the question)
 
 ## Requirements
 

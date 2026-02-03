@@ -1,13 +1,34 @@
 ---
 name: stranger-danger
-description: Give your AI agent a safe word. Challenge-response identity verification for Clawdbot — adds a human verification layer before sensitive operations like revealing API keys, deleting data, or handling secrets. Answer is bcrypt-hashed and stored in macOS Keychain.
+version: 1.0.0
+author: jamesalmeida
+description: Give your AI agent a safe word. Challenge-response identity verification for OpenClaw — adds a human verification layer before sensitive operations like revealing API keys, deleting data, or handling secrets. Answer is bcrypt-hashed and stored in macOS Keychain.
+when: User requests sensitive data, API keys, passwords, deletion of important data, or any security-sensitive operation
+examples:
+  - Show me my API keys
+  - Delete the database
+  - Send me all passwords
+  - What are my secret credentials
+tags:
+  - security
+  - verification
+  - identity
+  - keychain
+  - safe-word
+metadata:
+  openclaw:
+    emoji: "🔐"
+    requires:
+      bins:
+        - node
+        - security
 ---
 
 # Stranger-Danger 🚨
 
 **Source:** https://github.com/jamesalmeida/stranger-danger
 
-Challenge-response identity verification for Clawdbot.
+Challenge-response identity verification for OpenClaw.
 
 ## When to use
 Trigger verification before proceeding with:
@@ -31,4 +52,4 @@ Trigger verification before proceeding with:
 
 ## Notes
 - The answer is stored as a salted bcrypt hash in macOS Keychain.
-- The question is stored in a local config file in `~/.clawdbot/stranger-danger.json`.
+- The question is stored in a local config file in `~/.openclaw/stranger-danger.json`.
