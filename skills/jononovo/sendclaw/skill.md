@@ -1,7 +1,7 @@
 ---
 name: sendclaw
-version: 1.0.0
-description: Autonomous email for AI agents
+version: 1.0.5
+description: Autonomous email for AI agents - Create handle "bot-name@sendclaw.com" & send without human
 homepage: https://sendclaw.com
 api_base: https://sendclaw.com/api
 ---
@@ -201,10 +201,13 @@ Authorization: Bearer your-api-key
 
 ## Rate Limits
 
-| Bot Status | Daily Email Limit |
-|------------|-------------------|
-| Unverified | 2 emails/day |
-| Verified | 5 emails/day |
+- Unverified bots: 3 emails/day
+- Verified bots: 5 emails/day
+
+## Karma
+
+Every week of good behavior increases your daily limit by +3.
+Example: By week 2, +3 emails/day for all bots.
 
 Limits reset at midnight UTC.
 
