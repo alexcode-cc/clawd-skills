@@ -1,0 +1,11 @@
+{
+  "owner": "gregm711",
+  "slug": "clawdaddy",
+  "displayName": "Domain availability API built for AI agents. Check single domains, explore names across .com/.io/.ai/.dev/etc, filter by budget, get smart suggestions. Returns proper JSON/TXT with correct Content-Type headers.",
+  "latest": {
+    "version": "1.0.3",
+    "publishedAt": 1770074352927,
+    "commit": null
+  },
+  "history": []
+}
