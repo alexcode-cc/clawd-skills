@@ -2,7 +2,7 @@
 name: share_usecase
 description: "Share your OpenClaw use case to clawusecase.com. Analyzes your recent work and creates a submission for the community."
 author: "Rex 🐧"
-version: "2.0.0"
+version: "2.0.1"
 ---
 
 # Share Use Case Skill
@@ -122,43 +122,57 @@ Click one of the links above to authenticate. I'll detect when you're connected 
 
 **Auto-detect connection:**
 
-Immediately after sending OAuth links, start an active polling loop to detect when the user completes authentication.
+**⚠️ CRITICAL: You MUST actively monitor and respond to polling results in real-time. Do NOT run polling in the background and wait for system messages. Check the process output directly and respond immediately.**
 
-**Option 1: Use the helper script (recommended):**
+Immediately after sending OAuth links, start polling and watch for completion:
+
+**Recommended approach:**
 ```bash
-# Polls every 5 seconds for up to 2 minutes
-./poll-credential.sh [oauth_token]
-
-# Returns credential JSON on success (exit 0)
-# Returns error on timeout (exit 1)
-```
-
-**Option 2: Manual polling loop:**
-```bash
-# Implementation: poll up to 24 times (2 minutes total)
+cd /path/to/skill
 for i in {1..24}; do
-  # Try to get credential (exit 0 if found)
-  if node get-credential.js --token [oauth_token] 2>/dev/null; then
-    # Connection detected! Get the credential data
-    CREDENTIAL=$(node get-credential.js --token [oauth_token] 2>/dev/null)
-    # Immediately notify user
-    echo "✅ Connected as @username!"
-    # Proceed with submission
+  # Try to get credential
+  RESULT=$(node get-credential.js --token [oauth_token] 2>&1)
+  
+  if echo "$RESULT" | grep -q '"username"'; then
+    # SUCCESS! Parse the credential
+    USERNAME=$(echo "$RESULT" | grep -o '"username":"[^"]*"' | cut -d'"' -f4)
+    PLATFORM=$(echo "$RESULT" | grep -o '"platform":"[^"]*"' | cut -d'"' -f4)
+    
+    # IMMEDIATELY notify user (don't wait for background processes!)
+    # Send this message RIGHT NOW before continuing
+    echo "User should see: ✅ Connected as @$USERNAME!"
+    
+    # Store the full credential for submission
+    CREDENTIAL="$RESULT"
     break
   fi
-  # Not found yet, wait 5 seconds before trying again
-  sleep 5
+  
+  # Not ready yet, wait 5 seconds
+  if [ $i -lt 24 ]; then
+    sleep 5
+  fi
 done
+
+# After loop, check if we got a credential
+if [ -z "$CREDENTIAL" ]; then
+  echo "Timeout - credential not received within 2 minutes"
+fi
 ```
 
-**Critical:** You must actively monitor the polling loop and respond immediately when the credential is detected. Don't just launch it in the background - check the results after each attempt.
+**Critical implementation notes:**
+
+1. **DO NOT** use `exec(..., background: true)` for polling - you won't see results in time
+2. **DO** run polling synchronously or check process output immediately
+3. **IMMEDIATELY** send "✅ Connected as @username!" message when detected
+4. **DO NOT** wait for system messages or background process completion
+5. Parse the credential JSON directly from the command output
 
 **Example flow:**
 1. Send OAuth links to user
-2. Start polling loop (every 5 seconds)
-3. On each check: look for credential completion
-4. **The moment it's found:** immediately send message: "✅ Connected as @josephliow! Submitting your use case now..."
-5. Extract username from credential JSON
+2. **Immediately start polling** (synchronous checks every 5 seconds)
+3. **Each iteration:** Check if credential exists
+4. **The INSTANT it's found:** Send message "✅ Connected as @username! Submitting your use case now..."
+5. Extract username/platform from credential JSON
 6. Proceed with submission
 
 **If timeout (2 minutes):**
