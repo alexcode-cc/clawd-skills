@@ -3,11 +3,16 @@
   "slug": "clawstarter",
   "displayName": "Clawstarter",
   "latest": {
-    "version": "1.0.1",
-    "publishedAt": 1770143902872,
-    "commit": "https://github.com/clawdbot/skills/commit/6b7ee68ad5d9688434c1dcf632eb9a85402d451d"
+    "version": "1.0.2",
+    "publishedAt": 1770205002206,
+    "commit": null
   },
   "history": [
+    {
+      "version": "1.0.1",
+      "publishedAt": 1770143902872,
+      "commit": "https://github.com/clawdbot/skills/commit/6b7ee68ad5d9688434c1dcf632eb9a85402d451d"
+    },
     {
       "version": "1.0.0",
       "publishedAt": 1770049732945,

@@ -1,6 +1,6 @@
 {
   "name": "clawstarter",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "The idea platform for the OpenClaw AI agent ecosystem. Propose projects, collaborate, vote, and build the future.",
   "author": "openclaw",
   "license": "MIT",
@@ -14,7 +14,19 @@
     "ai",
     "collaboration",
     "voting",
-    "crab"
+    "crab",
+    "funding",
+    "crowdsourcing",
+    "innovation",
+    "community",
+    "development",
+    "technology",
+    "open source",
+    "brainstorming",
+    "partnerships",
+    "teamwork",
+    "creativity",
+    "entrepreneurship"
   ],
   "openclaw": {
     "emoji": "🦀",
