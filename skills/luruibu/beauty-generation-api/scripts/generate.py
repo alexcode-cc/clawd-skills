@@ -1,696 +1,195 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import argparse
+"""
+Ultra-Fast Beauty Generation Script - Optimized for 1-second GPU generation
+超快速美女生成脚本 - 为1秒GPU生成优化
+
+This script delivers images to users within 5 seconds total time.
+"""
+
 import json
-import os
-import sys
 import time
 import urllib.request
 import urllib.error
-from typing import Dict, List, Optional, Tuple
-import datetime as _dt
+import sys
+import argparse
+import os
 
-# Ensure UTF-8 encoding for cross-platform compatibility
-if sys.version_info >= (3, 7):
-    # For Python 3.7+, ensure UTF-8 mode
-    if hasattr(sys, 'set_int_max_str_digits'):
-        # Modern Python versions
-        pass
-else:
-    # For older Python versions, set encoding explicitly
-    import locale
-    if sys.platform.startswith('win'):
-        # Windows specific encoding handling
-        try:
-            import codecs
-            sys.stdout = codecs.getwriter('utf-8')(sys.stdout.detach())
-            sys.stderr = codecs.getwriter('utf-8')(sys.stderr.detach())
-        except:
-            pass
+API_BASE = "https://gen1.diversityfaces.org"
+API_KEY = "ak_OymjErKQRs-brINJuHFxKwIbxbZHq2KRiEzYthnwxMI"
 
-# Set environment variable for consistent UTF-8 handling
-os.environ.setdefault('PYTHONIOENCODING', 'utf-8')
-
-
-def _stamp() -> str:
-    return _dt.datetime.now().strftime("%Y-%m-%d-%H%M%S")
-
-
-def _default_out_dir() -> str:
-    """Get default output directory with cross-platform path handling."""
-    try:
-        # Use expanduser for cross-platform home directory
-        projects_tmp = os.path.expanduser("~/Projects/tmp")
-        if os.path.isdir(projects_tmp):
-            return os.path.join(projects_tmp, f"beauty-generation-{_stamp()}")
-    except Exception:
-        # Fallback if home directory access fails
-        pass
+def generate_and_download(prompt, width=1024, height=1024, output_dir=None, filename=None):
+    """
+    Generate and download image with ultra-fast polling.
+    Returns (success, total_time, file_path, error_message)
+    """
     
-    # Fallback to current directory
-    return os.path.join(os.getcwd(), "tmp", f"beauty-generation-{_stamp()}")
-
-
-class BeautyAPIClient:
-    def __init__(self, api_base: str = "https://gen1.diversityfaces.org", 
-                 api_key: str = "ak_OymjErKQRs-brINJuHFxKwIbxbZHq2KRiEzYthnwxMI"):
-        self.api_base = api_base.rstrip("/")
-        self.api_key = api_key
-        self.timeout = 30
-
-    def _make_request(self, method: str, endpoint: str, data: Optional[Dict] = None) -> Dict:
-        """Make HTTP request with API key authentication and robust encoding handling."""
-        url = f"{self.api_base}{endpoint}"
-        headers = {
-            "Content-Type": "application/json; charset=utf-8",
-            "X-API-Key": self.api_key,
-            "User-Agent": "beauty-generation-skill/1.2.2",
-            "Accept": "application/json",
-            "Accept-Charset": "utf-8"
-        }
-        
-        body = None
-        if data:
-            # Ensure proper UTF-8 encoding for JSON data
-            body = json.dumps(data, ensure_ascii=False).encode("utf-8")
-        
-        req = urllib.request.Request(url, data=body, headers=headers, method=method)
-        
-        try:
-            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
-                response_data = resp.read()
-                # Try multiple encodings for response
-                for encoding in ['utf-8', 'utf-8-sig', 'gbk', 'latin1']:
-                    try:
-                        text = response_data.decode(encoding)
-                        return json.loads(text)
-                    except (UnicodeDecodeError, json.JSONDecodeError):
-                        continue
-                
-                # If all encodings fail, raise error
-                raise SystemExit("Failed to decode API response with any supported encoding")
-                
-        except urllib.error.HTTPError as e:
-            error_data = e.read()
-            try:
-                # Try to decode error response with multiple encodings
-                error_text = ""
-                for encoding in ['utf-8', 'gbk', 'latin1']:
-                    try:
-                        error_text = error_data.decode(encoding)
-                        break
-                    except UnicodeDecodeError:
-                        continue
-                
-                error_json = json.loads(error_text)
-                if e.code == 401:
-                    raise SystemExit(f"Authentication failed: {error_json.get('message', 'Invalid API key')}")
-                elif e.code == 429:
-                    raise SystemExit(f"Rate limit exceeded: {error_json.get('message', 'Too many requests')}")
-                else:
-                    raise SystemExit(f"API error {e.code}: {error_json.get('error', error_text[:100])}")
-            except json.JSONDecodeError:
-                raise SystemExit(f"HTTP {e.code}: {error_text[:100] if 'error_text' in locals() else 'Unknown error'}")
-        except Exception as e:
-            raise SystemExit(f"Request failed: {e}")
-
-    def generate_standard(self, **params) -> Dict:
-        """Generate with standard parameters."""
-        return self._make_request("POST", "/api/generate", params)
-
-    def generate_random(self, **params) -> Dict:
-        """Generate with random parameters."""
-        return self._make_request("POST", "/api/generate/random", params)
-
-    def generate_custom(self, full_prompt: str, **params) -> Dict:
-        """Generate with custom prompt."""
-        data = {"full_prompt": full_prompt, **params}
-        return self._make_request("POST", "/api/generate/custom", data)
-
-    def check_status(self, prompt_id: str) -> Dict:
-        """Check generation status."""
-        return self._make_request("GET", f"/api/status/{prompt_id}")
-
-    def get_presets(self) -> Dict:
-        """Get available parameter presets."""
-        return self._make_request("GET", "/api/presets")
-
-    def download_image(self, filename: str, save_path: str, **params) -> str:
-        """Download generated image with cross-platform path and encoding handling."""
-        url_params = "&".join([f"{k}={v}" for k, v in params.items() if v])
-        url = f"{self.api_base}/api/image/{filename}"
-        if url_params:
-            url += f"?{url_params}"
-        
-        headers = {
-            "X-API-Key": self.api_key,
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-        }
-        req = urllib.request.Request(url, headers=headers)
-        
-        try:
-            download_start = time.time()
-            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
-                # Ensure directory exists with proper path handling
-                save_dir = os.path.dirname(save_path)
-                if save_dir:
-                    os.makedirs(save_dir, exist_ok=True)
-                
-                # Download image data
-                image_data = resp.read()
-                
-                # Write to file with binary mode (no encoding issues)
-                with open(save_path, "wb") as f:
-                    f.write(image_data)
-                
-                download_time = time.time() - download_start
-                
-                # Use safe string formatting for cross-platform output
-                try:
-                    print(f"🖼️  Downloaded: {save_path} ({len(image_data):,} bytes, {download_time:.1f}s)")
-                    print(f"📁 Full path: {os.path.abspath(save_path)}")
-                    print(f"🎉 Image ready for viewing!")
-                except UnicodeEncodeError:
-                    # Fallback for systems with encoding issues
-                    print(f"🖼️  Downloaded: {os.path.basename(save_path)} ({len(image_data):,} bytes, {download_time:.1f}s)")
-                    print(f"🎉 Image ready for viewing!")
-                
-                return save_path
-        except urllib.error.HTTPError as e:
-            error_data = e.read()
-            try:
-                # Try multiple encodings for error messages
-                error_text = ""
-                for encoding in ['utf-8', 'gbk', 'latin1']:
-                    try:
-                        error_text = error_data.decode(encoding)
-                        break
-                    except UnicodeDecodeError:
-                        continue
-                
-                if "cloudflare" in error_text.lower():
-                    raise SystemExit("Image download blocked by protection. Try again later.")
-                raise SystemExit(f"HTTP {e.code}: Failed to download image - {error_text[:100]}")
-            except:
-                raise SystemExit(f"HTTP {e.code}: Failed to download image")
-        except Exception as e:
-            raise SystemExit(f"Failed to download image: {e}")
-
-    def wait_for_completion(self, prompt_id: str, max_wait: int = 300) -> Dict:
-        """Wait for generation to complete with optimized timing for fast generation."""
-        start_time = time.time()
-        retry_count = 0
-        max_retries = 3
-        
-        print(f"⏳ Waiting for completion (optimized for 5s generation)...")
-        
-        # Optimized polling strategy for fast generation
-        check_intervals = [1, 1, 1, 2, 2, 3, 3, 5, 5, 10]  # Start with 1s intervals
-        check_count = 0
-        
-        while time.time() - start_time < max_wait:
-            try:
-                # Use a more robust status check
-                status = self._check_status_robust(prompt_id)
-                
-                if status["status"] == "completed":
-                    elapsed = time.time() - start_time
-                    print(f"✅ Generation completed in {elapsed:.1f}s!")
-                    return status
-                elif status["status"] == "failed":
-                    raise SystemExit(f"Generation failed: {status.get('message', 'Unknown error')}")
-                elif status["status"] == "error":
-                    if retry_count < max_retries:
-                        retry_count += 1
-                        print(f"Status check error, retrying ({retry_count}/{max_retries})...")
-                        time.sleep(2)
-                        continue
-                    else:
-                        raise SystemExit(f"Status check failed after {max_retries} retries")
-                
-                elapsed = time.time() - start_time
-                print(f"⏱️  Status: {status['status']} - {status.get('message', 'Processing...')} ({elapsed:.1f}s)")
-                retry_count = 0  # Reset retry count on successful request
-                
-            except SystemExit:
-                raise
-            except Exception as e:
-                if retry_count < max_retries:
-                    retry_count += 1
-                    print(f"Status check error, retrying ({retry_count}/{max_retries}): {e}")
-                    time.sleep(2)
-                    continue
-                else:
-                    raise SystemExit(f"Status check failed after {max_retries} retries: {e}")
-            
-            # Use optimized intervals for faster response
-            if check_count < len(check_intervals):
-                sleep_time = check_intervals[check_count]
-            else:
-                sleep_time = 10  # Fall back to 10s intervals after initial fast checks
-            
-            time.sleep(sleep_time)
-            check_count += 1
-        
-        raise SystemExit(f"Generation timeout after {max_wait} seconds")
+    if output_dir is None:
+        output_dir = os.getcwd()
     
-    def _check_status_robust(self, prompt_id: str) -> Dict:
-        """Robust status check with multiple encoding attempts."""
-        url = f"{self.api_base}/api/status/{prompt_id}"
-        headers = {
-            "X-API-Key": self.api_key,
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-            "Accept": "application/json",
-            "Accept-Charset": "utf-8"
-        }
-        
-        req = urllib.request.Request(url, headers=headers, method="GET")
-        
-        try:
-            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
-                response_data = resp.read()
-                
-                # Try multiple encodings
-                for encoding in ['utf-8', 'utf-8-sig', 'gbk', 'latin1']:
-                    try:
-                        text = response_data.decode(encoding)
-                        return json.loads(text)
-                    except (UnicodeDecodeError, json.JSONDecodeError):
-                        continue
-                
-                # If all encodings fail, return error status
-                return {"status": "error", "message": "Failed to decode response"}
-                
-        except urllib.error.HTTPError as e:
-            error_data = e.read()
-            
-            # Try to decode error response
-            error_text = ""
-            for encoding in ['utf-8', 'gbk', 'latin1']:
-                try:
-                    error_text = error_data.decode(encoding)
-                    break
-                except UnicodeDecodeError:
-                    continue
-            
-            if "cloudflare" in error_text.lower() or "<html" in error_text.lower():
-                return {"status": "error", "message": "Server protection detected"}
-            
-            try:
-                error_json = json.loads(error_text)
-                return {"status": "error", "message": error_json.get("error", "API error")}
-            except json.JSONDecodeError:
-                return {"status": "error", "message": f"HTTP {e.code}"}
-                
-        except Exception as e:
-            return {"status": "error", "message": str(e)}
-
-
-def load_style_presets() -> Dict[str, Dict]:
-    """Load predefined style combinations with cross-platform encoding support."""
-    # Define presets with explicit Unicode strings for cross-platform compatibility
-    presets = {
-        "professional-chinese": {
-            "style": "\u77e5\u6027",  # 知性
-            "age": "25",
-            "nationality": "\u4e2d\u56fd",  # 中国
-            "clothing": "\u897f\u88c5",  # 西装
-            "clothing_color": "\u9ed1\u8272",  # 黑色
-            "scene": "\u529e\u516c\u5ba4",  # 办公室
-            "mood": "\u81ea\u4fe1"  # 自信
-        },
-        "traditional-japanese": {
-            "style": "\u53e4\u5178",  # 古典
-            "age": "23",
-            "nationality": "\u65e5\u672c",  # 日本
-            "clothing": "\u548c\u670d",  # 和服
-            "clothing_color": "\u7c89\u8272",  # 粉色
-            "scene": "\u82b1\u56ed",  # 花园
-            "mood": "\u6e29\u67d4"  # 温柔
-        },
-        "modern-korean": {
-            "style": "\u73b0\u4ee3",  # 现代
-            "age": "20",
-            "nationality": "\u97e9\u56fd",  # 韩国
-            "clothing": "\u8fde\u8863\u88d9",  # 连衣裙
-            "clothing_color": "\u767d\u8272",  # 白色
-            "scene": "\u57ce\u5e02",  # 城市
-            "mood": "\u6d3b\u6cfc"  # 活泼
-        },
-        "elegant-chinese-qipao": {
-            "style": "\u4f18\u96c5",  # 优雅
-            "age": "24",
-            "nationality": "\u4e2d\u56fd",  # 中国
-            "clothing": "\u65d7\u888d",  # 旗袍
-            "clothing_color": "\u7ea2\u8272",  # 红色
-            "scene": "\u5ba4\u5185",  # 室内
-            "mood": "\u9ad8\u8d35"  # 高贵
-        },
-        "casual-lifestyle": {
-            "style": "\u6e05\u7eaf",  # 清纯
-            "age": "22",
-            "nationality": "\u4e2d\u56fd",  # 中国
-            "clothing": "\u4f11\u95f2\u88c5",  # 休闲装
-            "clothing_color": "\u84dd\u8272",  # 蓝色
-            "scene": "\u5496\u5561\u5385",  # 咖啡厅
-            "mood": "\u751c\u7f8e"  # 甜美
-        },
-        "fashion-editorial": {
-            "style": "\u51b7\u8273",  # 冷艳
-            "age": "26",
-            "nationality": "\u4fc4\u7f57\u65af",  # 俄罗斯
-            "clothing": "\u665a\u793c\u670d",  # 晚礼服
-            "clothing_color": "\u9ed1\u8272",  # 黑色
-            "scene": "\u57ce\u5e02",  # 城市
-            "mood": "\u795e\u79d8"  # 神秘
-        },
-        "brazilian-beach": {
-            "style": "\u6027\u611f",  # 性感
-            "age": "24",
-            "nationality": "\u5df4\u897f",  # 巴西
-            "clothing": "\u8fde\u8863\u88d9",  # 连衣裙
-            "clothing_color": "\u9ec4\u8272",  # 黄色
-            "scene": "\u6d77\u8fb9",  # 海边
-            "mood": "\u70ed\u60c5"  # 热情
-        },
-        "french-elegance": {
-            "style": "\u4f18\u96c5",  # 优雅
-            "age": "27",
-            "nationality": "\u6cd5\u56fd",  # 法国
-            "clothing": "\u5916\u5957",  # 外套
-            "clothing_color": "\u7c73\u8272",  # 米色
-            "scene": "\u5496\u5561\u5385",  # 咖啡厅
-            "mood": "\u77e5\u6027"  # 知性
-        },
-        "indian-traditional": {
-            "style": "\u53e4\u5178",  # 古典
-            "age": "22",
-            "nationality": "\u5370\u5ea6",  # 印度
-            "clothing": "\u6c11\u65cf\u670d\u88c5",  # 民族服装
-            "clothing_color": "\u7ea2\u8272",  # 红色
-            "scene": "\u5ba4\u5185",  # 室内
-            "mood": "\u6e29\u67d4"  # 温柔
-        },
-        "american-casual": {
-            "style": "\u6d3b\u6cfc",  # 活泼
-            "age": "21",
-            "nationality": "\u7f8e\u56fd",  # 美国
-            "clothing": "\u725b\u4ed4\u88e4",  # 牛仔裤
-            "clothing_color": "\u84dd\u8272",  # 蓝色
-            "scene": "\u516c\u56ed",  # 公园
-            "mood": "\u5f00\u6717"  # 开朗
-        }
+    if filename is None:
+        filename = f"beauty_generated_{int(time.time())}.webp"
+    
+    file_path = os.path.join(output_dir, filename)
+    
+    print(f"🚀 Ultra-Fast Generation Started")
+    print(f"📝 Prompt: {prompt}")
+    print(f"📐 Size: {width}x{height}")
+    print(f"📁 Output: {file_path}")
+    print("-" * 60)
+    
+    # Step 1: Submit generation request
+    url = f"{API_BASE}/api/generate/custom"
+    data = {
+        "full_prompt": prompt,
+        "width": width,
+        "height": height
     }
     
-    return presets
+    headers = {
+        "Content-Type": "application/json",
+        "X-API-Key": API_KEY,
+        "User-Agent": "beauty-generation-ultra-fast/1.0"
+    }
+    
+    body = json.dumps(data).encode("utf-8")
+    req = urllib.request.Request(url, data=body, headers=headers, method="POST")
+    
+    generation_start = time.time()
+    
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            result = json.loads(resp.read().decode("utf-8"))
+            prompt_id = result["prompt_id"]
+            submit_time = time.time() - generation_start
+            print(f"✅ Submitted in {submit_time:.2f}s (ID: {prompt_id[:8]}...)")
+    except Exception as e:
+        return False, 0, None, f"Failed to submit generation: {e}"
+    
+    # Step 2: Ultra-fast status polling (every 0.5s)
+    print("⚡ Ultra-fast polling started...")
+    
+    check_count = 0
+    max_wait = 15
+    
+    while time.time() - generation_start < max_wait:
+        status_url = f"{API_BASE}/api/status/{prompt_id}"
+        status_headers = {
+            "X-API-Key": API_KEY,
+            "User-Agent": "beauty-generation-ultra-fast/1.0"
+        }
+        
+        status_req = urllib.request.Request(status_url, headers=status_headers, method="GET")
+        
+        try:
+            with urllib.request.urlopen(status_req, timeout=10) as resp:
+                status_result = json.loads(resp.read().decode("utf-8"))
+                check_count += 1
+                elapsed = time.time() - generation_start
+                
+                if status_result.get("status") == "completed":
+                    print(f"🚀 Generation completed in {elapsed:.2f}s after {check_count} checks!")
+                    
+                    # Step 3: Download image immediately
+                    if status_result.get("images"):
+                        filename_from_api = status_result["images"][0]["filename"]
+                        
+                        download_url = f"{API_BASE}/api/image/{filename_from_api}?format=webp"
+                        download_headers = {
+                            "X-API-Key": API_KEY,
+                            "User-Agent": "beauty-generation-ultra-fast/1.0"
+                        }
+                        download_req = urllib.request.Request(download_url, headers=download_headers)
+                        
+                        try:
+                            download_start = time.time()
+                            with urllib.request.urlopen(download_req, timeout=10) as resp:
+                                image_data = resp.read()
+                                
+                            # Ensure output directory exists
+                            os.makedirs(output_dir, exist_ok=True)
+                            
+                            with open(file_path, "wb") as f:
+                                f.write(image_data)
+                                
+                            download_time = time.time() - download_start
+                            total_time = time.time() - generation_start
+                            
+                            print(f"📥 Downloaded in {download_time:.2f}s ({len(image_data):,} bytes)")
+                            print("-" * 60)
+                            print(f"🎉 SUCCESS! Total time: {total_time:.2f}s")
+                            print(f"📁 Image saved: {file_path}")
+                            print(f"🎯 Target: {'✅ ACHIEVED' if total_time <= 5 else '❌ MISSED'} (≤5s)")
+                            
+                            return True, total_time, file_path, None
+                        except Exception as e:
+                            return False, 0, None, f"Failed to download image: {e}"
+                    else:
+                        return False, 0, None, "No images in completed response"
+                        
+                elif status_result.get("status") == "failed":
+                    error_msg = status_result.get('message', 'Unknown error')
+                    return False, 0, None, f"Generation failed: {error_msg}"
+                else:
+                    # Print status every 10th check to reduce noise
+                    if check_count % 10 == 0:
+                        print(f"⏱️  Check #{check_count}: {status_result.get('status', 'unknown')} ({elapsed:.2f}s)")
+                
+        except Exception:
+            # Silently continue on status check errors
+            pass
+        
+        # Wait 0.5 seconds before next check
+        time.sleep(0.5)
+    
+    return False, 0, None, f"Timeout after {max_wait}s and {check_count} checks"
 
-
-def main(argv: List[str]) -> int:
+def main():
     parser = argparse.ArgumentParser(
-        prog="beauty-generation",
-        description="Generate beautiful AI portraits using the Beauty Generation API"
+        description="Ultra-fast beauty image generation - optimized for 1-second GPU"
     )
     
-    # Generation modes
-    mode_group = parser.add_mutually_exclusive_group(required=False)
-    mode_group.add_argument("--standard", action="store_true", help="Standard generation with parameters")
-    mode_group.add_argument("--random", action="store_true", help="Random generation")
-    mode_group.add_argument("--custom", help="Custom prompt generation")
-    mode_group.add_argument("--preset", choices=load_style_presets().keys(), help="Use predefined style preset")
+    parser.add_argument("--prompt", 
+                       help="Custom English prompt for image generation")
+    parser.add_argument("--width", type=int, default=1024,
+                       help="Image width (default: 1024)")
+    parser.add_argument("--height", type=int, default=1024, 
+                       help="Image height (default: 1024)")
+    parser.add_argument("--output-dir", 
+                       help="Output directory (default: current directory)")
+    parser.add_argument("--filename",
+                       help="Output filename (default: auto-generated)")
+    parser.add_argument("--test", action="store_true",
+                       help="Run with test prompt")
     
-    # Standard parameters
-    parser.add_argument("--style", help="Beauty style (清纯, 性感, 古典, 现代, etc.)")
-    parser.add_argument("--age", help="Age (18-28)")
-    parser.add_argument("--nationality", help="Nationality/ethnicity")
-    parser.add_argument("--clothing", help="Clothing type")
-    parser.add_argument("--clothing-color", help="Clothing color")
-    parser.add_argument("--scene", help="Background scene")
-    parser.add_argument("--mood", help="Emotional expression")
-    parser.add_argument("--hair-style", help="Hairstyle")
-    parser.add_argument("--hair-color", help="Hair color")
-    parser.add_argument("--skin-tone", help="Skin tone")
-    parser.add_argument("--accessories", help="Accessories")
+    args = parser.parse_args()
     
-    # Image parameters
-    parser.add_argument("--width", type=int, default=1024, help="Image width (default: 1024)")
-    parser.add_argument("--height", type=int, default=1024, help="Image height (default: 1024)")
-    parser.add_argument("--seed", type=int, default=-1, help="Random seed (default: -1)")
-    
-    # Note: Steps are fixed at 4 for security and performance
-    
-    # Output options
-    parser.add_argument("--out-dir", help="Output directory")
-    parser.add_argument("--format", default="webp", choices=["png", "webp", "jpeg"], help="Image format")
-    parser.add_argument("--count", type=int, default=1, help="Number of images to generate")
-    
-    # API options
-    parser.add_argument("--api-base", default="https://gen1.diversityfaces.org", help="API base URL")
-    parser.add_argument("--api-key", help="API key (or use environment variable)")
-    parser.add_argument("--timeout", type=int, default=300, help="Generation timeout (seconds)")
-    
-    # Utility options
-    parser.add_argument("--list-presets", action="store_true", help="List available presets")
-    parser.add_argument("--show-params", action="store_true", help="Show available parameters")
-    parser.add_argument("--dry-run", action="store_true", help="Show parameters without generating")
-    parser.add_argument("--quick", action="store_true", help="Quick generation mode (optimized for 5s generation)")
-    
-    args = parser.parse_args(argv)
-    
-    # Handle utility options
-    if args.list_presets:
-        presets = load_style_presets()
-        try:
-            print("Available style presets:")
-            for name, params in presets.items():
-                print(f"  {name}:")
-                for key, value in params.items():
-                    print(f"    {key}: {value}")
-                print()
-        except UnicodeEncodeError:
-            # Fallback for systems with encoding issues
-            print("Available style presets:")
-            for name, params in presets.items():
-                print(f"  {name}: [Chinese parameters - encoding display issue]")
-        return 0
-    
-    if args.show_params:
-        client = BeautyAPIClient(args.api_base, args.api_key or os.environ.get("BEAUTY_API_KEY"))
-        try:
-            presets = client.get_presets()
-            print("Available parameters:")
-            for category, values in presets.items():
-                if isinstance(values, list):
-                    try:
-                        print(f"  {category}: {', '.join(values[:10])}{'...' if len(values) > 10 else ''}")
-                    except UnicodeEncodeError:
-                        # Fallback for systems with encoding issues
-                        print(f"  {category}: [Chinese values - encoding display issue]")
-        except Exception as e:
-            print(f"Failed to fetch parameters: {e}")
-            return 1
-        return 0
-    
-    # Validate that a generation mode is selected
-    if not any([args.standard, args.random, args.custom, args.preset]):
-        parser.error("One of --standard, --random, --custom, or --preset is required for generation")
-    
-    
-    # Initialize client
-    api_key = args.api_key or os.environ.get("BEAUTY_API_KEY")
-    if not api_key:
-        print("Error: API key required. Set BEAUTY_API_KEY environment variable or use --api-key", file=sys.stderr)
-        return 1
-    
-    client = BeautyAPIClient(args.api_base, api_key)
-    
-    # Optimize timeout for quick mode
-    if args.quick:
-        client.timeout = 15  # Shorter timeout for quick mode
-        print("🚀 Quick mode enabled - optimized for fast 5s generation!")
-    
-    out_dir = args.out_dir or _default_out_dir()
-    os.makedirs(out_dir, exist_ok=True)
-    
-    # Build generation parameters
-    params = {
-        "width": args.width,
-        "height": args.height,
-        "seed": args.seed
-    }
-    
-    # Steps are fixed at 4 for security
-    
-    # Add style parameters
-    style_params = ["style", "age", "nationality", "clothing", "clothing_color", 
-                   "scene", "mood", "hair_style", "hair_color", "skin_tone", "accessories"]
-    
-    for param in style_params:
-        value = getattr(args, param.replace("-", "_"))
-        if value:
-            params[param] = value
-    
-    # Handle different generation modes
-    generations = []
-    
-    for i in range(args.count):
-        if args.preset:
-            preset_params = load_style_presets()[args.preset].copy()
-            preset_params.update(params)
-            if args.dry_run:
-                try:
-                    print(f"Preset '{args.preset}' parameters:")
-                    for key, value in preset_params.items():
-                        print(f"  {key}: {value}")
-                    print("Fixed steps: 4 (for security)")
-                except UnicodeEncodeError:
-                    # Fallback for systems with encoding issues
-                    print(f"Preset '{args.preset}' parameters: [Chinese values - encoding display issue]")
-                    print("Fixed steps: 4 (for security)")
-                continue
-            result = client.generate_standard(**preset_params)
-            generations.append((result, f"preset-{args.preset}-{i+1}", preset_params))
-            
-        elif args.standard:
-            if args.dry_run:
-                try:
-                    print("Standard generation parameters:")
-                    for key, value in params.items():
-                        print(f"  {key}: {value}")
-                    print("Fixed steps: 4 (for security)")
-                except UnicodeEncodeError:
-                    # Fallback for systems with encoding issues
-                    print("Standard generation parameters: [Chinese values - encoding display issue]")
-                    print("Fixed steps: 4 (for security)")
-                continue
-            result = client.generate_standard(**params)
-            generations.append((result, f"standard-{i+1}", params))
-            
-        elif args.random:
-            if args.dry_run:
-                try:
-                    print("Random generation with overrides:")
-                    for key, value in params.items():
-                        if key not in ["width", "height", "seed"]:
-                            print(f"  {key}: {value}")
-                    print("Fixed steps: 4 (for security)")
-                except UnicodeEncodeError:
-                    # Fallback for systems with encoding issues
-                    print("Random generation with overrides: [Chinese values - encoding display issue]")
-                    print("Fixed steps: 4 (for security)")
-                continue
-            result = client.generate_random(**params)
-            generations.append((result, f"random-{i+1}", params))
-            
-        elif args.custom:
-            custom_params = {"full_prompt": args.custom, **params}
-            if args.dry_run:
-                try:
-                    print(f"Custom generation: {args.custom}")
-                    print("Fixed steps: 4 (for security)")
-                except UnicodeEncodeError:
-                    # Fallback for systems with encoding issues
-                    print("Custom generation: [Chinese prompt - encoding display issue]")
-                    print("Fixed steps: 4 (for security)")
-                continue
-            result = client.generate_custom(args.custom, **params)
-            generations.append((result, f"custom-{i+1}", custom_params))
-    
-    if args.dry_run:
-        return 0
-    
-    # Process generations
-    results = []
-    total_start_time = time.time()
-    
-    for i, (result, name, gen_params) in enumerate(generations, 1):
-        if not result.get("success"):
-            print(f"❌ Generation {i} failed: {result.get('error', 'Unknown error')}")
-            continue
-        
-        prompt_id = result["prompt_id"]
-        generation_start = time.time()
-        
-        print(f"🚀 Starting generation {i}/{len(generations)}: {name} (ID: {prompt_id[:8]}...)")
-        try:
-            print(f"📝 Prompt: {result.get('prompt', 'N/A')}")
-        except UnicodeEncodeError:
-            # Fallback for systems with encoding issues
-            print("📝 Prompt: [Chinese text - encoding display issue]")
-        
-        # Wait for completion with optimized timing
-        try:
-            final_status = client.wait_for_completion(prompt_id, args.timeout)
-            generation_time = time.time() - generation_start
-            
-            # Download images immediately
-            download_start = time.time()
-            for j, img in enumerate(final_status["images"]):
-                filename = img["filename"]
-                ext = args.format
-                save_name = f"{name}-{j+1}.{ext}"
-                save_path = os.path.join(out_dir, save_name)
-                
-                client.download_image(
-                    filename, save_path,
-                    format=args.format,
-                    subfolder=img.get("subfolder", ""),
-                    type=img.get("type", "output")
-                )
-                
-                results.append({
-                    "name": name,
-                    "file": save_name,
-                    "full_path": os.path.abspath(save_path),
-                    "prompt": result.get("prompt", ""),
-                    "params": gen_params,
-                    "original_filename": filename,
-                    "generation_time": generation_time,
-                    "download_time": time.time() - download_start
-                })
-                
-                print(f"✅ Completed: {save_name}")
-                
-                # Immediate notification to user
-                print("=" * 60)
-                print(f"🎨 IMAGE READY FOR VIEWING!")
-                print(f"📂 File: {save_name}")
-                print(f"📍 Location: {os.path.abspath(save_path)}")
-                print(f"⏱️  Total time: {time.time() - generation_start:.1f}s")
-                print("=" * 60)
-        
-        except Exception as e:
-            print(f"❌ Failed to complete {name}: {e}")
-    
-    total_time = time.time() - total_start_time
-    
-    # Save metadata
-    if results:
-        metadata_path = os.path.join(out_dir, "generation_metadata.json")
-        with open(metadata_path, "w", encoding="utf-8") as f:
-            json.dump(results, f, indent=2, ensure_ascii=False)
-        
-        print("\n" + "=" * 80)
-        print(f"🎉 GENERATION COMPLETE!")
-        print(f"📊 Generated {len(results)} images in {total_time:.1f}s")
-        print(f"📁 Output directory: {out_dir}")
-        print(f"📋 Metadata saved: generation_metadata.json")
-        print("=" * 80)
-        
-        # List all generated files for easy access
-        print("\n📸 Generated Images:")
-        for result in results:
-            gen_time = result.get('generation_time', 0)
-            dl_time = result.get('download_time', 0)
-            print(f"  • {result['file']} (gen: {gen_time:.1f}s, dl: {dl_time:.1f}s)")
-        
-        print(f"\n💡 All images are ready for immediate viewing!")
-        print(f"📂 Open folder: {out_dir}")
+    # Use test prompt if requested, otherwise require --prompt
+    if args.test:
+        prompt = "A beautiful 25-year-old woman with long flowing hair, elegant dress, professional photography"
+        print("🧪 Using test prompt")
+    elif args.prompt:
+        prompt = args.prompt
     else:
-        print("\n❌ No images were generated successfully.")
+        parser.error("Either --prompt or --test is required")
     
-    return 0
-
+    # Generate and download
+    success, total_time, file_path, error = generate_and_download(
+        prompt=prompt,
+        width=args.width,
+        height=args.height,
+        output_dir=args.output_dir,
+        filename=args.filename
+    )
+    
+    if success:
+        print(f"\n✅ Generation successful in {total_time:.2f}s")
+        print(f"📁 File: {file_path}")
+        return 0
+    else:
+        print(f"\n❌ Generation failed: {error}")
+        return 1
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+    sys.exit(main())

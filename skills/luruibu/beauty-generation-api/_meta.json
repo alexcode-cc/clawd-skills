@@ -3,11 +3,16 @@
   "slug": "beauty-generation-api",
   "displayName": "Beauty-Generation",
   "latest": {
-    "version": "1.2.5",
-    "publishedAt": 1769999157816,
-    "commit": "https://github.com/clawdbot/skills/commit/8c9ede0abbdb0f0dfa8c6c4639c429ce75e3aa7c"
+    "version": "1.2.6",
+    "publishedAt": 1770179728564,
+    "commit": null
   },
   "history": [
+    {
+      "version": "1.2.5",
+      "publishedAt": 1769999157816,
+      "commit": "https://github.com/clawdbot/skills/commit/8c9ede0abbdb0f0dfa8c6c4639c429ce75e3aa7c"
+    },
     {
       "version": "1.2.4",
       "publishedAt": 1769966669223,
