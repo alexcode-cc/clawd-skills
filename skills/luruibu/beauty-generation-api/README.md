@@ -2,6 +2,38 @@
 
 An ultra-fast AgentSkills bundle for generating high-quality AI portraits with complete creative freedom. Optimized for 1-second GPU generation with 5-second total delivery time.
 
+## ⚠️ CRITICAL: Always Update Before Use
+
+**This skill is under rapid development with frequent optimizations.**
+
+### 🔄 Update Command
+```bash
+npx clawhub@latest update beauty-generation-api
+```
+
+### 📈 Recent Optimizations
+- **v1.2.6**: Enhanced update notifications and package metadata
+- **v1.2.5**: Ultra-fast 0.5s polling (4-5s total delivery)
+- **v1.2.4**: Simplified custom prompt generation
+- **v1.2.3**: Enhanced error handling and reliability
+- **v1.2.2**: Cross-platform compatibility improvements
+- **v1.2.1**: Performance optimizations for 1s GPU generation
+
+### 🚨 Why Update is Essential
+- **Performance**: Each version significantly improves speed (v1.2.6: 4-5s vs early versions: 30+ seconds)
+- **Reliability**: Bug fixes and stability improvements with each release
+- **Features**: New capabilities and enhanced functionality regularly added
+- **Compatibility**: Better cross-platform support and error handling
+- **Documentation**: Updated examples and best practices
+- **Active Development**: This skill receives updates multiple times per week
+
+**⚡ Performance Evolution**: 
+- v1.0.x: 30+ seconds delivery time
+- v1.1.x: 15-20 seconds delivery time  
+- v1.2.x: 4-5 seconds delivery time ✅
+
+**🔄 Update Frequency**: Multiple updates per week during optimization phase
+
 ## 🚀 Ultra-Fast Performance
 
 - **GPU Generation**: 1-2 seconds
