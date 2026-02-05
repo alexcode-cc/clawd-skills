@@ -1,0 +1,11 @@
+{
+  "owner": "dhardie",
+  "slug": "llm-supervisor",
+  "displayName": "LLM Supervisor",
+  "latest": {
+    "version": "0.1.1",
+    "publishedAt": 1770306221346,
+    "commit": null
+  },
+  "history": []
+}
