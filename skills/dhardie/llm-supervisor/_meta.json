@@ -3,9 +3,15 @@
   "slug": "llm-supervisor",
   "displayName": "LLM Supervisor",
   "latest": {
-    "version": "0.1.1",
-    "publishedAt": 1770306221346,
-    "commit": "https://github.com/clawdbot/skills/commit/e3a3f21326c99a83c8f6e5888367dcc9e1449c05"
+    "version": "0.2.0",
+    "publishedAt": 1770308693259,
+    "commit": null
   },
-  "history": []
+  "history": [
+    {
+      "version": "0.1.1",
+      "publishedAt": 1770306221346,
+      "commit": "https://github.com/clawdbot/skills/commit/e3a3f21326c99a83c8f6e5888367dcc9e1449c05"
+    }
+  ]
 }
