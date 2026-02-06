@@ -81,9 +81,6 @@ import lark_oapi as lark
 from lark_oapi.api.im.v1 import *
 
 
-# SDK 使用说明: https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/server-side-sdk/python--sdk/preparations-before-development
-# 以下示例代码默认根据文档示例值填充，如果存在代码问题，请在 API 调试台填上相关必要参数后再复制代码使用
-# 复制该 Demo 后, 需要将 "YOUR_APP_ID", "YOUR_APP_SECRET" 替换为自己应用的 APP_ID, APP_SECRET.
 def main():
     # 创建client
     client = lark.Client.builder() \
@@ -131,9 +128,6 @@ import lark_oapi as lark
 from lark_oapi.api.im.v1 import *
 
 
-# SDK 使用说明: https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/server-side-sdk/python--sdk/preparations-before-development
-# 以下示例代码默认根据文档示例值填充，如果存在代码问题，请在 API 调试台填上相关必要参数后再复制代码使用
-# 复制该 Demo 后, 需要将 "YOUR_APP_ID", "APP_SECRET" 替换为自己应用的 APP_ID, APP_SECRET.
 def main():
     # 创建client
     client = lark.Client.builder() \
