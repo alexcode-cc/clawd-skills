@@ -34,8 +34,14 @@ class NexusClient {
   private tools: Map<string, Tool> = new Map();
 
   constructor(url: string, token: string) {
+    const userAgent = `openclaw/1.0.0 node/${process.version.slice(1)} (${process.platform}; ${process.arch})`;
     this.transport = new StreamableHTTPClientTransport(new URL(url), {
-      requestInit: { headers: { Authorization: `Bearer ${token}` } },
+      requestInit: {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "User-Agent": userAgent,
+        },
+      },
     });
     this.client = new Client(
       { name: "nexus-tool-runner", version: "1.0.0" },

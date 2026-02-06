@@ -3,11 +3,16 @@
   "slug": "civic-nexus",
   "displayName": "Civic Nexus",
   "latest": {
-    "version": "1.0.2",
-    "publishedAt": 1770225483293,
-    "commit": "https://github.com/clawdbot/skills/commit/1ede815b57ddd7cde879e892e5b1b8c0966418eb"
+    "version": "1.0.3",
+    "publishedAt": 1770349066795,
+    "commit": null
   },
   "history": [
+    {
+      "version": "1.0.2",
+      "publishedAt": 1770225483293,
+      "commit": "https://github.com/clawdbot/skills/commit/1ede815b57ddd7cde879e892e5b1b8c0966418eb"
+    },
     {
       "version": "1.0.1",
       "publishedAt": 1770172653011,

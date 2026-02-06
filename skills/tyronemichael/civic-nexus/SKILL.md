@@ -47,7 +47,8 @@ If you have mcporter installed (`npm install -g mcporter`), add to `~/.openclaw/
     "nexus": {
       "baseUrl": "https://nexus.civic.com/hub/mcp?accountId=YOUR_ACCOUNT_ID&profile=YOUR_PROFILE",
       "headers": {
-        "Authorization": "Bearer YOUR_TOKEN"
+        "Authorization": "Bearer YOUR_TOKEN",
+        "User-Agent": "openclaw/1.0.0"
       }
     }
   }
