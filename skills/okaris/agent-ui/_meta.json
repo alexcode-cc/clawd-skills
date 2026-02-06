@@ -1,0 +1,11 @@
+{
+  "owner": "okaris",
+  "slug": "agent-ui",
+  "displayName": "Agent Ui",
+  "latest": {
+    "version": "0.1.1",
+    "publishedAt": 1770362909980,
+    "commit": null
+  },
+  "history": []
+}
