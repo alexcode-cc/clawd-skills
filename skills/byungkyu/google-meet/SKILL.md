@@ -1,7 +1,7 @@
 ---
 name: google-meet
 description: |
-  Google Meet API integration with managed OAuth. Create meeting spaces, list conference records, and manage meeting participants. Use this skill when users want to interact with Google Meet.
+  Google Meet API integration with managed OAuth. Create meeting spaces, list conference records, and manage meeting participants. Use this skill when users want to interact with Google Meet. For other third party apps, use the api-gateway skill (https://clawhub.ai/byungkyu/api-gateway).
 compatibility: Requires network access and valid Maton API key
 metadata:
   author: maton
@@ -16,10 +16,14 @@ Access the Google Meet API with managed OAuth authentication. Create and manage 
 
 ```bash
 # Create a meeting space
-curl -s -X POST 'https://gateway.maton.ai/google-meet/v2/spaces' \
-  -H 'Content-Type: application/json' \
-  -H 'Authorization: Bearer YOUR_API_KEY' \
-  -d '{}'
+python <<'EOF'
+import urllib.request, os, json
+data = json.dumps({}).encode()
+req = urllib.request.Request('https://gateway.maton.ai/google-meet/v2/spaces', data=data, method='POST')
+req.add_header('Authorization', f'Bearer {os.environ["MATON_API_KEY"]}')
+req.add_header('Content-Type', 'application/json')
+print(json.dumps(json.load(urllib.request.urlopen(req)), indent=2))
+EOF
 ```
 
 ## Base URL
@@ -35,7 +39,7 @@ Replace `{native-api-path}` with the actual Google Meet API endpoint path. The g
 All requests require the Maton API key in the Authorization header:
 
 ```
-Authorization: Bearer YOUR_API_KEY
+Authorization: Bearer $MATON_API_KEY
 ```
 
 **Environment Variable:** Set your API key as `MATON_API_KEY`:
@@ -57,24 +61,36 @@ Manage your Google OAuth connections at `https://ctrl.maton.ai`.
 ### List Connections
 
 ```bash
-curl -s -X GET 'https://ctrl.maton.ai/connections?app=google-meet&status=ACTIVE' \
-  -H 'Authorization: Bearer YOUR_API_KEY'
+python <<'EOF'
+import urllib.request, os, json
+req = urllib.request.Request('https://ctrl.maton.ai/connections?app=google-meet&status=ACTIVE')
+req.add_header('Authorization', f'Bearer {os.environ["MATON_API_KEY"]}')
+print(json.dumps(json.load(urllib.request.urlopen(req)), indent=2))
+EOF
 ```
 
 ### Create Connection
 
 ```bash
-curl -s -X POST 'https://ctrl.maton.ai/connections' \
-  -H 'Content-Type: application/json' \
-  -H 'Authorization: Bearer YOUR_API_KEY' \
-  -d '{"app": "google-meet"}'
+python <<'EOF'
+import urllib.request, os, json
+data = json.dumps({'app': 'google-meet'}).encode()
+req = urllib.request.Request('https://ctrl.maton.ai/connections', data=data, method='POST')
+req.add_header('Authorization', f'Bearer {os.environ["MATON_API_KEY"]}')
+req.add_header('Content-Type', 'application/json')
+print(json.dumps(json.load(urllib.request.urlopen(req)), indent=2))
+EOF
 ```
 
 ### Get Connection
 
 ```bash
-curl -s -X GET 'https://ctrl.maton.ai/connections/{connection_id}' \
-  -H 'Authorization: Bearer YOUR_API_KEY'
+python <<'EOF'
+import urllib.request, os, json
+req = urllib.request.Request('https://ctrl.maton.ai/connections/{connection_id}')
+req.add_header('Authorization', f'Bearer {os.environ["MATON_API_KEY"]}')
+print(json.dumps(json.load(urllib.request.urlopen(req)), indent=2))
+EOF
 ```
 
 **Response:**
@@ -97,8 +113,12 @@ Open the returned `url` in a browser to complete OAuth authorization.
 ### Delete Connection
 
 ```bash
-curl -s -X DELETE 'https://ctrl.maton.ai/connections/{connection_id}' \
-  -H 'Authorization: Bearer YOUR_API_KEY'
+python <<'EOF'
+import urllib.request, os, json
+req = urllib.request.Request('https://ctrl.maton.ai/connections/{connection_id}', method='DELETE')
+req.add_header('Authorization', f'Bearer {os.environ["MATON_API_KEY"]}')
+print(json.dumps(json.load(urllib.request.urlopen(req)), indent=2))
+EOF
 ```
 
 ### Specifying Connection
@@ -106,11 +126,15 @@ curl -s -X DELETE 'https://ctrl.maton.ai/connections/{connection_id}' \
 If you have multiple Google Meet connections, specify which one to use with the `Maton-Connection` header:
 
 ```bash
-curl -s -X POST 'https://gateway.maton.ai/google-meet/v2/spaces' \
-  -H 'Content-Type: application/json' \
-  -H 'Authorization: Bearer YOUR_API_KEY' \
-  -H 'Maton-Connection: 21fd90f9-5935-43cd-b6c8-bde9d915ca80' \
-  -d '{}'
+python <<'EOF'
+import urllib.request, os, json
+data = json.dumps({}).encode()
+req = urllib.request.Request('https://gateway.maton.ai/google-meet/v2/spaces', data=data, method='POST')
+req.add_header('Authorization', f'Bearer {os.environ["MATON_API_KEY"]}')
+req.add_header('Content-Type', 'application/json')
+req.add_header('Maton-Connection', '21fd90f9-5935-43cd-b6c8-bde9d915ca80')
+print(json.dumps(json.load(urllib.request.urlopen(req)), indent=2))
+EOF
 ```
 
 If omitted, the gateway uses the default (oldest) active connection.
@@ -291,6 +315,8 @@ print(f"Meeting URL: {space['meetingUri']}")
 - Conference records are created when a meeting starts and track meeting history
 - Access types: `OPEN` (anyone with link), `TRUSTED` (organization members only), `RESTRICTED` (invited only)
 - Recordings and transcripts require Google Workspace with recording enabled
+- IMPORTANT: When using curl commands, use `curl -g` when URLs contain brackets to disable glob parsing
+- IMPORTANT: When piping curl output to `jq` or other commands, environment variables like `$MATON_API_KEY` may not expand correctly in some shell environments. You may get "Invalid API key" errors when piping.
 
 ## Error Handling
 
@@ -300,6 +326,27 @@ print(f"Meeting URL: {space['meetingUri']}")
 | 401 | Invalid or missing Maton API key |
 | 429 | Rate limited (10 req/sec per account) |
 | 4xx/5xx | Passthrough error from Google Meet API |
+
+### Troubleshooting: Invalid API Key
+
+**When you receive a "Invalid API key" error, ALWAYS follow these steps before concluding there is an issue:**
+
+1. Check that the `MATON_API_KEY` environment variable is set:
+
+```bash
+echo $MATON_API_KEY
+```
+
+2. Verify the API key is valid by listing connections:
+
+```bash
+python <<'EOF'
+import urllib.request, os, json
+req = urllib.request.Request('https://ctrl.maton.ai/connections')
+req.add_header('Authorization', f'Bearer {os.environ["MATON_API_KEY"]}')
+print(json.dumps(json.load(urllib.request.urlopen(req)), indent=2))
+EOF
+```
 
 ## Resources
 
