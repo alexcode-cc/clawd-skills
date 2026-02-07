@@ -11,9 +11,9 @@ Extract a HackerNews post (article + comments) into single clean Markdown for qu
 see [Examples](https://github.com/guoqiao/skills/blob/main/hn-extract/examples)
 
 ## What it does
-- Accepts an HackerNews id, url, or a saved Algolia JSON file.
-- Scrapes the linked article content with `trafilatura`, cleans HTML, and formats it.
-- Fetches the story metadata and comment tree from `https://hn.algolia.com/api/v1/items/<id>`.
+- Accepts an HackerNews id or url
+- Download the linked article HTML, cleans and formats it.
+- Fetches the Hacknews post metadata and comments.
 - Outputs a readable combined markdown file with original article, threaded comments, and key metadata.
 
 ## Requirements
@@ -41,7 +41,6 @@ uv run --script ${baseDir}/hn-extract.py <hn-id|hn-url|path/to/item.json> [-o pa
 # Examples
 uv run --script ${baseDir}/hn-extract.py 46861313 -o /tmp/output.md
 uv run --script ${baseDir}/hn-extract.py "https://news.ycombinator.com/item?id=46861313"
-uv run --script ${baseDir}/hn-extract.py data/item.json
 ```
 
 - Omit `-o` to print to stdout.
@@ -50,5 +49,4 @@ uv run --script ${baseDir}/hn-extract.py data/item.json
 ## Notes
 - Retries are enabled for HTTP fetches.
 - Comments are indented by thread depth.
-- Article fetch uses `trafilatura.fetch_url` with liberal SSL handling to make it more usable.
 - Sites requires authentication or blocks scraping may still fail.

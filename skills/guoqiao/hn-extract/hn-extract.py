@@ -29,6 +29,17 @@ def tee_json(data):
     return data
 
 
+def is_uri_file(uri: str) -> bool:
+    """Check if a uri is a file path, either url or path."""
+    uri = str(uri).strip()
+    # if ends with / it's a directory, not a file
+    if uri.endswith('/'):
+        return False
+    # foo-bar or foo.bar or foo.bar.baz
+    basename = uri.rsplit('/', 1)[-1]
+    return '.' in basename
+
+
 def get_request_session(retry_total=3):
     """Get a request session with automatic retry."""
     retries = Retry(total=retry_total)
@@ -139,7 +150,7 @@ class HackerNewsExtractor:
         return self.add_line(*args, sep=sep, **kwargs)
 
     def get_html_form_url(self, url: str):
-        return fetch_url(url, no_ssl=True)
+        return fetch_url(url)
 
     def get_text_from_html(self, html: str):
         return extract(
@@ -209,8 +220,8 @@ class HackerNewsExtractor:
 
     def output_to_file(self, path, verbose=False):
         path = Path(path)
-        if path.is_file():
-            out_path = path.with_suffix(".md")
+        if path.suffix:  # .md or .txt
+            out_path = path
             out_dir = path.parent
         else:
             out_dir = path
