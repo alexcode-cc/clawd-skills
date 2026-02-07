@@ -1,0 +1,11 @@
+{
+  "owner": "atacan",
+  "slug": "record",
+  "displayName": "Record screen, microphone or camera from macOS terminal",
+  "latest": {
+    "version": "0.1.0",
+    "publishedAt": 1770491222024,
+    "commit": null
+  },
+  "history": []
+}
