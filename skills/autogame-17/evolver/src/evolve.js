@@ -814,6 +814,7 @@ async function run() {
 
     // Baseline snapshot (before any edits).
     let baselineUntracked = [];
+    let baselineTracked = [];
     let baselineHead = null;
     try {
       const out = execSync('git ls-files --others --exclude-standard', {
@@ -825,6 +826,25 @@ async function run() {
       baselineUntracked = String(out)
         .split('\n')
         .map(l => l.trim())
+        .filter(Boolean);
+    } catch (e) {}
+
+    try {
+      const out = execSync('git status --porcelain --untracked-files=no', {
+        cwd: REPO_ROOT,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+        timeout: 4000,
+      });
+      baselineTracked = String(out)
+        .split('\n')
+        .map(l => l.trim())
+        .filter(Boolean)
+        .map(l => {
+          const p = l.slice(3).trim();
+          const arrow = p.lastIndexOf('->');
+          return (arrow >= 0 ? p.slice(arrow + 2) : p).trim();
+        })
         .filter(Boolean);
     } catch (e) {}
 
@@ -869,6 +889,7 @@ async function run() {
         drift: !!IS_RANDOM_DRIFT,
         selected_by: selectedBy,
         baseline_untracked: baselineUntracked,
+        baseline_tracked: baselineTracked,
         baseline_git_head: baselineHead,
         blast_radius_estimate: blastRadiusEstimate,
       };
