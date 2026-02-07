@@ -3,11 +3,16 @@
   "slug": "tardis",
   "displayName": "TARDIS",
   "latest": {
-    "version": "1.1.0",
-    "publishedAt": 1770343350220,
-    "commit": "https://github.com/openclaw/skills/commit/50272b8e155afcd0e89602cfa8afd9a46abd1fc2"
+    "version": "1.2.0",
+    "publishedAt": 1770477730959,
+    "commit": null
   },
   "history": [
+    {
+      "version": "1.1.0",
+      "publishedAt": 1770343350220,
+      "commit": "https://github.com/openclaw/skills/commit/50272b8e155afcd0e89602cfa8afd9a46abd1fc2"
+    },
     {
       "version": "1.0.1",
       "publishedAt": 1770241058960,
