@@ -1,6 +1,6 @@
 ---
 name: paperpod
-description: Agent runtime for code execution, live preview URLs, browser automation, 50+ tools (ffmpeg, sqlite, pandoc, imagemagick), LLM inference, and persistent memory — all via CLI or HTTP, no SDK or API keys required.
+description: Isolated agent runtime for code execution, live preview URLs, browser automation, 50+ tools (ffmpeg, sqlite, pandoc, imagemagick), LLM inference, and persistent memory — all via CLI or HTTP, no SDK or API keys required.
 metadata:
   author: PaperPod
   version: "2.0"
@@ -15,7 +15,7 @@ Isolated, agent-native sandboxes for code execution, live preview URLs, browser 
 
 ```bash
 curl -X POST https://paperpod.dev/login -d '{"email":"you@email.com"}'  # Get token
-npm install -g @paperpod/cli && ppod login <token> && ppod exec "echo hello"
+npm install @paperpod/cli && npx ppod login <token> && npx ppod exec "echo hello"
 ```
 
 ## Authentication
@@ -30,7 +30,7 @@ curl -X POST https://paperpod.dev/login -d '{"email":"you@email.com"}'
 
 | Method | How | Best for |
 |--------|-----|----------|
-| **CLI login** | `ppod login pp_sess_...` | Everyday, Interactive use |
+| **CLI login** | `npx ppod login pp_sess_...` | Everyday, Interactive use |
 | **Env var** | `export PAPERPOD_TOKEN=pp_sess_...` | Scripts, CI/CD |
 | **Per-request** | `-H "Authorization: Bearer pp_sess_..."` | HTTP one-shots |
 
@@ -43,12 +43,10 @@ Tokens expire in **15 days**. On `EXPIRED_TOKEN` error, re-authenticate via `POS
 The CLI is the easiest way to use PaperPod. It handles streaming, sessions, and reconnection automatically.
 
 ```bash
-# Install
-npm install -g @paperpod/cli
-
+# Install (local)
+npm install @paperpod/cli
 # Login (saves token to ~/.paperpod/config.json)
 ppod login pp_sess_...
-
 # Discover all commands or get help for a specific one
 ppod help
 ppod exec --help
@@ -92,7 +90,7 @@ ppod exec --help
 | | `ppod help` | Show all commands |
 | | `ppod <cmd> --help` | Help for specific command |
 
-**Update CLI:** `npm update -g @paperpod/cli`
+**Update CLI:** `npm update @paperpod/cli`
 
 ### CLI Examples
 
@@ -100,17 +98,13 @@ ppod exec --help
 # Execute code
 ppod exec "python -c 'print(2+2)'"
 ppod exec "npm init -y && npm install express"
-
 # Start server + expose (--bind 0.0.0.0 required for public access)
 ppod start "python -m http.server 8080 --bind 0.0.0.0"
 ppod expose 8080  # → https://8080-{sandbox-id}-p8080_v1.paperpod.work (stable URL)
-
 # Browser with tracing
 ppod browser:screenshot https://example.com --trace debug.zip
-
 # Persistent storage (survives sandbox reset)
 echo '{"step":3}' | ppod mem:write state.json
-ppod mem:read state.json
 # Built-in tools (50+ available: ffmpeg, sqlite3, pandoc, imagemagick, git, jq, ripgrep...)
 ppod exec "ffmpeg -i input.mp4 -vf scale=640:480 output.mp4"  # Video processing
 ppod exec "sqlite3 data.db 'SELECT * FROM users'"             # Database queries

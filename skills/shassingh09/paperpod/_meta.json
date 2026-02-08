@@ -3,9 +3,15 @@
   "slug": "paperpod",
   "displayName": "PaperPod",
   "latest": {
-    "version": "2.0.0",
-    "publishedAt": 1770525441729,
-    "commit": "https://github.com/openclaw/skills/commit/9e074b6f0ea6e5dc6183a93560ad67d8cfa8ab2c"
+    "version": "2.0.1",
+    "publishedAt": 1770526904154,
+    "commit": null
   },
-  "history": []
+  "history": [
+    {
+      "version": "2.0.0",
+      "publishedAt": 1770525441729,
+      "commit": "https://github.com/openclaw/skills/commit/9e074b6f0ea6e5dc6183a93560ad67d8cfa8ab2c"
+    }
+  ]
 }
