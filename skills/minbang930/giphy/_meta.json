@@ -3,11 +3,16 @@
   "slug": "giphy",
   "displayName": "Giphy",
   "latest": {
-    "version": "1.0.3",
-    "publishedAt": 1770489329807,
-    "commit": "https://github.com/openclaw/skills/commit/0ae399e159f2d1850c974c92f74daca058e8060a"
+    "version": "1.0.6",
+    "publishedAt": 1770533708646,
+    "commit": null
   },
   "history": [
+    {
+      "version": "1.0.3",
+      "publishedAt": 1770489329807,
+      "commit": "https://github.com/openclaw/skills/commit/0ae399e159f2d1850c974c92f74daca058e8060a"
+    },
     {
       "version": "1.0.2",
       "publishedAt": 1770042243352,
