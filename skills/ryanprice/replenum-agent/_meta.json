@@ -1,0 +1,11 @@
+{
+  "owner": "ryanprice",
+  "slug": "replenum-agent",
+  "displayName": "Replenum Agent Skill",
+  "latest": {
+    "version": "1.0.0",
+    "publishedAt": 1770615924518,
+    "commit": null
+  },
+  "history": []
+}
