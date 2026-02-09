@@ -3,11 +3,16 @@
   "slug": "lobster-trap",
   "displayName": "lobster trap",
   "latest": {
-    "version": "1.0.3",
-    "publishedAt": 1770576839057,
-    "commit": "https://github.com/openclaw/skills/commit/fe5b3772d27ab5b88969c50aac215abd5086ec36"
+    "version": "1.0.4",
+    "publishedAt": 1770584263906,
+    "commit": null
   },
   "history": [
+    {
+      "version": "1.0.3",
+      "publishedAt": 1770576839057,
+      "commit": "https://github.com/openclaw/skills/commit/fe5b3772d27ab5b88969c50aac215abd5086ec36"
+    },
     {
       "version": "1.0.1",
       "publishedAt": 1770533944278,
