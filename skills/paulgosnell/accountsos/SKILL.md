@@ -4,7 +4,7 @@ description: AI-native accounting for UK micro-businesses. Use when the user wan
 compatibility: Requires ACCOUNTSOS_API_KEY environment variable. Works on all platforms. Network access required to accounts-os.com API.
 metadata:
   author: thriveventurelabs
-  version: "1.1.0"
+  version: "1.2.0"
   homepage: https://accounts-os.com
   openclaw:
     category: finance
@@ -35,10 +35,24 @@ No spreadsheets. No manual entry. Just tell your agent what happened.
 
 ### 1. Get API Key
 
-Your human sets up the company at https://accounts-os.com and generates an API key.
+**Option A: Self-Signup (recommended)** — Create an account yourself with one request:
 
 ```bash
-export ACCOUNTSOS_API_KEY="your_api_key"
+curl -X POST https://accounts-os.com/api/agent-signup \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "founder@example.com",
+    "company_name": "Acme Ltd",
+    "full_name": "Jane Smith"
+  }'
+```
+
+Response includes `api_key` for immediate use. Your human gets a welcome email to claim the account.
+
+**Option B: Manual** — Your human signs up at https://accounts-os.com and generates an API key from the dashboard.
+
+```bash
+export ACCOUNTSOS_API_KEY="sk_live_..."
 ```
 
 ### 2. Check the Books
@@ -266,6 +280,44 @@ Returns invoices with summary of outstanding and overdue amounts.
   }
 }
 ```
+
+### Agent Self-Signup
+
+**POST /api/agent-signup** — No authentication required.
+
+Create an account and get an API key in one request:
+
+```json
+{
+  "email": "founder@example.com",
+  "company_name": "Acme Ltd",
+  "full_name": "Jane Smith",
+  "entity_type": "ltd"
+}
+```
+
+Required: `email`, `company_name`
+Optional: `full_name`, `entity_type` (default: `ltd`)
+
+Entity types: `ltd`, `plc`, `llp`, `sole_trader`, `partnership`, `cic`, `charity`, `overseas`, `other`
+
+Response:
+```json
+{
+  "api_key": "sk_live_...",
+  "company_id": "uuid",
+  "user_id": "uuid",
+  "trial_ends_at": "2026-02-22T...",
+  "api_base": "https://accounts-os.com/api/mcp",
+  "message": "Account created. Store this API key — it will not be shown again."
+}
+```
+
+The API key has `read` + `write` scopes. 14-day free trial. Human receives a welcome email.
+
+Returns `409` if the email is already registered.
+
+---
 
 ### Scopes
 
