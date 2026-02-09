@@ -418,3 +418,17 @@ python3 ~/clawd/skills/sui-coverage/analyze_source.py -m <module> -o coverage.md
 # - Security issues found: N
 # - Recommendations: ...
 ```
+
+---
+
+## Related Skills
+
+This skill works great with the Sui development skill suite:
+
+- **sui-decompile**: Fetch and read on-chain contract source code. Decompile a protocol, then write tests to verify your understanding.
+- **sui-move**: Write and deploy Move smart contracts. Use coverage analysis to ensure your code is production-ready.
+
+**Typical workflow:**
+1. `sui-decompile` - Study how a contract works
+2. `sui-move` - Write your own implementation
+3. `sui-coverage` - Achieve 100% test coverage with security analysis
