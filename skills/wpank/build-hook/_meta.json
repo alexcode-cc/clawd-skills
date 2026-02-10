@@ -1,0 +1,11 @@
+{
+  "owner": "wpank",
+  "slug": "build-hook",
+  "displayName": "Uniswap Build Hook",
+  "latest": {
+    "version": "0.1.0",
+    "publishedAt": 1770744830545,
+    "commit": null
+  },
+  "history": []
+}
