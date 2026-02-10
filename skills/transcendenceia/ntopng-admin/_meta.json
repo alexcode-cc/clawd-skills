@@ -1,0 +1,11 @@
+{
+  "owner": "transcendenceia",
+  "slug": "ntopng-admin",
+  "displayName": "Ntopng Admin Skill",
+  "latest": {
+    "version": "1.0.3",
+    "publishedAt": 1770713828417,
+    "commit": null
+  },
+  "history": []
+}
