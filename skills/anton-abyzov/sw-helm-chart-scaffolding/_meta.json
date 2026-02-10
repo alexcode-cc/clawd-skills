@@ -1,0 +1,11 @@
+{
+  "owner": "anton-abyzov",
+  "slug": "sw-helm-chart-scaffolding",
+  "displayName": "Helm Chart Scaffolding",
+  "latest": {
+    "version": "1.0.0",
+    "publishedAt": 1770713749207,
+    "commit": null
+  },
+  "history": []
+}
