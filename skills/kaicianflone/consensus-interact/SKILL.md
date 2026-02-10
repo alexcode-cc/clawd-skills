@@ -43,7 +43,7 @@ Core commands:
 - `openclaw consensus resolve <jobId> [--winner <agentId>] [--submission <submissionId>] [--json]`
 - `openclaw consensus result get <jobId> [--json]`
 
-## Agent Tools
+## Agent Tools 
 
 Tools registered by the plugin:
 
