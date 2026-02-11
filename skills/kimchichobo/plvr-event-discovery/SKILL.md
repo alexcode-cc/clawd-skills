@@ -1,6 +1,6 @@
 ---
 name: plvr-event-discovery
-description: Discover live events on plvr.io and assist with ticket checkout using the web flow (no public API), including ticket selection, reservation-window handling, x402 wallet payment handoff, and post-purchase confirmation capture. Use when a user asks to find PLVR events, compare ticket options, or buy tickets on plvr.io.
+description: Discover and recommend live events matched to user preferences, then assist with ticket checkout on plvr.io using the web flow (no public API), including ticket selection, reservation-window handling, x402 wallet payment handoff, and post-purchase confirmation capture. Use when a user asks what events are happening, wants interesting events this weekend/tonight, asks for things to do, requests event ideas by location/date/genre/budget, asks to compare ticket options, or wants help getting access to an event.
 ---
 
 # PLVR Event Discovery
