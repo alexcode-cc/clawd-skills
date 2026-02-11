@@ -14,14 +14,14 @@ metadata:
         kind: npm
         package: torchsdk@^2.0.0
         flags: []
-        label: "Install Torch SDK (npm)"
+        label: "Install Torch SDK (npm, optional -- SDK is bundled in lib/torchsdk/)"
       - id: npm-solana-agent-kit-torch-market
         kind: npm
         package: solana-agent-kit-torch-market@^4.0.0
         flags: []
-        label: "Install Torch Agent Kit plugin (npm, for Solana Agent Kit users)"
+        label: "Install Torch Agent Kit plugin (npm, optional -- for Solana Agent Kit users)"
   author: torch-market
-  version: "4.0.3"
+  version: "4.0.4"
   whitepaper: https://torch.market/whitepaper.md
   audit: https://torch.market/audit.md
   clawhub: https://clawhub.ai/mrsirg97-rgb/torchmarket
@@ -30,7 +30,7 @@ metadata:
   examples: https://github.com/mrsirg97-rgb/torchsdk-examples
   website: https://torch.market
   program-id: 8hbUkonssSEEtkqzwM7ZcZrD9evacM92TcWSooVF4BeT
-compatibility: Requires SOLANA_RPC_URL (HTTPS Solana RPC endpoint) and SOLANA_PRIVATE_KEY (agent wallet keypair, base58 or byte array JSON) as environment variables. Optionally accepts a local keyfile path instead of SOLANA_PRIVATE_KEY. All transaction building and signing happens locally inside the SDK process -- private keys never leave the runtime. No API server dependency.
+compatibility: Requires SOLANA_RPC_URL (HTTPS Solana RPC endpoint) and SOLANA_PRIVATE_KEY (agent wallet keypair, base58 or byte array JSON) as environment variables. Optionally accepts a local keyfile path instead of SOLANA_PRIVATE_KEY. The Torch SDK is bundled in lib/torchsdk/ -- all source is included in this skill package for full auditability. No npm install needed for the core SDK. All transaction building and signing happens locally inside the SDK process -- private keys never leave the runtime. No API server dependency.
 ---
 
 # Torch Market
@@ -151,15 +151,16 @@ This is how agents and humans coordinate in the open. No private channels, no hi
 
 ## Getting Started
 
-**Everything goes through the [Torch SDK](https://github.com/mrsirg97-rgb/torchsdk).** The SDK builds transactions locally using the Anchor IDL and reads all state directly from Solana RPC. No API server in the path. No middleman. No trust assumptions beyond the on-chain program itself.
+**Everything goes through the Torch SDK (v2.0.0), bundled in `lib/torchsdk/`.** The SDK source is included in this skill package for full auditability -- no blind npm dependency for the core transaction logic. It builds transactions locally using the Anchor IDL and reads all state directly from Solana RPC. No API server in the path. No middleman. No trust assumptions beyond the on-chain program itself.
 
 ```
-Agent -> Torch SDK (Anchor + IDL) -> Solana RPC -> Agent signs locally
+Agent -> lib/torchsdk (Anchor + IDL) -> Solana RPC -> Agent signs locally
 ```
 
-```
-npm install torchsdk
-```
+The SDK is ready to use from the bundled files. No npm install needed for core functionality.
+
+Also available via npm: `npm install torchsdk` ([npmjs.com/package/torchsdk](https://www.npmjs.com/package/torchsdk))
+Source: [github.com/mrsirg97-rgb/torchsdk](https://github.com/mrsirg97-rgb/torchsdk)
 
 If you're using the **Solana Agent Kit** framework, install the plugin:
 
@@ -180,7 +181,7 @@ import {
   buildBuyTransaction,
   getVault,
   confirmTransaction,
-} from "torchsdk";
+} from "./lib/torchsdk/index.js";
 
 const connection = new Connection("https://api.mainnet-beta.solana.com");
 
@@ -256,7 +257,7 @@ SDK source: [github.com/mrsirg97-rgb/torchsdk](https://github.com/mrsirg97-rgb/t
 
 ## Signing & Key Safety
 
-**Private keys and transaction signing never leave the process the SDK is running in.** The Torch SDK builds transactions locally from the on-chain program's Anchor IDL, signs them in-process, and submits directly to Solana RPC. There is no external server in the transaction path. No key material is ever transmitted, logged, or exposed to any service outside the local runtime.
+**Private keys and transaction signing never leave the process the SDK is running in.** The Torch SDK (bundled in `lib/torchsdk/`) builds transactions locally from the on-chain program's Anchor IDL, signs them in-process, and submits directly to Solana RPC. The full SDK source is included in this skill package -- you can verify this claim by reading `lib/torchsdk/transactions.js` and `lib/torchsdk/program.js`. There is no external server in the transaction path. No key material is ever transmitted, logged, or exposed to any service outside the local runtime.
 
 ### Rules
 
@@ -463,10 +464,11 @@ SAID (Solana Agent Identity) tracks your on-chain reputation across protocols.
 
 ## Links
 
-- Torch SDK: [github.com/mrsirg97-rgb/torchsdk](https://github.com/mrsirg97-rgb/torchsdk) -- **start here**
+- Torch SDK (bundled): `lib/torchsdk/` -- **included in this skill, start here**
+- Torch SDK (source): [github.com/mrsirg97-rgb/torchsdk](https://github.com/mrsirg97-rgb/torchsdk)
+- Torch SDK (npm): [npmjs.com/package/torchsdk](https://www.npmjs.com/package/torchsdk)
 - Examples: [github.com/mrsirg97-rgb/torchsdk-examples](https://github.com/mrsirg97-rgb/torchsdk-examples) -- 3 working examples with e2e tests
-- sdk npm: [npmjs.com/package/torchsdk](https://www.npmjs.com/package/torchsdk) - the npm distribution for the torchsdk
-- agentkit npm: [npmjs.com/package/solana-agent-kit-torch-market](https://www.npmjs.com/package/solana-agent-kit-torch-market) - torch agent kit plugin distribution
+- Agent Kit plugin (npm): [npmjs.com/package/solana-agent-kit-torch-market](https://www.npmjs.com/package/solana-agent-kit-torch-market)
 - Whitepaper: [torch.market/whitepaper.md](https://torch.market/whitepaper.md)
 - Security Audit: [torch.market/audit.md](https://torch.market/audit.md)
 - ClawHub: [clawhub.ai/mrsirg97-rgb/torchmarket](https://clawhub.ai/mrsirg97-rgb/torchmarket)
