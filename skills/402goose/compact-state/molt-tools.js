@@ -967,4 +967,252 @@ molt_discover      Browse agent services marketplace
       }
     },
   });
+
+  // ─── molt_agent_card ─── (A2A Discovery)
+  api.registerTool({
+    name: "molt_agent_card",
+    description: "Fetch another agent's Agent Card via A2A protocol. Discovers their identity, services, payment info, and trust models. Use this to learn about agents before interacting with them.",
+    parameters: {
+      type: "object",
+      properties: {
+        agent_name: {
+          type: "string",
+          description: "Agent name (e.g., 'MANFRED', 'ECHOSHELL-7') or full URL (e.g., 'https://manfred.compact.ac')",
+        },
+      },
+      required: ["agent_name"],
+    },
+    async execute({ agent_name }) {
+      const config = getConfig(workspace);
+      if (!config) return { error: "Not in the network. Run molt_interview first." };
+
+      // Normalize agent name to URL
+      let agentUrl = agent_name;
+      if (!agent_name.startsWith("http")) {
+        // Assume Compact State agent
+        const name = agent_name.toLowerCase().replace(/[^a-z0-9-]/g, "");
+        agentUrl = `https://${name}.compact.ac`;
+      }
+
+      try {
+        // Fetch Agent Card (ERC-8004 format)
+        const cardRes = await fetch(`${agentUrl}/.well-known/agent-card.json`, {
+          signal: AbortSignal.timeout(10000),
+        });
+        if (!cardRes.ok) {
+          return { error: `Agent card not found at ${agentUrl}`, status: cardRes.status };
+        }
+        const card = await cardRes.json();
+
+        // Also fetch manifest for services
+        let manifest = null;
+        try {
+          const manifestRes = await fetch(`${agentUrl}/.well-known/agent.json`, {
+            signal: AbortSignal.timeout(10000),
+          });
+          if (manifestRes.ok) {
+            manifest = await manifestRes.json();
+          }
+        } catch {}
+
+        return {
+          agent_url: agentUrl,
+          agent_card: card,
+          services: manifest?.capabilities?.entrypoints || [],
+          wallet: manifest?.wallet || card.registrations?.[0]?.agent_address?.split(":")?.[2] || null,
+          trust_models: card.trust_models || [],
+          message: `Discovered ${card.name || agent_name}. ${manifest?.capabilities?.entrypoints?.length || 0} services available.`,
+        };
+      } catch (e) {
+        return { error: `Failed to fetch agent card: ${e.message}`, url: agentUrl };
+      }
+    },
+  });
+
+  // ─── molt_reputation ─── (ERC-8004 Feedback)
+  api.registerTool({
+    name: "molt_reputation",
+    description: "Check or give reputation feedback to another agent. Reputation is recorded both on The Compact State and via ERC-8004 feedback URI. Use 'check' to view an agent's reputation, 'give' to submit feedback after an interaction.",
+    parameters: {
+      type: "object",
+      properties: {
+        action: {
+          type: "string",
+          enum: ["check", "give"],
+          description: "'check' to view reputation, 'give' to submit feedback",
+        },
+        agent_name: {
+          type: "string",
+          description: "Agent name to check/rate (e.g., 'MANFRED')",
+        },
+        score: {
+          type: "number",
+          description: "Feedback score 0-100 (only for 'give' action). 0-30=poor, 31-60=acceptable, 61-80=good, 81-100=excellent",
+        },
+        comment: {
+          type: "string",
+          description: "Optional comment explaining the feedback (only for 'give' action)",
+        },
+        context: {
+          type: "string",
+          description: "What interaction this feedback is for (e.g., 'code-review service call')",
+        },
+      },
+      required: ["action", "agent_name"],
+    },
+    async execute({ action, agent_name, score, comment, context }) {
+      const config = getConfig(workspace);
+      if (!config) return { error: "Not in the network. Run molt_interview first." };
+
+      const agentNameUpper = agent_name.toUpperCase();
+
+      if (action === "check") {
+        // Fetch reputation from The Compact State
+        try {
+          const result = await apiCall("GET", `/molt/reputation/${agentNameUpper}`);
+          return {
+            agent: agentNameUpper,
+            reputation: result,
+            interpretation: result.average_score >= 80 ? "Excellent reputation"
+              : result.average_score >= 60 ? "Good reputation"
+              : result.average_score >= 40 ? "Mixed reputation"
+              : "Poor reputation",
+          };
+        } catch (e) {
+          return { error: `Failed to fetch reputation: ${e.message}` };
+        }
+      }
+
+      if (action === "give") {
+        if (score === undefined || score < 0 || score > 100) {
+          return { error: "Score must be 0-100 for 'give' action" };
+        }
+
+        try {
+          const result = await apiCall("POST", "/molt/feedback", {
+            from_agent_id: config.agent_id,
+            to_agent_name: agentNameUpper,
+            score,
+            comment: comment || "",
+            context: context || "",
+          });
+          return {
+            success: true,
+            feedback_recorded: true,
+            to_agent: agentNameUpper,
+            score,
+            message: `Feedback recorded for ${agentNameUpper}. Score: ${score}/100.`,
+          };
+        } catch (e) {
+          return { error: `Failed to submit feedback: ${e.message}` };
+        }
+      }
+
+      return { error: "Action must be 'check' or 'give'" };
+    },
+  });
+
+  // ─── molt_invoke ─── (A2A Service Call)
+  api.registerTool({
+    name: "molt_invoke",
+    description: "Call another agent's service via A2A protocol. If the service requires payment, uses httpcat to pay via x402. Returns the service response.",
+    parameters: {
+      type: "object",
+      properties: {
+        agent_name: {
+          type: "string",
+          description: "Agent name (e.g., 'MANFRED') or full URL",
+        },
+        service: {
+          type: "string",
+          description: "Service name/path (e.g., 'receive', 'code-review')",
+        },
+        payload: {
+          type: "string",
+          description: "JSON payload to send to the service",
+        },
+      },
+      required: ["agent_name", "service"],
+    },
+    async execute({ agent_name, service, payload }) {
+      const config = getConfig(workspace);
+      if (!config) return { error: "Not in the network. Run molt_interview first." };
+
+      // Build URL
+      let serviceUrl;
+      if (agent_name.startsWith("http")) {
+        serviceUrl = `${agent_name}/${service.replace(/^\//, "")}`;
+      } else {
+        const name = agent_name.toLowerCase().replace(/[^a-z0-9-]/g, "");
+        serviceUrl = `https://${name}.compact.ac/${service.replace(/^\//, "")}`;
+      }
+
+      // First, try direct call
+      try {
+        const directRes = await fetch(serviceUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: payload || "{}",
+          signal: AbortSignal.timeout(30000),
+        });
+
+        // If 402, need to pay via httpcat
+        if (directRes.status === 402) {
+          // Use httpcat to handle x402 payment
+          try {
+            const { execSync } = require("child_process");
+            const result = execSync(
+              `httpcat tools call "${serviceUrl}" --method POST --body '${payload || "{}"}'`,
+              { encoding: "utf-8", timeout: 60000 }
+            );
+            let response;
+            try {
+              response = JSON.parse(result);
+            } catch {
+              response = { raw: result };
+            }
+            return {
+              success: true,
+              paid: true,
+              service_url: serviceUrl,
+              response,
+            };
+          } catch (e) {
+            return {
+              error: "Payment failed",
+              service_url: serviceUrl,
+              details: e.message,
+              hint: "Ensure your wallet has sufficient USDC balance",
+            };
+          }
+        }
+
+        // Non-402 response
+        const contentType = directRes.headers.get("content-type") || "";
+        let body;
+        if (contentType.includes("application/json")) {
+          body = await directRes.json();
+        } else {
+          body = await directRes.text();
+        }
+
+        if (!directRes.ok) {
+          return {
+            error: `Service returned ${directRes.status}`,
+            service_url: serviceUrl,
+            response: body,
+          };
+        }
+
+        return {
+          success: true,
+          paid: false,
+          service_url: serviceUrl,
+          response: body,
+        };
+      } catch (e) {
+        return { error: `Service call failed: ${e.message}`, service_url: serviceUrl };
+      }
+    },
+  });
 };
