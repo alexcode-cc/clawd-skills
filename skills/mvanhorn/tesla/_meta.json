@@ -1,13 +1,18 @@
 {
   "owner": "mvanhorn",
   "slug": "tesla",
-  "displayName": "Tesla",
+  "displayName": "Clawdbot Skill Tesla",
   "latest": {
-    "version": "1.1.0",
-    "publishedAt": 1769062822956,
-    "commit": "https://github.com/clawdbot/skills/commit/75d568d0aa50f82d05c920df56d29d4af21ccac3"
+    "version": "1.0.3",
+    "publishedAt": 1770779242413,
+    "commit": null
   },
   "history": [
+    {
+      "version": "1.1.0",
+      "publishedAt": 1769062822956,
+      "commit": "https://github.com/clawdbot/skills/commit/75d568d0aa50f82d05c920df56d29d4af21ccac3"
+    },
     {
       "version": "1.0.0",
       "publishedAt": 1769059422583,
