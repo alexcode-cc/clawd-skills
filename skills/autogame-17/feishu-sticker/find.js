@@ -8,12 +8,18 @@ const INDEX_FILE = path.join(STICKER_DIR, 'index.json');
 
 program
   .option('-q, --query <text>', 'Search query (e.g., "angry cat", "happy")')
+  .option('--content <text>', 'Search query (alias for --query)')
   .option('-e, --emotion <emotion>', 'Filter by emotion (e.g., "happy", "sad")')
   .option('--random', 'Pick a random result if multiple match', false)
   .option('--json', 'Output JSON result', false);
 
 program.parse(process.argv);
 const options = program.opts();
+
+// Alias mapping
+if (options.content && !options.query) {
+    options.query = options.content;
+}
 
 function loadIndex() {
     if (!fs.existsSync(INDEX_FILE)) {

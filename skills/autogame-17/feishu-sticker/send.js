@@ -376,7 +376,7 @@ function getAutoTarget() {
     } catch (e) {}
 
     // 4. Default to Master
-    return 'ou_cdc63fe05e88c580aedead04d851fc04'; 
+    return process.env.OPENCLAW_MASTER_ID || ''; 
 }
 
 async function findSticker(options) {
