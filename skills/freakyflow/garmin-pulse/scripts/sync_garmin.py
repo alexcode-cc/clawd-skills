@@ -5,9 +5,10 @@
 """Sync daily health data from Garmin Connect into markdown files."""
 
 import argparse
-import os
 import sys
-from datetime import date, datetime, timedelta
+import time
+from datetime import date, timedelta
+from getpass import getpass
 from pathlib import Path
 
 import cloudscraper
@@ -16,12 +17,15 @@ from garminconnect import Garmin
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 TOKEN_DIR = Path.home() / ".garminconnect"
+VERBOSE = False
 
 
-def authenticate() -> Garmin:
-    """Authenticate with Garmin Connect, using cached tokens when available."""
-    email = os.environ.get("GARMIN_EMAIL")
-    password = os.environ.get("GARMIN_PASSWORD")
+def setup(email: str) -> None:
+    """One-time interactive setup: authenticate with email/password and cache tokens."""
+    password = getpass("Garmin Connect password: ")
+    if not password:
+        print("Error: Password cannot be empty.", file=sys.stderr)
+        sys.exit(1)
 
     client = Garmin(email, password)
     client.garth.sess = cloudscraper.create_scraper()
@@ -29,23 +33,93 @@ def authenticate() -> Garmin:
     TOKEN_DIR.mkdir(parents=True, exist_ok=True)
     tokenstore = str(TOKEN_DIR)
 
-    try:
-        client.login(tokenstore)
-    except Exception:
-        if not email or not password:
-            print(
-                "Error: GARMIN_EMAIL and GARMIN_PASSWORD env vars are required for first login.",
-                file=sys.stderr,
-            )
-            sys.exit(1)
+    last_exc: Exception | None = None
+    for attempt in range(3):
         try:
             client.login()
             client.garth.dump(tokenstore)
+            last_exc = None
+            break
         except Exception as e:
-            print(f"Error: Authentication failed — {e}", file=sys.stderr)
-            sys.exit(1)
+            last_exc = e
+            if attempt < 2 and "no profile" in str(e).lower():
+                time.sleep(2**attempt)
+                continue
+            break
 
-    return client
+    if last_exc is not None:
+        msg = str(last_exc).lower()
+        print(f"Error: Authentication failed — {last_exc}", file=sys.stderr)
+        if "no profile" in msg or "connectapi" in msg:
+            print(
+                "\nThis usually means Garmin's servers are temporarily blocking requests.\n"
+                "Try again in a few minutes. If it persists, double-check your password.",
+                file=sys.stderr,
+            )
+        elif "401" in msg or "unauthorized" in msg or "credentials" in msg:
+            print(
+                "\nDouble-check your email and password. If you have two-factor\n"
+                "authentication (2FA) enabled on your Garmin account, you may need\n"
+                "to disable it — the garminconnect library does not support 2FA.",
+                file=sys.stderr,
+            )
+        elif "cloudflare" in msg or "captcha" in msg or "403" in msg:
+            print(
+                "\nGarmin's Cloudflare protection may be blocking this request.\n"
+                "Wait a few minutes and try again.",
+                file=sys.stderr,
+            )
+        sys.exit(1)
+
+    print(f"Success! Tokens cached in {TOKEN_DIR}")
+    print("You can now run the sync command without credentials.")
+
+
+def authenticate() -> Garmin:
+    """Authenticate with Garmin Connect using cached tokens only."""
+    client = Garmin()
+    client.garth.sess = cloudscraper.create_scraper()
+
+    TOKEN_DIR.mkdir(parents=True, exist_ok=True)
+    tokenstore = str(TOKEN_DIR)
+
+    last_exc: Exception | None = None
+    for attempt in range(3):
+        try:
+            client.login(tokenstore)
+            return client
+        except FileNotFoundError:
+            print(
+                "Error: No cached tokens found.\n"
+                "Run setup first:\n\n"
+                "  uv run scripts/sync_garmin.py --setup --email you@example.com\n",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        except Exception as e:
+            last_exc = e
+            if attempt < 2 and "no profile" in str(e).lower():
+                time.sleep(2**attempt)
+                continue
+            break
+
+    msg = str(last_exc).lower()
+    if "no profile" in msg or "connectapi" in msg:
+        print(
+            "Error: Garmin's servers returned 'No profile'. This is usually\n"
+            "temporary — wait a few minutes and try again. If it persists,\n"
+            "re-run setup:\n\n"
+            "  uv run scripts/sync_garmin.py --setup --email you@example.com\n",
+            file=sys.stderr,
+        )
+    else:
+        print(
+            f"Error: Authentication failed — {last_exc}\n"
+            "Your cached tokens may have expired. Re-run setup:\n\n"
+            "  uv run scripts/sync_garmin.py --setup --email you@example.com\n",
+            file=sys.stderr,
+        )
+    sys.exit(1)
 
 
 def fmt_duration(seconds: float | int | None) -> str:
@@ -72,7 +146,9 @@ def fetch_sleep(client: Garmin, day: str) -> str | None:
     """Fetch and format sleep data."""
     try:
         data = client.get_sleep_data(day)
-    except Exception:
+    except Exception as e:
+        if VERBOSE:
+            print(f"    [verbose] Sleep fetch failed: {e}", file=sys.stderr)
         return None
 
     daily = data.get("dailySleepDTO", {})
@@ -110,15 +186,17 @@ def fetch_body(client: Garmin, day: str) -> str | None:
     summary = None
     try:
         summary = client.get_user_summary(day)
-    except Exception:
-        pass
+    except Exception as e:
+        if VERBOSE:
+            print(f"    [verbose] User summary fetch failed: {e}", file=sys.stderr)
 
     # Heart rates
     hr_data = None
     try:
         hr_data = client.get_heart_rates(day)
-    except Exception:
-        pass
+    except Exception as e:
+        if VERBOSE:
+            print(f"    [verbose] Heart rate fetch failed: {e}", file=sys.stderr)
 
     # Body battery
     battery = None
@@ -133,8 +211,9 @@ def fetch_body(client: Garmin, day: str) -> str | None:
             ]
             if values:
                 battery = max(values)
-    except Exception:
-        pass
+    except Exception as e:
+        if VERBOSE:
+            print(f"    [verbose] Body battery fetch failed: {e}", file=sys.stderr)
 
     # HRV
     hrv = None
@@ -144,8 +223,9 @@ def fetch_body(client: Garmin, day: str) -> str | None:
             summary_hrv = hrv_data.get("hrvSummary", {})
             if summary_hrv:
                 hrv = summary_hrv.get("weeklyAvg") or summary_hrv.get("lastNightAvg")
-    except Exception:
-        pass
+    except Exception as e:
+        if VERBOSE:
+            print(f"    [verbose] HRV fetch failed: {e}", file=sys.stderr)
 
     # SpO2
     spo2 = None
@@ -153,8 +233,9 @@ def fetch_body(client: Garmin, day: str) -> str | None:
         spo2_data = client.get_spo2_data(day)
         if spo2_data:
             spo2 = spo2_data.get("averageSpO2")
-    except Exception:
-        pass
+    except Exception as e:
+        if VERBOSE:
+            print(f"    [verbose] SpO2 fetch failed: {e}", file=sys.stderr)
 
     # Weight
     weight = None
@@ -166,8 +247,9 @@ def fetch_body(client: Garmin, day: str) -> str | None:
                 grams = entries[0].get("weight")
                 if grams:
                     weight = round(grams / 1000, 1)
-    except Exception:
-        pass
+    except Exception as e:
+        if VERBOSE:
+            print(f"    [verbose] Weight fetch failed: {e}", file=sys.stderr)
 
     if not summary and not hr_data and battery is None and hrv is None:
         return None
@@ -234,7 +316,9 @@ def fetch_stress(client: Garmin, day: str) -> str | None:
     """Fetch and format stress data."""
     try:
         data = client.get_all_day_stress(day)
-    except Exception:
+    except Exception as e:
+        if VERBOSE:
+            print(f"    [verbose] Stress fetch failed: {e}", file=sys.stderr)
         return None
 
     if not data:
@@ -260,7 +344,9 @@ def fetch_training_readiness(client: Garmin, day: str) -> str | None:
     """Fetch and format training readiness data."""
     try:
         data = client.get_training_readiness(day)
-    except Exception:
+    except Exception as e:
+        if VERBOSE:
+            print(f"    [verbose] Training readiness fetch failed: {e}", file=sys.stderr)
         return None
 
     if not data or not isinstance(data, list) or len(data) == 0:
@@ -286,7 +372,9 @@ def fetch_respiration(client: Garmin, day: str) -> str | None:
     """Fetch and format respiration data."""
     try:
         data = client.get_respiration_data(day)
-    except Exception:
+    except Exception as e:
+        if VERBOSE:
+            print(f"    [verbose] Respiration fetch failed: {e}", file=sys.stderr)
         return None
 
     if not data:
@@ -314,7 +402,9 @@ def fetch_fitness_age(client: Garmin, day: str) -> str | None:
     """Fetch and format fitness age data."""
     try:
         data = client.get_fitnessage_data(day)
-    except Exception:
+    except Exception as e:
+        if VERBOSE:
+            print(f"    [verbose] Fitness age fetch failed: {e}", file=sys.stderr)
         return None
 
     if not data:
@@ -339,7 +429,9 @@ def fetch_intensity_minutes(client: Garmin, day: str) -> str | None:
     """Fetch and format weekly intensity minutes."""
     try:
         data = client.get_intensity_minutes_data(day)
-    except Exception:
+    except Exception as e:
+        if VERBOSE:
+            print(f"    [verbose] Intensity minutes fetch failed: {e}", file=sys.stderr)
         return None
 
     if not data:
@@ -371,7 +463,9 @@ def fetch_activities(client: Garmin, day: str) -> str | None:
     """Fetch and format activities for the day."""
     try:
         activities = client.get_activities_by_date(day, day)
-    except Exception:
+    except Exception as e:
+        if VERBOSE:
+            print(f"    [verbose] Activities fetch failed: {e}", file=sys.stderr)
         return None
 
     if not activities:
@@ -496,8 +590,11 @@ def sync_day(client: Garmin, day: date, output_dir: Path) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Sync Garmin Connect health data to markdown.")
+    parser.add_argument("--setup", action="store_true", help="One-time setup: authenticate and cache tokens.")
+    parser.add_argument("--email", type=str, help="Garmin Connect email (used with --setup).")
     parser.add_argument("--date", type=str, help="Specific date to sync (YYYY-MM-DD). Default: today.")
     parser.add_argument("--days", type=int, help="Sync the last N days.")
+    parser.add_argument("--verbose", action="store_true", help="Show detailed error info for failed data fetches.")
     parser.add_argument(
         "--output-dir",
         type=str,
@@ -505,6 +602,16 @@ def main() -> None:
         help="Output directory for markdown files (relative to skill base dir).",
     )
     args = parser.parse_args()
+
+    global VERBOSE
+    VERBOSE = args.verbose
+
+    if args.setup:
+        if not args.email:
+            print("Error: --email is required with --setup.", file=sys.stderr)
+            sys.exit(1)
+        setup(args.email)
+        return
 
     # Always resolve output-dir relative to the skill's base directory, not CWD
     output_dir = Path(args.output_dir)

@@ -53,19 +53,25 @@ Sections are only included when data is available.
 
 - Python 3.10+
 - [uv](https://docs.astral.sh/uv/) (no pip install needed — dependencies are inline)
-- A Garmin Connect account
+  - macOS: `brew install uv`
+  - Linux/WSL: `curl -LsSf https://astral.sh/uv/install.sh | sh`
+  - Windows: `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`
+- A Garmin Connect account (two-factor authentication must be disabled — see [Troubleshooting](#troubleshooting))
 
-### Environment variables
+### One-time setup
+
+Authenticate and cache OAuth tokens. This only needs to happen once (~1 year token validity). The password is prompted interactively via `getpass` — never echoed to screen or stored in shell history.
 
 ```bash
-export GARMIN_EMAIL="you@example.com"
-export GARMIN_PASSWORD="yourpassword"
+uv run scripts/sync_garmin.py --setup --email you@example.com
 ```
+
+After setup succeeds, the password is no longer needed. All subsequent syncs use cached tokens only.
 
 ### Run it
 
 ```bash
-# Sync today
+# Sync today (no credentials needed — uses cached tokens)
 uv run scripts/sync_garmin.py
 
 # Sync a specific date
@@ -73,9 +79,12 @@ uv run scripts/sync_garmin.py --date 2025-01-26
 
 # Sync the last 7 days
 uv run scripts/sync_garmin.py --days 7
+
+# Custom output directory (default: health/)
+uv run scripts/sync_garmin.py --output-dir my-data
 ```
 
-Markdown files are written to `health/YYYY-MM-DD.md`.
+Markdown files are written to `health/YYYY-MM-DD.md` by default (relative to the skill's base directory).
 
 ### Install as an OpenClaw skill
 
@@ -85,12 +94,46 @@ ln -s /path/to/garminskill ~/.openclaw/skills/garmin-connect
 
 ### Cron
 
-Schedule the sync to run every morning so your data stays up to date automatically. OpenClaw's `cron` tool can handle this, or use a system crontab:
+Schedule the sync to run every morning so your data stays up to date automatically. No credentials needed — the sync uses cached tokens from the one-time setup. OpenClaw's `cron` tool can handle this, or use a system crontab:
 
 ```bash
-0 7 * * * GARMIN_EMAIL="..." GARMIN_PASSWORD="..." uv run /path/to/garminskill/scripts/sync_garmin.py
+0 7 * * * uv run /path/to/garminskill/scripts/sync_garmin.py
 ```
+
+## Troubleshooting
+
+### "No profile from connectapi"
+
+This is the most common setup error. It usually means Garmin's servers are temporarily rate-limiting or blocking the request (via Cloudflare). It does **not** necessarily mean your password is wrong.
+
+1. **Wait a few minutes and try again.** This resolves it most of the time.
+2. **Double-check your password.** The error can also appear for wrong credentials — Garmin doesn't always return a clear "wrong password" message.
+3. **Check if Garmin Connect is down.** Try logging in at [connect.garmin.com](https://connect.garmin.com) in a browser.
+
+### Two-factor authentication (2FA)
+
+If your Garmin account has 2FA enabled, authentication will fail. The `garminconnect` library does not support 2FA/MFA flows. You'll need to disable 2FA on your Garmin account to use this skill:
+
+1. Log in to [connect.garmin.com](https://connect.garmin.com)
+2. Go to Account Settings → Security
+3. Disable two-step verification
+4. Re-run setup: `uv run scripts/sync_garmin.py --setup --email you@example.com`
+
+### Cloudflare / random auth failures
+
+This skill uses [cloudscraper](https://github.com/VeNoMouS/cloudscraper) to bypass Cloudflare protection on Garmin's SSO. Garmin periodically updates their anti-bot measures, which can cause temporary breakdowns. If authentication suddenly stops working after a period of stability:
+
+1. **Update dependencies:** `uv cache clean` then re-run the sync (uv will fetch the latest versions automatically)
+2. **Wait and retry.** Cloudflare blocks are often transient.
+3. **Check the [garminconnect issues page](https://github.com/cyberjunky/python-garminconnect/issues)** — others may be experiencing the same problem.
+
+### Tokens expired
+
+Cached tokens last about a year. When they expire, the sync will tell you to re-run setup. Just run the setup command again with your email — a new password prompt will appear and fresh tokens will be cached.
 
 ## Auth notes
 
-The script uses [garminconnect](https://github.com/cyberjunky/python-garminconnect) with [cloudscraper](https://github.com/VeNoMouS/cloudscraper) to bypass Cloudflare protection on Garmin's SSO. OAuth tokens are cached in `~/.garminconnect/` and are valid for ~1 year, so credentials are only needed on first login.
+The script uses [garminconnect](https://github.com/cyberjunky/python-garminconnect) with [cloudscraper](https://github.com/VeNoMouS/cloudscraper) to bypass Cloudflare protection on Garmin's SSO. Authentication is split into two phases:
+
+1. **Setup** (`--setup`): Run once in a terminal to authenticate. `getpass` prompts for the password (never echoed to screen or stored in shell history). OAuth tokens are cached in `~/.garminconnect/` (~1 year validity). The password is used once and then discarded.
+2. **Sync** (default): Uses cached tokens only — no credentials needed. Token refresh is automatic (OAuth1 → OAuth2 exchange, no password required). If tokens expire or are revoked by Garmin, re-run setup.
