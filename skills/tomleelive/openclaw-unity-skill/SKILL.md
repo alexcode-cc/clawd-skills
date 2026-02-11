@@ -1,9 +1,14 @@
 ---
 name: unity-plugin
 description: Control Unity Editor via OpenClaw Unity Plugin. Use for Unity game development tasks including scene management, GameObject/Component manipulation, debugging, input simulation, and Play mode control. Triggers on Unity-related requests like inspecting scenes, creating objects, taking screenshots, testing gameplay, or controlling the Editor.
+homepage: https://github.com/TomLeeLive/openclaw-unity-skill
+author: Tom Jaejoon Lee
+disableModelInvocation: true
 ---
 
 # Unity Plugin Skill
+
+Control Unity Editor through 52+ built-in tools. Works in both Editor and Play mode.
 
 ## First-Time Setup
 
@@ -19,7 +24,27 @@ openclaw gateway restart
 
 The extension files are in `extension/` directory.
 
-Control Unity Editor through 52 built-in tools. Works in both Editor and Play mode.
+### What install-extension.sh Does
+
+```bash
+# 1. Copies extension files from skill to gateway
+#    Source: <skill>/extension/
+#    Destination: ~/.openclaw/extensions/unity/
+
+# 2. Files installed:
+#    - index.ts     # Extension entry point (HTTP handlers, tools)
+#    - package.json # Extension metadata
+
+# After installation, restart gateway to load the extension.
+```
+
+## 🔐 Security
+
+이 스킬은 `disableModelInvocation: true`로 설정되어 있습니다.
+- AI가 자동으로 도구를 호출하지 않음
+- 사용자가 명시적으로 요청한 작업만 실행
+
+설정 변경 방법은 [README.md](README.md)를 참조하세요.
 
 ## Quick Reference
 
@@ -47,8 +72,8 @@ unity_execute: scene.getActive
 
 ```
 unity_execute: gameobject.find {name: "Player"}
-unity_execute: component.get {objectName: "Player", componentType: "Transform"}
-unity_execute: transform.setPosition {objectName: "Player", x: 0, y: 5, z: 0}
+unity_execute: component.get {name: "Player", componentType: "Transform"}
+unity_execute: transform.setPosition {name: "Player", x: 0, y: 5, z: 0}
 ```
 
 ### 3. UI Testing
@@ -176,3 +201,13 @@ editor.refresh    # Full asset refresh + recompile
 | No connection | Verify `openclaw unity status`, check gateway |
 | Scripts not updating | Use `editor.refresh` to force recompile |
 | Wrong screenshot | Use Play mode for game view with UI |
+
+## Links
+
+- **Skill Repository:** https://github.com/TomLeeLive/openclaw-unity-skill
+- **Plugin Repository:** https://github.com/TomLeeLive/openclaw-unity-mcp
+- **OpenClaw Docs:** https://docs.openclaw.ai
+
+## License
+
+MIT License - See LICENSE file
