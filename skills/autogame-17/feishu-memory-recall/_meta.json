@@ -3,11 +3,16 @@
   "slug": "feishu-memory-recall",
   "displayName": "Feishu Memory Recall",
   "latest": {
-    "version": "2.0.0",
-    "publishedAt": 1770642752196,
-    "commit": "https://github.com/openclaw/skills/commit/418ba8feea4fae9406d6d507601b55f538a18942"
+    "version": "2.0.2",
+    "publishedAt": 1770791708548,
+    "commit": null
   },
   "history": [
+    {
+      "version": "2.0.0",
+      "publishedAt": 1770642752196,
+      "commit": "https://github.com/openclaw/skills/commit/418ba8feea4fae9406d6d507601b55f538a18942"
+    },
     {
       "version": "1.0.0",
       "publishedAt": 1770317586675,

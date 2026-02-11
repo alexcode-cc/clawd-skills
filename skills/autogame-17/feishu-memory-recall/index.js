@@ -248,54 +248,75 @@ function syncGroups() {
     console.log(JSON.stringify({ total: existing.length, added, groups: existing }, null, 2));
 }
 
+// --- Exports ---
+module.exports = {
+    recall,
+    search,
+    digest,
+    logEvent,
+    syncGroups,
+    loadGroups,
+    saveGroups
+};
+
 // --- CLI ---
-program
-    .command('recall')
-    .description('Find recent messages from a user across all groups')
-    .requiredOption('-u, --user <id>', 'User Open ID')
-    .option('--hours <n>', 'Lookback hours', '24')
-    .action(async (opts) => { await recall(opts.user, Number(opts.hours)); });
+if (require.main === module) {
+    program
+        .command('recall')
+        .description('Find recent messages from a user across all groups')
+        .requiredOption('-u, --user <id>', 'User Open ID')
+        .option('--hours <n>', 'Lookback hours', '24')
+        .action(async (opts) => { await recall(opts.user, Number(opts.hours)); });
 
-program
-    .command('search')
-    .description('Search messages by keyword across all groups')
-    .requiredOption('-k, --keyword <text>', 'Search keyword')
-    .option('--hours <n>', 'Lookback hours', '24')
-    .action(async (opts) => { await search(opts.keyword, Number(opts.hours)); });
+    program
+        .command('search')
+        .description('Search messages by keyword across all groups')
+        .requiredOption('-k, --keyword <text>', 'Search keyword')
+        .option('--hours <n>', 'Lookback hours', '24')
+        .action(async (opts) => { await search(opts.keyword, Number(opts.hours)); });
 
-program
-    .command('digest')
-    .description('Generate activity digest across all tracked groups')
-    .option('--hours <n>', 'Lookback hours', '6')
-    .action(async (opts) => { await digest(Number(opts.hours)); });
+    program
+        .command('digest')
+        .description('Generate activity digest across all tracked groups')
+        .option('--hours <n>', 'Lookback hours', '6')
+        .action(async (opts) => { await digest(Number(opts.hours)); });
 
-program
-    .command('log-event')
-    .description('Write an event to RECENT_EVENTS.md and daily log')
-    .requiredOption('-s, --source <name>', 'Event source (group name or context)')
-    .requiredOption('-e, --event <text>', 'Event description')
-    .action((opts) => { logEvent(opts.source, opts.event); });
+    program
+        .command('log-event')
+        .description('Write an event to RECENT_EVENTS.md and daily log')
+        .requiredOption('-s, --source <name>', 'Event source (group name or context)')
+        .requiredOption('-e, --event <text>', 'Event description')
+        .option('--content <text>', 'Event description (alias)')
+        .action((opts) => { 
+            const evt = opts.event || opts.content;
+            if (!evt) {
+                console.error("Error: --event or --content required");
+                process.exit(1);
+            }
+            logEvent(opts.source, evt); 
+        });
 
-program
-    .command('sync-groups')
-    .description('Auto-discover Feishu groups from gateway sessions')
-    .action(() => { syncGroups(); });
+    program
+        .command('sync-groups')
+        .description('Auto-discover Feishu groups from gateway sessions')
+        .action(() => { syncGroups(); });
 
-program
-    .command('add-group')
-    .description('Manually track a Feishu group')
-    .requiredOption('-i, --id <id>', 'Chat ID (oc_...)')
-    .requiredOption('-n, --name <name>', 'Group name')
-    .action((opts) => {
-        const groups = loadGroups().filter(g => g.id !== opts.id);
-        groups.push({ id: opts.id, name: opts.name });
-        saveGroups(groups);
-        console.log(`Added: ${opts.name} (${opts.id})`);
-    });
+    program
+        .command('add-group')
+        .description('Manually track a Feishu group')
+        .requiredOption('-i, --id <id>', 'Chat ID (oc_...)')
+        .requiredOption('-n, --name <name>', 'Group name')
+        .action((opts) => {
+            const groups = loadGroups().filter(g => g.id !== opts.id);
+            groups.push({ id: opts.id, name: opts.name });
+            saveGroups(groups);
+            console.log(`Added: ${opts.name} (${opts.id})`);
+        });
 
-program
-    .command('list-groups')
-    .description('Show all tracked groups')
-    .action(() => { console.log(JSON.stringify(loadGroups(), null, 2)); });
+    program
+        .command('list-groups')
+        .description('Show all tracked groups')
+        .action(() => { console.log(JSON.stringify(loadGroups(), null, 2)); });
 
-program.parse();
+    program.parse();
+}
