@@ -1,45 +1,37 @@
 ---
 name: fluora-setup
-description: Interactive setup wizard for Fluora marketplace integration. Installs fluora-mcp, generates wallet, configures mcporter, and guides funding.
+description: Interactive setup wizard for Fluora marketplace integration. Clones fluora-mcp from GitHub, builds locally, generates wallet, and configures mcporter.
 homepage: https://fluora.ai
 metadata:
   {
     "openclaw":
       {
         "emoji": "🔧",
-        "requires": { "bins": ["node", "npm"] },
-        "install":
-          [
-            {
-              "id": "fluora-mcp",
-              "kind": "node",
-              "package": "fluora-mcp",
-              "bins": ["fluora-mcp"],
-              "label": "Install fluora-mcp (global)",
-            },
-          ],
+        "requires": { "bins": ["node", "npm", "git"] },
       },
   }
 ---
 
-# Fluora Setup - Interactive Onboarding Wizard
+# Fluora Setup - Interactive Onboarding Wizard (GitHub Version)
 
-Complete setup wizard for accessing the Fluora marketplace. Handles wallet generation, mcporter configuration, and funding instructions.
+Complete setup wizard for accessing the Fluora marketplace. Uses the official GitHub repository for the latest working version.
 
 ## What This Skill Does
 
 Automates the entire Fluora setup process:
-1. ✅ Installs `fluora-mcp` globally
-2. ✅ Generates wallet (auto-creates `~/.fluora/wallets.json`)
-3. ✅ Extracts wallet address from private key
-4. ✅ Displays funding instructions
-5. ✅ Configures mcporter with Fluora registry
-6. ✅ Verifies setup is working
+1. ✅ Clones `fluora-mcp` from GitHub (https://github.com/fluora-ai/fluora-mcp)
+2. ✅ Installs dependencies and builds locally
+3. ✅ Generates wallet (auto-creates `~/.fluora/wallets.json`)
+4. ✅ Extracts wallet address from private key
+5. ✅ Displays funding instructions
+6. ✅ Configures mcporter with local Fluora registry
+7. ✅ Verifies setup is working
 
 ## Prerequisites
 
 - Node.js 18+
 - npm
+- git
 - mcporter installed (optional, will guide if missing)
 
 ## Usage
@@ -72,10 +64,12 @@ node setup.js --funding 10
 
 ## What Gets Created/Modified
 
-### 1. Global Package
-```bash
-npm install -g fluora-mcp
+### 1. Local fluora-mcp Repository
 ```
+~/.openclaw/workspace/fluora-mcp/
+```
+
+Cloned from GitHub and built locally with all dependencies.
 
 ### 2. Wallet File
 ```
@@ -97,13 +91,13 @@ Auto-generated on first run with structure:
 ```
 (or `~/.mcporter/mcporter.json` if workspace config doesn't exist)
 
-Adds Fluora registry:
+Adds Fluora registry pointing to local build:
 ```json
 {
   "mcpServers": {
     "fluora-registry": {
-      "command": "npx",
-      "args": ["fluora-mcp"],
+      "command": "node",
+      "args": ["/Users/YOUR_USERNAME/.openclaw/workspace/fluora-mcp/build/index.js"],
       "env": {
         "ENABLE_REQUEST_ELICITATION": "true",
         "ELICITATION_THRESHOLD": "0.01"
@@ -113,7 +107,7 @@ Adds Fluora registry:
 }
 ```
 
-**Note:** mcporter looks for config in current directory first, then `~/.mcporter/`. The workspace config works from any directory inside `~/.openclaw/workspace/`.
+**Note:** Uses the LOCAL GitHub build, not `npx fluora-mcp` from npm, because the npm version has a parameter parsing bug.
 
 ## Wallet Funding
 
@@ -125,16 +119,15 @@ Your Fluora Wallet Address:
 
 To fund your wallet:
 1. Open Coinbase, Binance, or your preferred exchange
-2. Send $1 USDC to the address above
+2. Send $5-10 USDC to the address above
 3. **Important:** Select "Base" network (NOT Ethereum mainnet)
 4. Wait ~1 minute for confirmation
 ```
 
 ### Network Details
 - **Network:** Base (Coinbase L2)
-- **Token:** USDC
-- **Recommended amount:** $1 for testing
-- **Gas fees:** $0 (paid by service provider)
+- **Token needed:** USDC only (for service payments, $5-10 recommended)
+- **Payments:** Handled automatically with USDC, no additional tokens needed
 
 ### Where to Get USDC on Base
 
@@ -154,12 +147,14 @@ To fund your wallet:
 ## Verification
 
 The skill automatically verifies:
-- ✅ fluora-mcp installed
+- ✅ fluora-mcp cloned from GitHub
+- ✅ Dependencies installed
+- ✅ Build successful
 - ✅ Wallet file exists
 - ✅ Private key is valid
 - ✅ Wallet address derived correctly
 - ✅ mcporter config is valid JSON
-- ✅ Fluora registry configured
+- ✅ Fluora registry configured with local path
 
 Optional: Check wallet balance (after funding)
 
@@ -170,10 +165,11 @@ Optional: Check wallet balance (after funding)
   "success": true,
   "walletAddress": "0x...",
   "privateKeyPath": "~/.fluora/wallets.json",
+  "fluoraPath": "~/.openclaw/workspace/fluora-mcp",
   "mcporterConfigured": true,
   "funded": false,
   "nextSteps": [
-    "Fund wallet with $1 USDC on Base",
+    "Fund wallet with $5-10 USDC on Base",
     "Test with: mcporter call fluora-registry.exploreServices",
     "Start building with workflow-to-monetized-mcp"
   ]
@@ -188,12 +184,20 @@ Optional: Check wallet balance (after funding)
 # List available services
 mcporter call 'fluora-registry.exploreServices()'
 
-# Use a service (requires funded wallet)
+# Use a free service (testnet screenshot)
 mcporter call 'fluora-registry.useService' --args '{
-  "serviceId": "example",
-  "serverUrl": "https://...",
-  "serverId": "...",
-  "params": {}
+  "serviceId": "zyte-screenshot",
+  "serverUrl": "https://pi5fcuvxfb.us-west-2.awsapprunner.com",
+  "serverId": "c2b7baa1-771c-4662-8be4-4fd676168ad6",
+  "params": {"url": "https://example.com"}
+}'
+
+# Use a paid service (PDF conversion - requires confirmation)
+mcporter call 'fluora-registry.useService' --args '{
+  "serviceId": "pdfshift-convert",
+  "serverUrl": "https://9krswmmx4a.us-west-2.awsapprunner.com",
+  "serverId": "c45d3968-0aa1-4d78-a16e-041372110f23",
+  "params": {"websiteUrl": "https://example.com"}
 }'
 ```
 
@@ -206,13 +210,22 @@ Now you can use the other Fluora skills:
 
 ## Troubleshooting
 
-### "fluora-mcp not found"
-```bash
-npm install -g fluora-mcp
-```
+### "git clone failed"
+Ensure you have git installed and internet access.
+
+### "npm install failed"
+Check Node.js version (18+) and npm is working.
+
+### "Build failed"
+Check the error in the build output. Usually dependency issues.
 
 ### "wallets.json not created"
-Run `npx fluora-mcp` manually once, then re-run setup.
+Run the local fluora-mcp once manually:
+```bash
+cd ~/.openclaw/workspace/fluora-mcp
+node build/index.js
+# Press Ctrl+C after it starts
+```
 
 ### "Invalid private key"
 The key in `~/.fluora/wallets.json` should be 0x-prefixed hex string (66 characters).
@@ -224,6 +237,15 @@ Make sure you're sending USDC on **Base** network, not Ethereum mainnet or other
 - Check transaction on Base block explorer: https://basescan.org
 - Wait 1-2 minutes for confirmation
 - Verify you sent to the correct address
+- Ensure you selected Base network (not Ethereum)
+
+## Why GitHub Instead of npm?
+
+The npm package (`fluora-mcp@0.1.38`) has a parameter parsing bug where `useService` cannot receive parameters correctly. The GitHub repository (v0.1.39+) has the fix.
+
+**Bug details:**
+- npm version: Schema definition uses plain object, breaking MCP parameter passing
+- GitHub version: Fixed schema definition, all parameters work correctly
 
 ## Security Notes
 
@@ -235,7 +257,7 @@ Make sure you're sending USDC on **Base** network, not Ethereum mainnet or other
 - This wallet is for **buying services**, not storing large amounts
 
 ### Best Practices
-- Fund with small amounts initially ($1 for testing)
+- Fund with small amounts initially ($5-10 USDC)
 - Monitor spending in Fluora dashboard
 - Rotate wallets if compromised
 - Use separate wallet for each OpenClaw instance
@@ -243,21 +265,21 @@ Make sure you're sending USDC on **Base** network, not Ethereum mainnet or other
 ## Cost Summary
 
 ### Setup Costs
-- fluora-mcp: Free (npm package)
-- Wallet generation: Free
-- Initial funding: $1 USDC (you choose)
+- fluora-mcp clone: Free
+- Initial funding: $5-10 USDC (you choose)
 
 ### Ongoing Costs
 - Service calls: $0.001-0.20 per call (varies by service)
-- Gas fees: $0 (paid by service provider)
+- Payments: Handled automatically with USDC, no additional fees
 
 ### Example Usage
-- $1 USDC → ~50-1000 calls (depending on service)
+- $5 USDC → ~250-5000 calls (depending on service)
 - Most calls are $0.001-0.02
 
 ## Resources
 
 - Fluora marketplace: https://fluora.ai
+- GitHub repo: https://github.com/fluora-ai/fluora-mcp
 - Base network: https://base.org
 - Block explorer: https://basescan.org
 - USDC info: https://www.circle.com/en/usdc
