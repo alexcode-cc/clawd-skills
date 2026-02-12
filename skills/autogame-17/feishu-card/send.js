@@ -6,7 +6,7 @@ const crypto = require('crypto');
 require('dotenv').config({ path: require('path').resolve(__dirname, '../../.env'), quiet: true }); 
 
 // Optimization: Use shared client with Auth Refresh & Retry
-const { fetchWithAuth } = require('../common/feishu-client.js');
+const { fetchWithAuth } = require('../feishu-common/index.js');
 
 const IMAGE_KEY_CACHE_FILE = path.resolve(__dirname, '../../memory/feishu_image_keys.json');
 

@@ -3,11 +3,16 @@
   "slug": "feishu-card",
   "displayName": "Feishu Card",
   "latest": {
-    "version": "1.4.13",
-    "publishedAt": 1770791203522,
-    "commit": "https://github.com/openclaw/skills/commit/1b4b389092cdc372983f5151860f0bdf4bf1086c"
+    "version": "1.4.14",
+    "publishedAt": 1770892441750,
+    "commit": null
   },
   "history": [
+    {
+      "version": "1.4.13",
+      "publishedAt": 1770791203522,
+      "commit": "https://github.com/openclaw/skills/commit/1b4b389092cdc372983f5151860f0bdf4bf1086c"
+    },
     {
       "version": "1.4.11",
       "publishedAt": 1770649344266,
