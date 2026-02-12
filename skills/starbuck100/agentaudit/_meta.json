@@ -1,0 +1,11 @@
+{
+  "owner": "starbuck100",
+  "slug": "agentaudit",
+  "displayName": "AgentAudit",
+  "latest": {
+    "version": "2.1.0",
+    "publishedAt": 1770903077878,
+    "commit": null
+  },
+  "history": []
+}
