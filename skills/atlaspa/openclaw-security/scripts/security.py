@@ -178,11 +178,6 @@ def installed_skills(workspace):
         skill_dir = sd / name
         if skill_dir.is_dir() and (skill_dir / "SKILL.md").exists():
             found[name] = skill_dir
-        # also check for -pro variant
-        pro_name = name + "-pro"
-        pro_dir = sd / pro_name
-        if pro_dir.is_dir() and (pro_dir / "SKILL.md").exists():
-            found[pro_name] = pro_dir
     return found
 
 
@@ -321,30 +316,18 @@ def cmd_list(workspace):
         print(f"    python3 security.py install --workspace {workspace}")
         return 1
 
-    free_count = 0
-    pro_count = 0
+    installed_count = 0
 
     for name in SCAN_ORDER:
         info = SKILLS[name]
-        has_free = name in found
-        has_pro = (name + "-pro") in found
-
-        status_parts = []
-        if has_free:
-            status_parts.append("free")
-            free_count += 1
-        if has_pro:
-            status_parts.append("pro")
-            pro_count += 1
-
-        if status_parts:
-            tier = " + ".join(status_parts)
-            print(f"  [*] {name:<30} {info['domain']:<24} ({tier})")
+        if name in found:
+            installed_count += 1
+            print(f"  [*] {name:<30} {info['domain']}")
         else:
             print(f"  [ ] {name:<30} {info['domain']:<24} (not installed)")
 
     print()
-    print(f"  Free: {free_count}/11  Pro: {pro_count}/11")
+    print(f"  Installed: {installed_count}/11")
     return 0
 
 
@@ -363,20 +346,12 @@ def cmd_status(workspace):
 
     for name in SCAN_ORDER:
         info = SKILLS[name]
-        # prefer pro variant if installed
-        pro_name = name + "-pro"
-        if pro_name in found:
-            active_name = pro_name
-            active_dir = found[pro_name]
-        elif name in found:
-            active_name = name
-            active_dir = found[name]
-        else:
+        if name not in found:
             print(f"  [--] {info['domain']:<24} {name:<30} not installed")
             continue
 
         stdout, stderr, code = run_skill(
-            python, active_dir, info["script"],
+            python, found[name], info["script"],
             info["status_cmd"], workspace,
             ws_before=info["ws_before"],
         )
@@ -405,10 +380,9 @@ def cmd_status(workspace):
                 status_line = useful[-1]
 
         icon = severity_icon(code)
-        tier = "PRO" if active_name.endswith("-pro") else "   "
-        print(f"  {icon} {info['domain']:<24} {tier}  {status_line}")
+        print(f"  {icon} {info['domain']:<24} {status_line}")
 
-        results[name] = {"code": code, "output": stdout, "tier": tier.strip()}
+        results[name] = {"code": code, "output": stdout}
         worst = max(worst, code)
 
     # Summary
@@ -451,21 +425,14 @@ def cmd_scan(workspace):
 
     for name in SCAN_ORDER:
         info = SKILLS[name]
-        pro_name = name + "-pro"
-        if pro_name in found:
-            active_name = pro_name
-            active_dir = found[pro_name]
-        elif name in found:
-            active_name = name
-            active_dir = found[name]
-        else:
+        if name not in found:
             continue
 
         short = info["domain"]
         print(f"  Scanning: {short}...", flush=True)
 
         stdout, stderr, code = run_skill(
-            python, active_dir, info["script"],
+            python, found[name], info["script"],
             info["scan_cmd"], workspace,
             ws_before=info["ws_before"],
         )
@@ -522,8 +489,7 @@ def cmd_scan(workspace):
     else:
         print("  RESULT: ACTION REQUIRED — critical findings detected")
         print()
-        print("  Upgrade to Pro for automated countermeasures:")
-        print("  https://github.com/sponsors/AtlasPA")
+        print("  Run 'protect' to apply automated countermeasures.")
 
     return worst
 
@@ -547,12 +513,7 @@ def cmd_setup(workspace):
         if info["setup_cmd"] is None:
             continue
 
-        pro_name = name + "-pro"
-        if pro_name in found:
-            active_dir = found[pro_name]
-        elif name in found:
-            active_dir = found[name]
-        else:
+        if name not in found:
             continue
 
         short = info["domain"]
@@ -560,7 +521,7 @@ def cmd_setup(workspace):
         print(f"  [{cmd_label:<16}] {short}...", end="", flush=True)
 
         stdout, stderr, code = run_skill(
-            python, active_dir, info["script"],
+            python, found[name], info["script"],
             info["setup_cmd"], workspace,
             ws_before=info["ws_before"],
         )
@@ -632,27 +593,24 @@ def cmd_update(workspace):
 
 
 def cmd_protect(workspace):
-    """Run automated countermeasures across all installed Pro tools."""
-    print_header("PROTECT (PRO)")
+    """Run automated countermeasures across all installed tools."""
+    print_header("PROTECT")
 
     found = installed_skills(workspace)
     python = find_python()
 
-    pro_tools = {n: d for n, d in found.items() if n.endswith("-pro")}
-    if not pro_tools:
-        print("  No Pro tools installed.")
+    if not found:
+        print("  No security tools installed.")
         print()
-        print("  Upgrade to Pro for automated countermeasures:")
-        print("  https://github.com/sponsors/AtlasPA")
+        print("  Run 'install' to set up the security suite.")
         return 1
 
     worst = 0
-    for pro_name, pro_dir in sorted(pro_tools.items()):
-        base_name = pro_name.replace("-pro", "")
-        if base_name not in SKILLS:
+    for name in SCAN_ORDER:
+        if name not in found:
             continue
 
-        info = SKILLS[base_name]
+        info = SKILLS[name]
         if info["protect_cmd"] is None:
             continue
 
@@ -660,7 +618,7 @@ def cmd_protect(workspace):
         print(f"  Protecting: {short}...", flush=True)
 
         stdout, stderr, code = run_skill(
-            python, pro_dir, info["script"],
+            python, found[name], info["script"],
             info["protect_cmd"], workspace,
             ws_before=info["ws_before"],
         )
