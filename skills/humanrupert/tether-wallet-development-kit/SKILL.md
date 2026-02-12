@@ -11,20 +11,42 @@ Multi-chain wallet SDK. All modules share common interfaces from `@tetherto/wdk-
 ## Documentation
 
 **Official Docs**: https://docs.wallet.tether.io
+**GitHub**: https://github.com/tetherto/wdk-core
 
 ### URL Fetching Workflow
 
-1. Identify relevant URLs from Module Documentation Links below
+1. Identify relevant URLs from the reference files in `references/`
 2. `web_fetch` the URL directly
 3. If fetch fails → `web_search` the exact URL first (unlocks fetching) → then `web_fetch` again
 
-Each module has subpages: `/usage`, `/configuration`, `/api-reference`
+Each module doc page has subpages: `/usage`, `/configuration`, `/api-reference`
+
+### Reference Files
+
+This skill is organized into reference files for chain-specific and protocol-specific details:
+
+| File | Content |
+|------|---------|
+| `references/chains.md` | Chain IDs, native tokens, units, decimals, dust thresholds, address formats, EIP-3009 support, bridge routes |
+| `references/deployments.md` | USDT native addresses, USDT0 omnichain addresses, public RPC endpoints |
+| `references/wallet-btc.md` | Bitcoin wallet: BIP-84, Electrum, PSBT, fee rates |
+| `references/wallet-evm.md` | EVM + ERC-4337: BIP-44, EIP-1559, ERC20, batch txs, paymaster |
+| `references/wallet-solana.md` | Solana: Ed25519, SPL tokens, lamports |
+| `references/wallet-spark.md` | Spark: Lightning, key tree, deposits, withdrawals |
+| `references/wallet-ton.md` | TON + TON Gasless: Jettons, nanotons, paymaster |
+| `references/wallet-tron.md` | TRON + TRON Gasfree: TRC20, energy/bandwidth, gasFreeProvider |
+| `references/protocol-swap.md` | Velora EVM + StonFi TON swap protocols |
+| `references/protocol-bridge.md` | USDT0 cross-chain bridge via LayerZero |
+| `references/protocol-lending.md` | Aave V3 lending: supply/withdraw/borrow/repay |
+| `references/protocol-fiat.md` | MoonPay fiat on/off ramp |
+
+When a task targets a specific chain or protocol, read the relevant reference file(s) before writing code.
 
 
 ## Architecture
 
 ```
-@tetherto/wdk-core          # Orchestrator - registers wallets + protocols
+@tetherto/wdk               # Orchestrator - registers wallets + protocols
     ├── @tetherto/wdk-wallet    # Base classes (WalletManager, IWalletAccount)
     │   ├── wdk-wallet-btc      # Bitcoin (BIP-84, SegWit)
     │   ├── wdk-wallet-evm      # Ethereum & EVM chains
@@ -42,6 +64,53 @@ Each module has subpages: `/usage`, `/configuration`, `/api-reference`
         ├── wdk-protocol-lending-aave-evm  # Aave V3 lending
         └── wdk-protocol-fiat-moonpay      # Fiat on/off ramp
 ```
+
+> **Note:** `@tetherto/wdk-core` appears in the architecture tree but the npm package is `@tetherto/wdk` — import as `import WDK from '@tetherto/wdk'`.
+
+
+## npm Packages
+
+All packages are under the `@tetherto` scope. **Always** `npm view <pkg> version` before adding to `package.json` — never hardcode versions.
+
+### Core & Base
+
+| Package | npm |
+|---------|-----|
+| `@tetherto/wdk` | [npmjs.com/package/@tetherto/wdk](https://www.npmjs.com/package/@tetherto/wdk) |
+| `@tetherto/wdk-wallet` | [npmjs.com/package/@tetherto/wdk-wallet](https://www.npmjs.com/package/@tetherto/wdk-wallet) |
+
+### Wallet Modules
+
+| Package | npm |
+|---------|-----|
+| `@tetherto/wdk-wallet-btc` | [npmjs.com/package/@tetherto/wdk-wallet-btc](https://www.npmjs.com/package/@tetherto/wdk-wallet-btc) |
+| `@tetherto/wdk-wallet-evm` | [npmjs.com/package/@tetherto/wdk-wallet-evm](https://www.npmjs.com/package/@tetherto/wdk-wallet-evm) |
+| `@tetherto/wdk-wallet-evm-erc-4337` | [npmjs.com/package/@tetherto/wdk-wallet-evm-erc-4337](https://www.npmjs.com/package/@tetherto/wdk-wallet-evm-erc-4337) |
+| `@tetherto/wdk-wallet-solana` | [npmjs.com/package/@tetherto/wdk-wallet-solana](https://www.npmjs.com/package/@tetherto/wdk-wallet-solana) |
+| `@tetherto/wdk-wallet-spark` | [npmjs.com/package/@tetherto/wdk-wallet-spark](https://www.npmjs.com/package/@tetherto/wdk-wallet-spark) |
+| `@tetherto/wdk-wallet-ton` | [npmjs.com/package/@tetherto/wdk-wallet-ton](https://www.npmjs.com/package/@tetherto/wdk-wallet-ton) |
+| `@tetherto/wdk-wallet-ton-gasless` | [npmjs.com/package/@tetherto/wdk-wallet-ton-gasless](https://www.npmjs.com/package/@tetherto/wdk-wallet-ton-gasless) |
+| `@tetherto/wdk-wallet-tron` | [npmjs.com/package/@tetherto/wdk-wallet-tron](https://www.npmjs.com/package/@tetherto/wdk-wallet-tron) |
+| `@tetherto/wdk-wallet-tron-gasfree` | [npmjs.com/package/@tetherto/wdk-wallet-tron-gasfree](https://www.npmjs.com/package/@tetherto/wdk-wallet-tron-gasfree) |
+
+### Protocol Modules
+
+| Package | npm |
+|---------|-----|
+| `@tetherto/wdk-protocol-swap-velora-evm` | [npmjs.com/package/@tetherto/wdk-protocol-swap-velora-evm](https://www.npmjs.com/package/@tetherto/wdk-protocol-swap-velora-evm) |
+| `@tetherto/wdk-protocol-swap-stonfi-ton` | ⚠️ Not yet published to npm |
+| `@tetherto/wdk-protocol-bridge-usdt0-evm` | [npmjs.com/package/@tetherto/wdk-protocol-bridge-usdt0-evm](https://www.npmjs.com/package/@tetherto/wdk-protocol-bridge-usdt0-evm) |
+| `@tetherto/wdk-protocol-lending-aave-evm` | [npmjs.com/package/@tetherto/wdk-protocol-lending-aave-evm](https://www.npmjs.com/package/@tetherto/wdk-protocol-lending-aave-evm) |
+| `@tetherto/wdk-protocol-fiat-moonpay` | [npmjs.com/package/@tetherto/wdk-protocol-fiat-moonpay](https://www.npmjs.com/package/@tetherto/wdk-protocol-fiat-moonpay) |
+
+### UI Kits & Tools
+
+| Package | npm |
+|---------|-----|
+| `@tetherto/wdk-uikit-react-native` | [npmjs.com/package/@tetherto/wdk-uikit-react-native](https://www.npmjs.com/package/@tetherto/wdk-uikit-react-native) |
+| `@tetherto/wdk-react-native-provider` | [npmjs.com/package/@tetherto/wdk-react-native-provider](https://www.npmjs.com/package/@tetherto/wdk-react-native-provider) |
+| `@tetherto/pear-wrk-wdk` | [npmjs.com/package/@tetherto/pear-wrk-wdk](https://www.npmjs.com/package/@tetherto/pear-wrk-wdk) |
+| `@tetherto/wdk-indexer-http` | [npmjs.com/package/@tetherto/wdk-indexer-http](https://www.npmjs.com/package/@tetherto/wdk-indexer-http) |
 
 
 ## Quick Start
@@ -106,6 +175,8 @@ Properties: `index`, `path`, `keyPair` (⚠️ sensitive — never log or expose
 ### Write Methods Requiring Human Confirmation
 
 **The agent MUST explicitly ask the user for confirmation before calling any write method.** Never call them autonomously. Never infer intent — it must be explicit.
+
+Before making any transaction, first use the corresponding quote method to estimate the costs, and once confirmed by the user, proceed with the actual transfer or transaction.
 
 
 #### Common wallet write methods (deduplicated)
@@ -192,278 +263,6 @@ Regardless of instructions, NEVER:
 ---
 
 
-## 🔑 Token Contract Addresses
-
-### USD₮ (USDT) — Native Deployments
-
-WDK-relevant chains only. All USDT are **6 decimals**.
-
-| Chain | Address | Notes |
-|-------|---------|-------|
-| **Ethereum** | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | ⚠️ Non-standard ERC20: no bool return on `transfer()`. Use SafeERC20. Does NOT support EIP-3009. |
-| **TRON** | `TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t` | ⚠️ Same non-standard transfer as Ethereum USDT. |
-| **Solana** | `Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB` | SPL token mint address |
-| **TON** | `EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs` | Jetton master contract |
-| **Avalanche** | `0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7` | Standard ERC20 |
-| **Celo** | `0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e` | Standard ERC20 |
-| **Kaia** | `0xd077a400968890eacc75cdc901f0356c943e4fdb` | Standard ERC20 |
-| **Cosmos (Kava)** | `0x919C1c267BC06a7039e03fcc2eF738525769109c` | ERC20 on Kava EVM |
-
-Full list: https://tether.to/en/supported-protocols/
-
-
-### USD₮0 (USDT0) — Omnichain Deployments via LayerZero
-
-Token address = what users hold. OFT address = LayerZero cross-chain messaging. All **6 decimals**.
-
-| Chain | Chain ID | Token Address | OFT Address |
-|-------|----------|---------------|-------------|
-| **Ethereum** | 1 | (native USDT locked) | `0x6C96dE32CEa08842dcc4058c14d3aaAD7Fa41dee` (Adapter) |
-| **Arbitrum** | 42161 | `0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9` | `0x14E4A1B13bf7F943c8ff7C51fb60FA964A298D92` |
-| **Optimism** | 10 | `0x01bFF41798a0BcF287b996046Ca68b395DbC1071` | `0xF03b4d9AC1D5d1E7c4cEf54C2A313b9fe051A0aD` |
-| **Polygon** | 137 | `0xc2132D05D31c914a87C6611C10748AEb04B58e8F` | `0x6BA10300f0DC58B7a1e4c0e41f5daBb7D7829e13` |
-| **Plasma** | 9745 | `0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb` | `0x02ca37966753bDdDf11216B73B16C1dE756A7CF9` |
-| **Mantle** | 5000 | `0x779Ded0c9e1022225f8E0630b35a9b54bE713736` | `0xcb768e263FB1C62214E7cab4AA8d036D76dc59CC` |
-| **Berachain** | 80094 | `0x779Ded0c9e1022225f8E0630b35a9b54bE713736` | `0x3Dc96399109df5ceb2C226664A086140bD0379cB` |
-| **Ink** | 57073 | `0x0200C29006150606B650577BBE7B6248F58470c1` | `0x1cB6De532588fCA4a21B7209DE7C456AF8434A65` |
-| **Unichain** | 130 | `0x9151434b16b9763660705744891fA906F660EcC5` | `0xc07bE8994D035631c36fb4a89C918CeFB2f03EC3` |
-| **Sei** | 1329 | `0x9151434b16b9763660705744891fA906F660EcC5` | `0x56Fe74A2e3b484b921c447357203431a3485CC60` |
-| **Flare** | 14 | `0xe7cd86e13AC4309349F30B3435a9d337750fC82D` | `0x567287d2A9829215a37e3B88843d32f9221E7588` |
-| **Rootstock** | 30 | `0x779dED0C9e1022225F8e0630b35A9B54Be713736` | `0x1a594d5d5d1c426281C1064B07f23F57B2716B61` |
-| **Corn** | 21000000 | `0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb` | `0x3f82943338a8a76c35BFA0c1828aA27fd43a34E4` |
-| **Morph** | 2818 | `0xe7cd86e13AC4309349F30B3435a9d337750fC82D` | `0xcb768e263FB1C62214E7cab4AA8d036D76dc59CC` |
-| **XLayer** | 196 | `0x779Ded0c9e1022225f8E0630b35a9b54bE713736` | `0x94bcca6bdfd6a61817ab0e960bfede4984505554` |
-| **HyperEVM** | 999 | `0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb` | `0x904861a24F30EC96ea7CFC3bE9EA4B476d237e98` |
-| **MegaETH** | 4326 | `0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb` | `0x9151434b16b9763660705744891fa906f660ecc5` |
-| **Monad** | 143 | `0xe7cd86e13AC4309349F30B3435a9d337750fC82D` | `0x9151434b16b9763660705744891fA906F660EcC5` |
-| **Stable** | 988 | `0x779Ded0c9e1022225f8E0630b35a9b54bE713736` | `0xedaba024be4d87974d5aB11C6Dd586963CcCB027` |
-| **Conflux eSpace** | 1030 | `0xaf37E8B6C9ED7f6318979f56Fc287d76c30847ff` | `0xC57efa1c7113D98BdA6F9f249471704Ece5dd84A` |
-
-Full list + live updates: https://docs.usdt0.to/technical-documentation/deployments
-API endpoint: https://docs.usdt0.to/api/deployments
-
-
----
-
-
-## 📊 Chain & Unit Reference
-
-### Chains, Native Tokens & Base Units
-
-| Chain | Chain ID | Native Token | Base Unit | Decimals | 1 Token = |
-|-------|----------|-------------|-----------|----------|-----------|
-| **Bitcoin** | — | BTC | satoshi | 8 | 100,000,000 sats |
-| **Ethereum** | 1 | ETH | wei | 18 | 10^18 wei |
-| **Arbitrum** | 42161 | ETH | wei | 18 | 10^18 wei |
-| **Optimism** | 10 | ETH | wei | 18 | 10^18 wei |
-| **Polygon** | 137 | POL | wei | 18 | 10^18 wei |
-| **Berachain** | 80094 | BERA | wei | 18 | 10^18 wei |
-| **Ink** | 57073 | ETH | wei | 18 | 10^18 wei |
-| **Plasma** | 9745 | XPL | wei | 18 | 10^18 wei |
-| **Solana** | — | SOL | lamport | 9 | 1,000,000,000 lamports |
-| **Spark** | — | BTC | satoshi | 8 | 100,000,000 sats |
-| **TON** | — | TON | nanoton | 9 | 1,000,000,000 nanotons |
-| **TRON** | — | TRX | sun | 6 | 1,000,000 sun |
-
-
-### Common Token Decimals
-
-| Token | Decimals | Note |
-|-------|----------|------|
-| USDT / USDT0 | 6 | All chains |
-| USDC | 6 | All chains |
-| DAI | 18 | EVM chains |
-| WETH | 18 | EVM chains |
-| WBTC | 8 | EVM chains |
-
-
-### EIP-3009 Support (Gasless Transfers)
-
-EIP-3009 allows `transferWithAuthorization` / `receiveWithAuthorization` — the user signs an off-chain EIP-712 message and a relayer submits it, paying gas on behalf of the user.
-
-| Token | Chain | EIP-3009 Support |
-|-------|-------|-----------------|
-| USDT (native) | Ethereum | ❌ Not supported |
-| USDT (native) | TRON | ❌ Not supported |
-| USDT0 | Arbitrum | ✅ Supported |
-| USDT0 | Plasma | ✅ Supported — Plasma Relayer API provides free gas. Min 1 USDT0 (1,000,000 base units). |
-
-
-### Address Format Validation
-
-| Chain | Format | Example |
-|-------|--------|---------|
-| **Bitcoin** | Bech32 (`bc1...`) | `bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4` |
-| **EVM** (all) | Hex, 42 chars, checksum | `0xdAC17F958D2ee523a2206206994597C13D831ec7` |
-| **Solana** | Base58, 32-44 chars | `Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB` |
-| **TON** | Base64url or raw | `EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs` |
-| **TRON** | Base58Check, starts with `T` | `TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t` |
-
-
-### Dust Thresholds
-
-Minimum meaningful amounts below which transactions will fail or be rejected by the network:
-
-| Chain | Dust Threshold | Notes |
-|-------|---------------|-------|
-| **Bitcoin** | 546 sats (P2PKH), 294 sats (P2WPKH) | Network enforced |
-| **Solana** | ~890,880 lamports | Rent-exempt minimum for accounts |
-| **Plasma (gasless)** | 1,000,000 (1 USDT0) | Relayer minimum |
-| **TRON** | Varies | Energy/bandwidth cost may exceed value for tiny amounts |
-
-
-### WDK Bridge Supported Routes
-
-Source chains (EVM only): ethereum, arbitrum, polygon, berachain, ink
-Destination chains: ethereum, arbitrum, polygon, berachain, ink, ton, tron
-
-ERC-4337 (Account Abstraction) currently supported on: Arbitrum
-
----
-
-
-## Module Documentation Links
-
-### Core Module
-| Resource | URL |
-|----------|-----|
-| Overview | https://docs.wallet.tether.io/sdk/core-module |
-| Usage | https://docs.wallet.tether.io/sdk/core-module/usage |
-| Configuration | https://docs.wallet.tether.io/sdk/core-module/configuration |
-| API Reference | https://docs.wallet.tether.io/sdk/core-module/api-reference |
-
-### Wallet Modules
-
-| Module | Docs |
-|--------|------|
-| **Bitcoin** | https://docs.wallet.tether.io/sdk/wallet-modules/wallet-btc |
-| **EVM** | https://docs.wallet.tether.io/sdk/wallet-modules/wallet-evm |
-| **EVM ERC-4337** | https://docs.wallet.tether.io/sdk/wallet-modules/wallet-evm-erc-4337 |
-| **Solana** | https://docs.wallet.tether.io/sdk/wallet-modules/wallet-solana |
-| **Spark** | https://docs.wallet.tether.io/sdk/wallet-modules/wallet-spark |
-| **TON** | https://docs.wallet.tether.io/sdk/wallet-modules/wallet-ton |
-| **TON Gasless** | https://docs.wallet.tether.io/sdk/wallet-modules/wallet-ton-gasless |
-| **TRON** | https://docs.wallet.tether.io/sdk/wallet-modules/wallet-tron |
-| **TRON Gasfree** | https://docs.wallet.tether.io/sdk/wallet-modules/wallet-tron-gasfree |
-
-Each has `/usage`, `/configuration`, `/api-reference` subpages.
-
-### Protocol Modules
-
-| Module | Docs |
-|--------|------|
-| **Swap (Velora EVM)** | https://docs.wallet.tether.io/sdk/swap-modules/swap-velora-evm |
-| **Swap (StonFi TON)** | https://docs.wallet.tether.io/sdk/swap-modules/swap-stonfi-ton |
-| **Bridge (USDT0 EVM)** | https://docs.wallet.tether.io/sdk/bridge-modules/bridge-usdt0-evm |
-| **Lending (Aave EVM)** | https://docs.wallet.tether.io/sdk/lending-modules/lending-aave-evm |
-| **Fiat (MoonPay)** | https://docs.wallet.tether.io/sdk/fiat-modules/fiat-moonpay |
-
-Each has `/usage`, `/configuration`, `/api-reference` subpages.
-
-### UI Kits & Examples
-
-| Resource | URL |
-|----------|-----|
-| React Native UI Kit | https://docs.wallet.tether.io/ui-kits/react-native-ui-kit/get-started |
-| Theming | https://docs.wallet.tether.io/ui-kits/react-native-ui-kit/theming |
-| UI Kit API Reference | https://docs.wallet.tether.io/ui-kits/react-native-ui-kit/api-reference |
-| React Native Starter | https://docs.wallet.tether.io/examples-and-starters/react-native-starter |
-
-
-## Chain-Specific Notes
-
-### Bitcoin
-- BIP-84 (Native SegWit only, `bc1...` addresses)
-- Path: `m/84'/0'/0'/0/{index}`
-- Uses Electrum servers, fees in sat/vB
-- No token support (`getTokenBalance`, `transfer` throw)
-- `getTransfers({direction, limit, skip})` for history
-
-### EVM
-- BIP-44 (`m/44'/60'/0'/0/{index}`), EIP-1559 fee model
-- Supports ERC20 via `transfer()`
-- Fee rates: `normal` = base×1.1, `fast` = base×2.0
-- ⚠️ Ethereum USDT uses non-standard ERC20 (no bool return). Use SafeERC20 in custom contracts.
-
-### ERC-4337 (Account Abstraction)
-- Gasless via UserOperations + Paymaster
-- Fees paid in paymaster token (e.g., USDT)
-- `getPaymasterTokenBalance()` for fee balance
-- Batch transactions: `sendTransaction([tx1, tx2])`
-
-### Solana
-- BIP-44 (`m/44'/501'/0'/0/{index}`), Ed25519
-- Fees in lamports (1 SOL = 1B lamports)
-- SPL tokens via `transfer()`
-
-### Spark
-- Bitcoin L2 with Lightning support
-- Path: `m/44'/998'/{net}'/0/{index}`
-- Key tree: identity(`/0'`), signing(`/0'/0'`), deposit(`/0'/1'`), staticDeposit(`/0'/2'`), htlcPreimage(`/0'/3'`)
-- Zero fees for Spark txs
-- `getSingleUseDepositAddress()`, `claimDeposit(txId)`
-- `createLightningInvoice({value, memo})`, `payLightningInvoice({invoice, maxFeeSats})`
-- `withdraw({to, value})` for L1 withdrawal
-
-### TON
-- BIP-44 (`m/44'/607'/0'/0/{index}`), Ed25519
-- Fees in nanotons (1 TON = 1B nanotons)
-- Jettons via `transfer()`
-
-### TRON
-- BIP-44 (`m/44'/195'/0'/0/{index}`), secp256k1
-- Fees in sun (1 TRX = 1M sun)
-- TRC20 via `transfer()`
-- Energy + bandwidth costs
-
-### Gasless Variants
-- **TON Gasless**: Requires `tonApiClient`, `paymasterToken` config. Jetton-to-Jetton only.
-- **TRON Gasfree**: Requires `gasFreeProvider`, `gasFreeApiKey`, `serviceProvider`, `verifyingContract`
-- Both: `sendTransaction()` **not supported** (throws), use `transfer()` only
-
-
-## Protocol Quick Reference
-
-### Swap (DEX)
-```javascript
-// EVM (Velora)
-const velora = new VeloraProtocolEvm(evmAccount, { swapMaxFee: 200000000000000n })
-await velora.swap({ tokenIn: '0x...', tokenOut: '0x...', tokenInAmount: 1000000n })
-
-// TON (StonFi)
-const stonfi = new StonFiProtocolTon(tonAccount, { swapMaxFee: 1000000000n })
-await stonfi.swap({ tokenIn: 'ton', tokenOut: 'EQ...', tokenInAmount: 1000000000n })
-```
-
-### Bridge
-```javascript
-const bridge = new Usdt0ProtocolEvm(evmAccount, { bridgeMaxFee: 1000000000000000n })
-await bridge.bridge({
-  targetChain: 'arbitrum',
-  recipient: '0x...',
-  token: '0x...',  // USDT0 token address on source chain
-  amount: 1000000n
-})
-```
-
-### Lending (Aave)
-```javascript
-const aave = new AaveProtocolEvm(evmAccount)
-await aave.supply({ token: '0x...', amount: 1000000n })
-await aave.borrow({ token: '0x...', amount: 500000n })
-await aave.repay({ token: '0x...', amount: 500000n })
-await aave.withdraw({ token: '0x...', amount: 1000000n })
-const data = await aave.getAccountData()  // healthFactor, ltv, etc.
-```
-
-### Fiat (MoonPay)
-```javascript
-const moonpay = new MoonPayProtocol(account, { apiKey: 'pk_...', secretKey: 'sk_...' })
-const { buyUrl } = await moonpay.buy({ cryptoAsset: 'eth', fiatCurrency: 'usd', fiatAmount: 10000n })
-const { sellUrl } = await moonpay.sell({ cryptoAsset: 'eth', fiatCurrency: 'usd', cryptoAmount: 500000000000000000n })
-```
-
-
 ## Common Patterns
 
 ### Fee Estimation Before Send (ALWAYS do this)
@@ -494,7 +293,7 @@ const readOnly = await account.toReadOnlyAccount()
 
 **ALWAYS** fetch the latest version from npm before adding any package to package.json:
 ```bash
-npm view @tetherto/wdk-core version
+npm view @tetherto/wdk version
 npm view @tetherto/wdk-wallet-btc version
 # ... for every @tetherto package
 ```
