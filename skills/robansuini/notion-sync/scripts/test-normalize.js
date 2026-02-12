@@ -20,6 +20,7 @@ const {
   richTextToMarkdown,
   richTextToPlain,
   createDetailedError,
+  stripTokenArg,
 } = require('./notion-utils.js');
 
 let passed = 0;
@@ -480,7 +481,7 @@ console.log('\n📋 createDetailedError');
 
 {
   const err = createDetailedError(401, '{}');
-  assert(err.message.includes('Authentication'), '401: authentication error');
+  assert(err.message.includes('Authentication') || err.message.includes('--token'), '401: authentication error');
 }
 
 {
@@ -507,6 +508,45 @@ console.log('\n📋 createDetailedError');
   const err = createDetailedError(418, 'not json');
   assert(err.message.includes('418'), 'Non-JSON body handled');
 }
+
+// --- stripTokenArg ---
+console.log('\n📋 stripTokenArg');
+
+assertEqual(
+  stripTokenArg(['--token-file', '/path/to/token', 'query']),
+  ['query'],
+  'Strips --token-file and its value'
+);
+
+assertEqual(
+  stripTokenArg(['query', '--limit', '5']),
+  ['query', '--limit', '5'],
+  'No token flags: passes through unchanged'
+);
+
+assertEqual(
+  stripTokenArg([]),
+  [],
+  'Empty array'
+);
+
+assertEqual(
+  stripTokenArg(['--filter', 'page', '--token-file', '~/.notion-token', '--limit', '5']),
+  ['--filter', 'page', '--limit', '5'],
+  'Strips --token-file from middle of args'
+);
+
+assertEqual(
+  stripTokenArg(['--token-stdin', 'query', '--limit', '5']),
+  ['query', '--limit', '5'],
+  'Strips --token-stdin flag (no value)'
+);
+
+assertEqual(
+  stripTokenArg(['--token-stdin', '--token-file', '/tmp/t', 'search']),
+  ['search'],
+  'Strips multiple token flags at once'
+);
 
 // --- Summary ---
 console.log(`\n${'='.repeat(50)}`);

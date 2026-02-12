@@ -10,20 +10,41 @@ license: MIT
 
 Bi-directional sync between markdown files and Notion pages, plus database management utilities for research tracking and project management.
 
+## Upgrading
+
+**From v2.0:** Replace `--token "ntn_..."` with `--token-file`, `--token-stdin`, or `NOTION_API_KEY` env var. Bare `--token` is no longer accepted (credentials should never appear in process listings).
+
+**From v1.x:** See v2.0 changelog for migration details.
+
 ## Requirements
 
 - **Node.js** v18 or later
-- **`NOTION_API_KEY`** environment variable set with your integration token
+- A **Notion integration token** (starts with `ntn_` or `secret_`)
 
 ## Setup
 
 1. Go to https://www.notion.so/my-integrations
 2. Create a new integration (or use an existing one)
-3. Copy the "Internal Integration Token" (starts with `ntn_` or `secret_`)
-4. Make it available as an environment variable:
+3. Copy the "Internal Integration Token"
+4. Pass the token using one of these methods (in order of security):
+
+   **Option A — Token file (recommended):**
    ```bash
-   export NOTION_API_KEY="ntn_your_token_here"
+   echo "ntn_your_token" > ~/.notion-token && chmod 600 ~/.notion-token
+   node scripts/search-notion.js "query" --token-file ~/.notion-token
    ```
+
+   **Option B — Stdin pipe:**
+   ```bash
+   echo "$NOTION_API_KEY" | node scripts/search-notion.js "query" --token-stdin
+   ```
+
+   **Option C — Environment variable:**
+   ```bash
+   export NOTION_API_KEY="ntn_your_token"
+   node scripts/search-notion.js "query"
+   ```
+
 5. Share your Notion pages/databases with the integration:
    - Open the page/database in Notion
    - Click "Share" → "Invite"
@@ -201,17 +222,12 @@ node scripts/notion-to-md.js \
 Monitor Notion pages for edits and compare with local markdown files.
 
 ```bash
-node scripts/watch-notion.js "<page-id>" "<local-markdown-path>"
-
-# Or use environment variables
-export NOTION_WATCH_PAGE_ID="<your-page-id>"
-export NOTION_WATCH_LOCAL_PATH="/path/to/your/draft.md"
-node scripts/watch-notion.js
+node scripts/watch-notion.js --token-file ~/.notion-token "<page-id>" "<local-markdown-path>"
 ```
 
 **Example:**
 ```bash
-node scripts/watch-notion.js \
+node scripts/watch-notion.js --token-file ~/.notion-token \
   "abc123-example-page-id-456def" \
   "projects/newsletter-draft.md"
 ```

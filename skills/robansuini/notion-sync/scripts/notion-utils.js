@@ -4,29 +4,101 @@
  */
 
 const https = require('https');
+const fs = require('fs');
 
 const NOTION_VERSION = '2025-09-03';
 
+// Cached token (resolved once per process)
+let _cachedToken = undefined;
+
 /**
- * Get the Notion API key from environment
+ * Resolve the Notion API token from multiple sources (in priority order):
+ *
+ * 1. --token-file <path>    Read from a file (recommended for automation)
+ * 2. --token-stdin           Read from stdin (recommended for pipes)
+ * 3. NOTION_API_KEY env var  Environment variable fallback
+ *
+ * Credentials are never accepted as bare command-line arguments to avoid
+ * exposure in process listings and shell history.
  */
-function getApiKey() {
-  return process.env.NOTION_API_KEY;
+function resolveToken() {
+  if (_cachedToken !== undefined) return _cachedToken;
+
+  const args = process.argv;
+
+  for (let i = 2; i < args.length; i++) {
+    // --token-file <path>
+    if (args[i] === '--token-file' && args[i + 1]) {
+      try {
+        _cachedToken = fs.readFileSync(args[i + 1], 'utf8').trim();
+        return _cachedToken;
+      } catch (err) {
+        console.error(`Error reading token file "${args[i + 1]}": ${err.message}`);
+        process.exit(1);
+      }
+    }
+    // --token-stdin
+    if (args[i] === '--token-stdin') {
+      try {
+        _cachedToken = fs.readFileSync(0, 'utf8').trim(); // fd 0 = stdin
+        return _cachedToken;
+      } catch (err) {
+        console.error(`Error reading token from stdin: ${err.message}`);
+        process.exit(1);
+      }
+    }
+  }
+
+  // Env var fallback
+  if (process.env.NOTION_API_KEY) {
+    _cachedToken = process.env.NOTION_API_KEY;
+    return _cachedToken;
+  }
+
+  _cachedToken = null;
+  return null;
 }
 
 /**
- * Check if NOTION_API_KEY is set, exit with helpful message if not
+ * Get the Notion API key (resolves from all supported sources)
+ */
+function getApiKey() {
+  return resolveToken();
+}
+
+/**
+ * Check if a Notion API token was provided, exit with helpful message if not
  */
 function checkApiKey() {
   if (!getApiKey()) {
-    console.error('Error: NOTION_API_KEY environment variable not set');
+    console.error('Error: No Notion API token provided');
     console.error('');
-    console.error('Setup:');
-    console.error('  1. Create an integration at https://www.notion.so/my-integrations');
-    console.error('  2. Set the environment variable:');
-    console.error('     export NOTION_API_KEY="ntn_your_token_here"');
+    console.error('Usage (pick one):');
+    console.error('  node scripts/<script>.js --token-file ~/.notion-token [args]');
+    console.error('  echo "$NOTION_API_KEY" | node scripts/<script>.js --token-stdin [args]');
+    console.error('  NOTION_API_KEY=ntn_... node scripts/<script>.js [args]');
+    console.error('');
+    console.error('Credentials are never passed as bare CLI arguments (security best practice).');
+    console.error('Create an integration at https://www.notion.so/my-integrations');
     process.exit(1);
   }
+}
+
+/**
+ * Strip token-related flags from an args array so scripts don't parse them as their own args
+ */
+function stripTokenArg(args) {
+  const result = [];
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--token-file' && i + 1 < args.length) {
+      i++; // skip value
+    } else if (args[i] === '--token-stdin') {
+      // skip flag only (no value)
+    } else {
+      result.push(args[i]);
+    }
+  }
+  return result;
 }
 
 /**
@@ -35,7 +107,7 @@ function checkApiKey() {
 function notionRequest(path, method, data = null) {
   const apiKey = getApiKey();
   if (!apiKey) {
-    return Promise.reject(new Error('NOTION_API_KEY environment variable not set'));
+    return Promise.reject(new Error('No Notion API token provided. Pass --token to the script.'));
   }
 
   return new Promise((resolve, reject) => {
@@ -103,7 +175,7 @@ function createDetailedError(statusCode, body) {
       return new Error(`Bad request: ${errorMessage}`);
 
     case 401:
-      return new Error('Authentication failed. Check your NOTION_API_KEY environment variable.');
+      return new Error('Authentication failed. Check that your --token value is valid.');
 
     case 404:
       if (errorCode === 'object_not_found') {
@@ -530,6 +602,7 @@ module.exports = {
   NOTION_VERSION,
   getApiKey,
   checkApiKey,
+  stripTokenArg,
 
   // HTTP
   notionRequest,
