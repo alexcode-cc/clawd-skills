@@ -2,14 +2,14 @@
 name: announcer
 description: "Announce text throughout the house via AirPlay speakers using Airfoil + ElevenLabs TTS."
 summary: "House-wide TTS announcements via AirPlay speakers, Airfoil, and ElevenLabs."
-version: 1.1.2
+version: 1.1.3
 homepage: https://github.com/odrobnik/announcer-skill
 metadata:
   {
     "openclaw":
       {
         "emoji": "📢",
-        "requires": { "bins": ["python3", "ffmpeg"], "apps": ["Airfoil"], "env": ["ELEVENLABS_API_KEY"], "skills": ["elevenlabs"] },
+        "requires": { "bins": ["python3", "ffmpeg"], "apps": ["Airfoil"], "env": ["ELEVENLABS_API_KEY"], "skills": ["elevenlabs"], "platform": "macos" },
       },
   }
 ---
