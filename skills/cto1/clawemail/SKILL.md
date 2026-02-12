@@ -1,6 +1,6 @@
 ---
-name: claw
-description: "Google Workspace via ClawEmail — Gmail, Drive, Docs, Sheets, Slides, Calendar, Forms. Use PROACTIVELY when the user asks to send email, create documents, manage files, schedule events, or work with any Google service."
+name: clawemail
+description: "Google Workspace via ClawEmail.com service — Gmail, Drive, Docs, Sheets, Slides, Calendar, Forms. Use PROACTIVELY when the user asks to send email, create documents, manage files, schedule events, or work with any Google service."
 metadata: {"openclaw":{"emoji":"🦞","requires":{"env":["CLAWEMAIL_CREDENTIALS"]},"primaryEnv":"CLAWEMAIL_CREDENTIALS"}}
 ---
 
@@ -20,7 +20,7 @@ Get credentials at https://clawemail.com — sign up, then visit `/connect/YOUR_
 All API calls need a Bearer token. Use the helper script to refresh and cache it:
 
 ```bash
-TOKEN=$(~/.openclaw/skills/claw/scripts/token.sh)
+TOKEN=$(~/.openclaw/skills/clawemail/scripts/token.sh)
 ```
 
 The script caches tokens for 50 minutes. Always assign to `TOKEN` before making API calls.
@@ -32,7 +32,7 @@ The script caches tokens for 50 minutes. Always assign to `TOKEN` before making 
 ### Search emails
 
 ```bash
-TOKEN=$(~/.openclaw/skills/claw/scripts/token.sh)
+TOKEN=$(~/.openclaw/skills/clawemail/scripts/token.sh)
 curl -s -H "Authorization: Bearer $TOKEN" \
   "https://gmail.googleapis.com/gmail/v1/users/me/messages?q=newer_than:7d&maxResults=10" | python3 -m json.tool
 ```
@@ -72,7 +72,7 @@ print(get_body(m['payload']))
 ### Send an email
 
 ```bash
-TOKEN=$(~/.openclaw/skills/claw/scripts/token.sh)
+TOKEN=$(~/.openclaw/skills/clawemail/scripts/token.sh)
 python3 -c "
 import base64,json
 raw = base64.urlsafe_b64encode(
@@ -129,7 +129,7 @@ curl -s -X POST -H "Authorization: Bearer $TOKEN" \
 ### List files
 
 ```bash
-TOKEN=$(~/.openclaw/skills/claw/scripts/token.sh)
+TOKEN=$(~/.openclaw/skills/clawemail/scripts/token.sh)
 curl -s -H "Authorization: Bearer $TOKEN" \
   "https://www.googleapis.com/drive/v3/files?pageSize=20&fields=files(id,name,mimeType,modifiedTime,size)&orderBy=modifiedTime desc" | python3 -m json.tool
 ```
@@ -211,7 +211,7 @@ curl -s -X DELETE -H "Authorization: Bearer $TOKEN" \
 ### Create a document
 
 ```bash
-TOKEN=$(~/.openclaw/skills/claw/scripts/token.sh)
+TOKEN=$(~/.openclaw/skills/clawemail/scripts/token.sh)
 curl -s -X POST -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"title":"My Document"}' \
@@ -277,7 +277,7 @@ Heading styles: `HEADING_1` through `HEADING_6`, `TITLE`, `SUBTITLE`, `NORMAL_TE
 ### Create a spreadsheet
 
 ```bash
-TOKEN=$(~/.openclaw/skills/claw/scripts/token.sh)
+TOKEN=$(~/.openclaw/skills/clawemail/scripts/token.sh)
 curl -s -X POST -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"properties":{"title":"My Spreadsheet"}}' \
@@ -330,7 +330,7 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 ### Create a presentation
 
 ```bash
-TOKEN=$(~/.openclaw/skills/claw/scripts/token.sh)
+TOKEN=$(~/.openclaw/skills/clawemail/scripts/token.sh)
 curl -s -X POST -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"title":"My Presentation"}' \
@@ -382,7 +382,7 @@ curl -s -X POST -H "Authorization: Bearer $TOKEN" \
 ### List upcoming events
 
 ```bash
-TOKEN=$(~/.openclaw/skills/claw/scripts/token.sh)
+TOKEN=$(~/.openclaw/skills/clawemail/scripts/token.sh)
 curl -s -H "Authorization: Bearer $TOKEN" \
   "https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=$(date -u +%Y-%m-%dT%H:%M:%SZ)&maxResults=10&singleEvents=true&orderBy=startTime" | python3 -m json.tool
 ```
@@ -439,7 +439,7 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 ### Create a form
 
 ```bash
-TOKEN=$(~/.openclaw/skills/claw/scripts/token.sh)
+TOKEN=$(~/.openclaw/skills/clawemail/scripts/token.sh)
 curl -s -X POST -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"info":{"title":"Feedback Form"}}' \
@@ -466,7 +466,7 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 
 ## Tips
 
-- **Always refresh token first:** Start every sequence with `TOKEN=$(~/.openclaw/skills/claw/scripts/token.sh)`
+- **Always refresh token first:** Start every sequence with `TOKEN=$(~/.openclaw/skills/clawemail/scripts/token.sh)`
 - **JSON output:** Pipe through `python3 -m json.tool` for readable output, or `| python3 -c "import json,sys;..."` for extraction
 - **Pagination:** Most list endpoints return `nextPageToken`. Pass it as `?pageToken=TOKEN` for the next page
 - **Batch operations:** Docs, Sheets, and Slides support `batchUpdate` — send multiple operations in one request
