@@ -24,7 +24,7 @@ This skill turns an aligned Champion pack (or any prompt/workflow pack) into a *
 Read the full process doc: `references/process.md`.
 
 ## Commands (scripts)
-All scripts are local and never print secrets.
+This skill wraps local tools in `tools/lygo_mint` and is designed to operate on non-secret prompt packs. It does not read env vars or network in the code shown, but **you should review the `tools/lygo_mint/*.py` files in your own workspace before using it on sensitive data.**
 
 ### Mint + verify a pack file
 - `python scripts/mint_pack_local.py --pack reference/CHAMPION_PACK_LYRA_V1.md --version 2026-02-07.v1`
