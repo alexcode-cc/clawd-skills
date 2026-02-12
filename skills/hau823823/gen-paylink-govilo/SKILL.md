@@ -1,11 +1,15 @@
 ---
-name: govilo-to-go
+name: gen-paylink-govilo
 description: >
   Upload files to Govilo and generate unlock links via Bot API. Use when:
   (1) Creating a Govilo unlock link from a ZIP, folder, or individual files,
   (2) Automating file upload to Govilo R2 storage with presigned URLs,
   (3) Managing Govilo Bot API interactions (presign → upload → create item).
   Requires GOVILO_API_KEY env var. If missing, guides user to register at https://govilo.xyz/.
+metadata:
+  author: hau823823@gmail.com
+  version: "1.0"
+  {"openclaw":{"requires":{"env":["GOVILO_API_KEY","SELLER_ADDRESS"]},"primaryEnv":"GOVILO_API_KEY","homepage":"https://github.com/hau823823/gen-paylink-govilo"}}
 ---
 
 # Govilo To Go
@@ -20,14 +24,23 @@ Always ask the user for these values before executing the CLI — never guess or
 
 ## CLI Command
 
+Run from this skill's base directory. Use a **dedicated** env file containing only `GOVILO_API_KEY` (and optionally `SELLER_ADDRESS`). Never point `--env-file` at a project `.env` that contains unrelated secrets.
+
 ```bash
-cd skills/govilo-to-go
-uv run --env-file ../../.env create-link \
+cd <skill_base_directory>
+uv run --env-file <path_to>/.env.govilo create-link \
   --input <path>         \
   --title "Product Name" \
   --price "5.00"         \
   --address "0x..."      \
   --description "optional"
+```
+
+If no `.env.govilo` exists, create one before running:
+
+```
+GOVILO_API_KEY=sk_live_xxx
+SELLER_ADDRESS=0x...
 ```
 
 `--input` accepts ZIP file, folder, or individual files (repeatable). Non-ZIP inputs are auto-packaged.
@@ -36,13 +49,13 @@ All output is JSON `{"ok": true/false, ...}` with exit code 1 on failure.
 
 ## Parameters
 
-| Param | Required | Source | Description |
-|-------|----------|--------|-------------|
-| `--input` | Yes | CLI (repeatable) | ZIP, folder, or file paths |
-| `--title` | Yes | CLI | Product title |
-| `--price` | Yes | CLI | Price in USDC |
-| `--address` | No | CLI > `SELLER_ADDRESS` env | Seller EVM wallet |
-| `--description` | No | CLI | Product description |
+| Param           | Required | Source                     | Description                |
+| --------------- | -------- | -------------------------- | -------------------------- |
+| `--input`       | Yes      | CLI (repeatable)           | ZIP, folder, or file paths |
+| `--title`       | Yes      | CLI                        | Product title              |
+| `--price`       | Yes      | CLI                        | Price in USDC              |
+| `--address`     | No       | CLI > `SELLER_ADDRESS` env | Seller EVM wallet          |
+| `--description` | No       | CLI                        | Product description        |
 
 ## Workflow
 
@@ -61,10 +74,12 @@ All output is JSON `{"ok": true/false, ...}` with exit code 1 on failure.
 
 Two values are required:
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `GOVILO_API_KEY` | Yes | Bot API key from https://govilo.xyz/ |
-| `SELLER_ADDRESS` | Yes* | EVM wallet address on **Base chain** |
+| Variable         | Required | Description                              |
+| ---------------- | -------- | ---------------------------------------- |
+| `GOVILO_API_KEY` | Yes      | Bot API key from [govilo.xyz][]          |
+| `SELLER_ADDRESS` | Yes*     | EVM wallet address on **Base chain**     |
+
+[govilo.xyz]: https://govilo.xyz/
 
 *`SELLER_ADDRESS` can also be passed via `--address` CLI parameter.
 

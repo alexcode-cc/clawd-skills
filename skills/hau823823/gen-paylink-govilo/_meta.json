@@ -1,11 +1,17 @@
 {
   "owner": "hau823823",
   "slug": "gen-paylink-govilo",
-  "displayName": "Gen Paylink By Govilo",
+  "displayName": "Gen Paylink Govilo",
   "latest": {
-    "version": "0.1.0",
-    "publishedAt": 1770880389660,
-    "commit": "https://github.com/openclaw/skills/commit/b4788c6bc4b55128ef71ae04bc536eb72ddbe8dd"
+    "version": "0.1.2",
+    "publishedAt": 1770901818475,
+    "commit": null
   },
-  "history": []
+  "history": [
+    {
+      "version": "0.1.0",
+      "publishedAt": 1770880389660,
+      "commit": "https://github.com/openclaw/skills/commit/b4788c6bc4b55128ef71ae04bc536eb72ddbe8dd"
+    }
+  ]
 }
