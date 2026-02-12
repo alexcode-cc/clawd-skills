@@ -54,16 +54,26 @@ if [ -z "$CHAT_ID" ] || [ -z "$MESSAGE_ID" ] || [ -z "$SENDER" ]; then
   exit 1
 fi
 
+# ── validate numeric arguments ──────────────────────────────────────
+if ! printf '%s' "$CHAT_ID" | grep -qE '^-?[0-9]+$'; then
+  echo "ERROR: chat_id must be an integer, got: '$CHAT_ID'" >&2
+  exit 1
+fi
+if ! printf '%s' "$MESSAGE_ID" | grep -qE '^[0-9]+$'; then
+  echo "ERROR: message_id must be a positive integer, got: '$MESSAGE_ID'" >&2
+  exit 1
+fi
+
 # ── strip leading/trailing whitespace from text ─────────────────────
-MSG=$(echo "$RAW_TEXT" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+MSG=$(printf '%s' "$RAW_TEXT" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
 
 # ── determine title ─────────────────────────────────────────────────
 if [ -n "$TITLE_ARG" ]; then
   TITLE="$TITLE_ARG"
 elif [ -n "$MSG" ]; then
   # Fallback: first ~50 chars at a word boundary
-  TITLE=$(echo "$MSG" | head -1 | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | cut -c1-50 | sed 's/[[:space:]][^[:space:]]*$//')
-  FIRST_LINE=$(echo "$MSG" | head -1)
+  FIRST_LINE=$(printf '%s' "$MSG" | head -1 | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+  TITLE=$(printf '%s' "$FIRST_LINE" | cut -c1-50 | sed 's/[[:space:]][^[:space:]]*$//')
   if [ "${#FIRST_LINE}" -gt 50 ]; then
     TITLE="${TITLE}…"
   fi
@@ -72,7 +82,7 @@ else
 fi
 
 # Telegram caps topic names at 128 chars
-TITLE=$(echo "$TITLE" | cut -c1-128)
+TITLE=$(printf '%s' "$TITLE" | cut -c1-128)
 
 # ── create forum topic ──────────────────────────────────────────────
 CREATE_RESULT=$(curl -s "$API/createForumTopic" \
@@ -122,8 +132,9 @@ fi
 
 # ── build topic link ────────────────────────────────────────────────
 # Strip -100 prefix from chat_id for the t.me/c/ link format
-STRIPPED_ID=$(echo "$CHAT_ID" | sed 's/^-100//')
+STRIPPED_ID=$(printf '%s' "$CHAT_ID" | sed 's/^-100//')
 LINK="https://t.me/c/${STRIPPED_ID}/${TOPIC_ID}"
 
-# ── output ──────────────────────────────────────────────────────────
-echo "{\"topic_id\": ${TOPIC_ID}, \"title\": \"${TITLE}\", \"link\": \"${LINK}\"}"
+# ── output (use jq for safe JSON encoding) ──────────────────────────
+jq -n --argjson tid "$TOPIC_ID" --arg title "$TITLE" --arg link "$LINK" \
+  '{"topic_id": $tid, "title": $title, "link": $link}'

@@ -3,11 +3,16 @@
   "slug": "telegram-auto-topic",
   "displayName": "Telegram Auto Topic",
   "latest": {
-    "version": "0.1.4",
-    "publishedAt": 1770147527526,
-    "commit": "https://github.com/clawdbot/skills/commit/2a1ffd7531a6db296b82f5d44d082e4760f764cf"
+    "version": "0.1.8",
+    "publishedAt": 1770900736757,
+    "commit": null
   },
   "history": [
+    {
+      "version": "0.1.4",
+      "publishedAt": 1770147527526,
+      "commit": "https://github.com/clawdbot/skills/commit/2a1ffd7531a6db296b82f5d44d082e4760f764cf"
+    },
     {
       "version": "0.1.0",
       "publishedAt": 1770127181687,

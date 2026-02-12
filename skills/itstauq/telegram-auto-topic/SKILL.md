@@ -5,6 +5,16 @@ description: >
   auto-create a new topic from it. A title is generated automatically from
   the message content.
   Github: https://github.com/itstauq/telegram-auto-topic
+metadata:
+  openclaw:
+    requires:
+      config:
+        - ~/.openclaw/openclaw.json
+      env:
+        - OPENCLAW_CONFIG
+      bins:
+        - curl
+        - jq
 ---
 
 # Telegram Auto-Topic
