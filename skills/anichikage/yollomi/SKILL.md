@@ -1,6 +1,6 @@
 ---
 name: yollomi-ai-api
-description: Generate AI images and videos using Yollomi API. Use when the user wants to create images from text, remove image backgrounds, or generate AI videos.
+description: AI image generator skill (image, image generation). Multi-model image generator for Yollomi to generate AI images via one unified API endpoint. Requires YOLLOMI_API_KEY.
 metadata: {"openclaw":{"requires":{"env":["YOLLOMI_API_KEY"]}}}
 ---
 

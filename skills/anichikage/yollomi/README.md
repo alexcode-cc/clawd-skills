@@ -1,6 +1,8 @@
-# Yollomi (OpenClaw Skill)
+# Yollomi AI Image Generator (All Models)
 
-Use Yollomi API to generate images.
+An AI image generator skill for OpenClaw. Image generation for text-to-image and image-to-image, across many AI image models via one unified Yollomi API.
+
+Keywords: image, ai image, image generator, image generation, text-to-image, image-to-image, multimodel.
 
 > Note: Video generation is temporarily disabled in this build.
 
