@@ -2,25 +2,27 @@
 name: honcho-setup
 description: >
   Install the @honcho-ai/openclaw-honcho plugin and migrate legacy file-based
-  memory (USER.md, MEMORY.md, IDENTITY.md, memory/, canvas/) to Honcho. Works
-  with managed Honcho (API key) or self-hosted local instances. Archives
-  originals with user confirmation, updates SOUL.md/AGENTS.md/BOOTSTRAP.md to
-  reference Honcho tools. Uploaded content is sent to api.honcho.dev (managed)
-  or your self-hosted Honcho instance.
+  memory to Honcho. **UPLOADS WORKSPACE CONTENT TO EXTERNAL API**: Sends
+  USER.md, MEMORY.md, IDENTITY.md, memory/, canvas/, SOUL.md, AGENTS.md,
+  BOOTSTRAP.md, TOOLS.md, and HEARTBEAT.md contents to api.honcho.dev
+  (managed, default) or your self-hosted HONCHO_BASE_URL. Requires user
+  confirmation before uploading. Archives originals locally with user
+  confirmation. Updates workspace docs to reference Honcho tools. Works with
+  managed Honcho (requires API key) or self-hosted local instances (no key
+  needed).
 metadata:
   openclaw:
     emoji: "🧠"
-    required_env:
-      - name: HONCHO_API_KEY
-        description: "API key for managed Honcho (https://app.honcho.dev). Not required for self-hosted instances."
-        required: false
+    required_env: []  # Nothing is strictly required - self-hosted mode works without API key
     optional_env:
+      - name: HONCHO_API_KEY
+        description: "REQUIRED for managed Honcho (https://app.honcho.dev). NOT required for self-hosted instances. This skill reads this value from environment variables or ~/.openclaw/.env file."
       - name: HONCHO_BASE_URL
-        description: "Base URL for a self-hosted Honcho instance (e.g. http://localhost:8000). Defaults to https://api.honcho.dev."
+        description: "Base URL for a self-hosted Honcho instance (e.g. http://localhost:8000). Defaults to https://api.honcho.dev (managed)."
       - name: HONCHO_WORKSPACE_ID
         description: "Honcho workspace ID. Defaults to 'openclaw'."
       - name: WORKSPACE_ROOT
-        description: "Path to the OpenClaw workspace root. Auto-detected if not set."
+        description: "Path to the OpenClaw workspace root. Auto-detected from ~/.openclaw/openclaw.json if not set."
     required_binaries:
       - node
       - npm
@@ -30,9 +32,24 @@ metadata:
       - docker-compose
     writes_to_disk: true
     archive_directory: "{workspace_root}/archive/"
+    reads_sensitive_files:
+      - "~/.openclaw/.env - reads ONLY the HONCHO_API_KEY value, no other environment variables are accessed"
+      - "~/.openclaw/openclaw.json - reads workspace path configuration only"
     network_access:
-      - "api.honcho.dev (managed mode)"
+      - "api.honcho.dev (managed mode, default)"
       - "User-configured HONCHO_BASE_URL (self-hosted mode)"
+    data_handling:
+      uploads_to_external: true
+      requires_user_confirmation: true
+      external_destinations:
+        - "api.honcho.dev (managed Honcho, default)"
+        - "User-configured HONCHO_BASE_URL (self-hosted mode)"
+      uploaded_content:
+        - "USER.md, MEMORY.md, IDENTITY.md (user profile/memory files)"
+        - "All files under memory/ directory (structured memory)"
+        - "All files under canvas/ directory (working memory)"
+        - "SOUL.md, AGENTS.md, BOOTSTRAP.md, TOOLS.md, HEARTBEAT.md (agent configuration)"
+      data_destination_purpose: "Migrates file-based memory system to Honcho API for AI agent memory/personalization"
   homepage: "https://honcho.dev"
   source: "https://github.com/plastic-labs/honcho"
 ---
@@ -41,9 +58,11 @@ metadata:
 
 Install the Honcho plugin and migrate legacy workspace memory files to Honcho.
 
-> **This skill modifies workspace files.** It will ask for confirmation before archiving or deleting any files. If the Honcho upload fails or is skipped, no files are moved or removed.
+> ⚠️ **DATA UPLOAD WARNING**: This skill uploads the contents of your workspace memory files (USER.md, MEMORY.md, IDENTITY.md, memory/, canvas/, SOUL.md, AGENTS.md, BOOTSTRAP.md, TOOLS.md, HEARTBEAT.md) to an external API. By default, data is sent to `api.honcho.dev` (managed Honcho cloud service). For self-hosted instances, data is sent to your configured `HONCHO_BASE_URL`. You will be asked for explicit confirmation before any upload occurs, and you will see exactly which files will be uploaded and where they will be sent.
 
-> **Network access:** This skill uploads workspace content (memory files, canvas files) to your Honcho instance. For managed Honcho this means `api.honcho.dev`; for self-hosted instances this means your configured `HONCHO_BASE_URL`.
+> **This skill modifies workspace files.** It will ask for confirmation before archiving or deleting any files. If the Honcho upload fails or is skipped, no files are moved or removed. All files are backed up to `{workspace_root}/archive/` before any deletion.
+
+> **Sensitive file access:** This skill reads `~/.openclaw/.env` to check for `HONCHO_API_KEY` only (required for managed Honcho). No other environment variables are read from this file. It also reads `~/.openclaw/openclaw.json` to determine workspace location.
 ## Step 1: Install and Enable the Plugin
 
 Install the Honcho plugin using the OpenClaw plugin system. **Use this exact command — do not install `@honcho-ai/sdk` directly or use `npm install` in the workspace.**
@@ -74,9 +93,9 @@ Honcho can run as a **managed cloud service** or as a **self-hosted local instan
 
 ### Option A: Managed Honcho (default)
 
-Confirm that `HONCHO_API_KEY` is set. Check the environment and `~/.openclaw/.env`.
+Confirm that `HONCHO_API_KEY` is set. Check the environment variables first. If not found, read ONLY the `HONCHO_API_KEY` value from `~/.openclaw/.env` if that file exists. **Do not read or access any other environment variables from the .env file** — only extract the HONCHO_API_KEY value needed for this migration.
 
-If the key is **not** set, stop and tell the user:
+If the key is **not** set in either location, stop and tell the user:
 
 > `HONCHO_API_KEY` is not set. Add it to your environment or `~/.openclaw/.env`, then re-run this skill. You can get a key at https://app.honcho.dev
 
@@ -128,9 +147,24 @@ Scan the workspace root for legacy memory files. The workspace root is determine
 
 Files inside `memory/` and `canvas/` are treated as user/owner content.
 
-Report what was found to the user before proceeding. Ask for confirmation to continue.
+Report what was found to the user before proceeding. **IMPORTANT: You MUST ask for explicit confirmation before proceeding.** 
 
-When asking for confirmation, briefly state what will happen next: **uploading** those files to Honcho via the messages upload endpoint (user/owner and agent/self), then (after further confirmations) **archiving** legacy files and **updating** workspace docs. This way the user knows exactly what they are agreeing to.
+When asking for confirmation, provide this exact information to the user:
+
+> **Found legacy memory files ready for migration:**
+> - [List each file found with its size]
+>
+> **What will happen next if you confirm:**
+> 1. **Upload**: All file contents will be uploaded to [api.honcho.dev OR your self-hosted URL]
+> 2. **Archive**: Files will be copied to {workspace_root}/archive/ for backup
+> 3. **Remove**: Legacy-only files (USER.md, MEMORY.md, IDENTITY.md, HEARTBEAT.md, memory/, canvas/) will be removed after successful archive
+> 4. **Update**: Workspace docs (SOUL.md, AGENTS.md, BOOTSTRAP.md) will be updated to use Honcho tools
+>
+> **Data destination**: Your file contents will be sent to [show actual URL based on HONCHO_BASE_URL config]
+>
+> **Do you want to proceed with this migration?**
+
+Do not proceed to Step 4 without explicit user confirmation.
 
 ## Step 4: Upload to Honcho
 
@@ -201,12 +235,16 @@ for (const { path: filePath, peer } of filesToUpload) {
 
 ## Step 5: Archive Legacy Files
 
-**Ask the user for confirmation before archiving.** The default archive location is `{workspace_root}/archive/`. The user may choose a different directory.
+**CRITICAL: Ask the user for explicit confirmation before archiving.** The default archive location is `{workspace_root}/archive/`. The user may choose a different directory.
+
+**Safety guarantee: No file will ever be deleted without a backup copy existing in the archive directory first.**
 
 For each detected file:
 
 1. Create the archive directory if it does not exist.
-2. Copy the file into the archive directory. If a file with the same name already exists there, append a timestamp (e.g., `USER.md-2026-02-10T22-55-12`).
+2. Copy the file into the archive directory. **Verify the copy succeeded before proceeding.**
+3. If a file with the same name already exists in archive, append a timestamp (e.g., `USER.md-2026-02-10T22-55-12`).
+4. Only after successful copy verification, apply the removal rules below.
 
 Then apply these rules:
 
@@ -253,3 +291,51 @@ Summarize what happened:
 - That Honcho is now the memory system — no more manual file management needed
 
 Provide a link to the Honcho docs for reference: https://docs.honcho.dev
+
+---
+
+## Security & Privacy Disclosure
+
+This skill has been designed with transparency and safety as priorities. Below is a complete disclosure of what this skill does:
+
+### Data Upload
+- **What is uploaded**: Contents of USER.md, MEMORY.md, IDENTITY.md, all files under memory/, all files under canvas/, SOUL.md, AGENTS.md, BOOTSTRAP.md, TOOLS.md, HEARTBEAT.md
+- **Where it goes**: By default to `api.honcho.dev` (managed Honcho cloud service). For self-hosted instances, to your configured `HONCHO_BASE_URL`
+- **User control**: Explicit confirmation required before any upload. You will see the exact list of files and the destination URL
+- **Purpose**: Migrating file-based memory system to Honcho API for AI agent personalization and memory
+
+### Sensitive File Access
+- **`~/.openclaw/.env`**: This skill reads ONLY the `HONCHO_API_KEY` value from this file (if present). No other environment variables are read or accessed
+- **`~/.openclaw/openclaw.json`**: This skill reads workspace path configuration only (`agent.workspace` or `agents.defaults.workspace` fields)
+- **Workspace files**: All legacy memory files listed above are read for upload
+
+### File Modifications
+- **Archives**: Creates `{workspace_root}/archive/` and copies all files there before any deletion
+- **Deletions**: USER.md, MEMORY.md, IDENTITY.md, HEARTBEAT.md, memory/, canvas/ are deleted ONLY after successful archive copy verification
+- **Updates**: SOUL.md, AGENTS.md, BOOTSTRAP.md are updated to reference Honcho tools (preserved in archive first)
+- **Safety**: No file is ever deleted without a verified backup copy existing first
+
+### Credentials
+- **HONCHO_API_KEY**: Required only for managed Honcho (api.honcho.dev). Not required for self-hosted instances
+- **No other credentials**: This skill does not access, read, or transmit any other credentials or secrets
+
+### Network Access
+- **Managed mode**: Connects to `api.honcho.dev` (Honcho cloud service)
+- **Self-hosted mode**: Connects to your configured `HONCHO_BASE_URL` (e.g., `http://localhost:8000`)
+- **Protocol**: All uploads use the Honcho SDK (`@honcho-ai/sdk`) via the messages upload endpoint
+
+### User Control
+- **Step 3**: Explicit confirmation required before any file upload (shows file list and destination URL)
+- **Step 5**: Explicit confirmation required before any file archiving/deletion
+- **Step 6**: Workspace doc updates preserve custom content
+- **Failure handling**: If upload fails, no files are archived or deleted
+
+### Data Retention
+- **Local backups**: All original files are preserved in `{workspace_root}/archive/` indefinitely
+- **Remote storage**: Uploaded data is stored according to Honcho's data retention policy (see https://honcho.dev/privacy)
+- **Self-hosted control**: If using self-hosted Honcho, you control all data retention
+
+### Open Source
+- **Honcho SDK**: Open source at https://github.com/plastic-labs/honcho
+- **Plugin code**: Available at `~/.openclaw/extensions/openclaw-honcho` after installation
+- **This skill**: You are reading the complete skill instructions - there is no hidden behavior
