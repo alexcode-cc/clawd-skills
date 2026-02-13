@@ -3,9 +3,15 @@
   "slug": "alicloud-ai-translation-anytrans",
   "displayName": "Alicloud Ai Translation Anytrans",
   "latest": {
-    "version": "1.0.1",
-    "publishedAt": 1770768625702,
-    "commit": "https://github.com/openclaw/skills/commit/76e2a7d0880855b6a98f36d63c378b5d117b9df6"
+    "version": "1.0.2",
+    "publishedAt": 1770973191234,
+    "commit": null
   },
-  "history": []
+  "history": [
+    {
+      "version": "1.0.1",
+      "publishedAt": 1770768625702,
+      "commit": "https://github.com/openclaw/skills/commit/76e2a7d0880855b6a98f36d63c378b5d117b9df6"
+    }
+  ]
 }
