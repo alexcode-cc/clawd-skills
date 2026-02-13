@@ -10,13 +10,12 @@ Surface what's worth reading from RSS feeds. Requires `feed` CLI (`brew install 
 
 ## Workflow
 
+0. **Bootstrap** — Run `feed get stats`. If 0 feeds, import the starter set: `feed import https://github.com/odysseus0/feed/raw/main/hn-popular-blogs-2025.opml` (92 curated tech blogs). Ask the user if they want to add their own feeds too.
 1. **Fetch** — `feed fetch` to pull latest entries.
 2. **Scan** — `feed get entries --limit 50` for recent unread (title, feed, date, summary).
 3. **Triage** — Pick 5-10 high-signal posts. Prioritize: AI progress, systems engineering, developer tools, anything surprising or contrarian.
 4. **Read** — `feed get entry <id>` for each pick (full post as Markdown).
 5. **Synthesize** — For each post: title, source, 2-3 sentence summary of why it matters. Group by theme if natural clusters emerge.
-6. **Mark read** — `feed update entries --read <id1> <id2> ...` to mark triaged entries as read.
-
 ## Commands
 
 ```

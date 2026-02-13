@@ -3,9 +3,15 @@
   "slug": "rss-digest",
   "displayName": "RSS Digest",
   "latest": {
-    "version": "1.0.1",
-    "publishedAt": 1770969485324,
-    "commit": "https://github.com/openclaw/skills/commit/e527e5c1c5beac686cb52f8cfd8685a04b1cbcfb"
+    "version": "1.2.0",
+    "publishedAt": 1771018474005,
+    "commit": null
   },
-  "history": []
+  "history": [
+    {
+      "version": "1.0.1",
+      "publishedAt": 1770969485324,
+      "commit": "https://github.com/openclaw/skills/commit/e527e5c1c5beac686cb52f8cfd8685a04b1cbcfb"
+    }
+  ]
 }
