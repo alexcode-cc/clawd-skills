@@ -35,6 +35,13 @@ if (!slug) {
   process.exit(1);
 }
 
+// Input validation: slugs should only contain word characters, hyphens, dots, and percent-encoded sequences
+slug = slug.trim();
+if (!/^[\w\-.%]+$/.test(slug) || slug.length > 200) {
+  console.error('Error: Invalid slug. Use alphanumeric characters, underscores, hyphens only (max 200 chars).');
+  process.exit(1);
+}
+
 function htmlToMarkdown(html) {
   // Simple HTML to Markdown converter
   let md = html;

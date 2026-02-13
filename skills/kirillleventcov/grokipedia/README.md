@@ -5,8 +5,8 @@ Search and fetch articles from [Grokipedia.com](https://grokipedia.com) - xAI's 
 ## Installation
 
 ```bash
-cd ~/.openclaw/workspace/grokipedia-parser
-bun install
+cd ~/.openclaw/workspace/skills/Grokipedia
+bun install --production
 ```
 
 ## Usage

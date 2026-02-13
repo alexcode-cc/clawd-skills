@@ -32,6 +32,13 @@ if (!query) {
   process.exit(1);
 }
 
+// Input validation: strip control characters, enforce reasonable length
+query = query.replace(/[\x00-\x1f\x7f]/g, '').trim();
+if (query.length === 0 || query.length > 200) {
+  console.error('Error: Query must be 1-200 characters (no control characters).');
+  process.exit(1);
+}
+
 async function search(query, limit) {
   const url = new URL('https://grokipedia.com/api/typeahead');
   url.searchParams.set('query', query);

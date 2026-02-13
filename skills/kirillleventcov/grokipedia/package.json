@@ -1,6 +1,6 @@
 {
   "name": "grokipedia-parser",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Search and fetch articles from Grokipedia.com — xAI's AI-generated encyclopedia. Returns clean markdown for LLM consumption.",
   "type": "module",
   "homepage": "https://github.com/kirillleventcov/grokipedia-parser",
@@ -25,7 +25,7 @@
   "openclaw": {
     "summary": "Search and fetch articles from Grokipedia.com (xAI's AI-generated encyclopedia). Read-only, no credentials needed.",
     "requiredBinaries": ["node"],
-    "install": "npm install --production"
+    "install": "bun install --production"
   },
   "dependencies": {
     "jsdom": "^24.0.0",

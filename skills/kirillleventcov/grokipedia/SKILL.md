@@ -11,22 +11,24 @@ Search and fetch articles from [Grokipedia.com](https://grokipedia.com) — xAI'
 
 ## Requirements
 
-- **Node.js** (v18+) — used to run the search and fetch scripts
-- **npm dependencies** — `jsdom` and `@mozilla/readability` (installed via `npm install`)
+- **Node.js** (v18+) / **Bun** — used to run the search and fetch scripts
+- **Dependencies** — `jsdom` and `@mozilla/readability` (installed via `bun install`)
 
 ## Install
 
 ```bash
-cd ~/.openclaw/workspace/grokipedia-parser
-npm install --production
+cd ~/.openclaw/workspace/skills/Grokipedia
+bun install --production
 ```
+
+> **Note:** Installation creates a `node_modules/` directory in the skill folder. The scripts themselves only output to stdout at runtime.
 
 ## Scripts
 
 ### Search Articles
 
 ```bash
-node ~/.openclaw/workspace/grokipedia-parser/scripts/search.mjs "query" [--limit N]
+node ~/.openclaw/workspace/skills/Grokipedia/scripts/search.mjs "query" [--limit N]
 ```
 
 **Parameters:**
@@ -37,13 +39,13 @@ node ~/.openclaw/workspace/grokipedia-parser/scripts/search.mjs "query" [--limit
 
 **Example:**
 ```bash
-node ~/.openclaw/workspace/grokipedia-parser/scripts/search.mjs "artificial intelligence" --limit 5
+node ~/.openclaw/workspace/skills/Grokipedia/scripts/search.mjs "artificial intelligence" --limit 5
 ```
 
 ### Fetch Article
 
 ```bash
-node ~/.openclaw/workspace/grokipedia-parser/scripts/fetch.mjs "Article_Slug"
+node ~/.openclaw/workspace/skills/Grokipedia/scripts/fetch.mjs "Article_Slug"
 ```
 
 **Parameters:**
@@ -53,15 +55,15 @@ node ~/.openclaw/workspace/grokipedia-parser/scripts/fetch.mjs "Article_Slug"
 
 **Example:**
 ```bash
-node ~/.openclaw/workspace/grokipedia-parser/scripts/fetch.mjs "Helsinki"
-node ~/.openclaw/workspace/grokipedia-parser/scripts/fetch.mjs "Artificial_intelligence"
+node ~/.openclaw/workspace/skills/Grokipedia/scripts/fetch.mjs "Helsinki"
+node ~/.openclaw/workspace/skills/Grokipedia/scripts/fetch.mjs "Artificial_intelligence"
 ```
 
 ## What This Skill Does
 
 - **Network access:** Fetches from `grokipedia.com` only (search API + article pages)
 - **No credentials:** Public read-only access, no API keys or tokens needed
-- **No file writes:** Only outputs to stdout (JSON for search, markdown for articles)
+- **No runtime file writes:** Only outputs to stdout (JSON for search, markdown for articles). Install step creates `node_modules/` in the skill directory.
 - **No persistence:** No background processes, no cron, no elevated privileges
 - **Dependencies:** `jsdom` (DOM parsing) and `@mozilla/readability` (article extraction)
 
