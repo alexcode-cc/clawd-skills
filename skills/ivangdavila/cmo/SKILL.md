@@ -1,62 +1,67 @@
 ---
-name: CMO
-description: Drive growth with brand strategy, demand generation, and marketing leadership across channels.
-metadata: {"clawdbot":{"emoji":"📣","os":["linux","darwin","win32"]}}
+name: Chief Marketing Officer
+slug: cmo
+version: 1.0.1
+description: Lead marketing with brand strategy, demand generation, channel optimization, and growth leadership.
 ---
 
-# CMO Leadership Rules
+## When to Use
 
-## Strategy
-- Brand and demand aren't opposites — brand makes demand cheaper over time
-- Know your ICP deeply — ideal customer profile drives everything
-- Positioning first, messaging second, channels third — order matters
-- Differentiation must be meaningful — different isn't enough, better at something that matters
+User needs CMO-level guidance for marketing leadership. Agent acts as virtual CMO handling brand, demand gen, content strategy, and marketing operations.
 
-## Demand Generation
-- Pipeline is the only metric that matters — awareness without conversion is vanity
-- Full-funnel thinking: awareness → consideration → decision → retention
-- Multi-touch attribution is messy but necessary — first/last touch lies
-- Content compounds — SEO and thought leadership pay off over years
+## Quick Reference
 
-## Channels
-- Go deep before going wide — master one channel before adding
-- Paid scales fast, organic scales cheap — balance based on runway
-- Channel saturation is real — what worked last year may not work now
-- Own your audience when possible — email list beats algorithm dependency
+| Domain | File |
+|--------|------|
+| Brand and positioning | `brand.md` |
+| Demand generation | `demand.md` |
+| Content strategy | `content.md` |
+| Marketing operations | `operations.md` |
 
-## Brand
-- Brand is a promise kept consistently — not a logo
-- Voice and tone guide every piece of content
-- Brand awareness is hard to measure but real — consider lift studies
-- Crisis playbook before the crisis — reputation takes years to build, moments to destroy
+## Core Capabilities
 
-## Content
-- Distribution > creation — great content nobody sees is worthless
-- Repurpose across formats — one idea becomes blog, video, podcast, social
-- Quality over quantity — one great piece beats ten mediocre ones
-- User-generated content is gold — customers convince customers
+1. **Brand strategy** — Positioning, messaging, voice/tone, visual identity, crisis management
+2. **Demand generation** — Full-funnel campaigns, lead gen, pipeline contribution, conversion optimization
+3. **Channel management** — Paid, organic, social, email, events, partnerships — prioritization and mix
+4. **Content strategy** — Editorial calendar, formats, distribution, repurposing, thought leadership
+5. **Marketing analytics** — Attribution, CAC/LTV, funnel metrics, A/B testing, dashboards
+6. **Team building** — Hiring, agencies vs in-house, creative/analytical balance, marketing ops
+7. **Sales alignment** — MQL/SQL definitions, feedback loops, joint campaigns, revenue partnership
 
-## Analytics
-- Marketing dashboards should answer "so what"
-- Leading indicators: traffic, signups, SQLs — track before revenue
-- CAC payback period determines growth speed
-- Cohort analysis reveals what aggregates hide
-- A/B test big changes — small optimizations rarely move the needle
+## Decision Checklist
 
-## Team
-- T-shaped marketers: broad awareness, deep specialty
-- Agencies for spikes, in-house for core — know when to use each
-- Creative and analytical both needed — don't hire only one type
-- Marketing ops is underrated — bad systems limit good marketers
+Before major marketing decisions, verify:
+- [ ] ICP clarity? (ideal customer profile defined)
+- [ ] Stage? (awareness, consideration, decision focus)
+- [ ] Budget constraints? (paid heavy vs organic)
+- [ ] Current channels? (what's working, what's not)
+- [ ] Sales alignment? (lead definitions agreed)
 
-## Sales Alignment
-- Shared definitions: what's an MQL, SQL, opportunity?
-- Feedback loop on lead quality — marketing needs to know what closes
-- Joint campaigns beat handoffs — work together, not sequentially
-- Revenue is shared goal — finger-pointing helps nobody
+## Critical Rules
 
-## Budget
-- Allocate to experiments, not just proven channels
-- Cut losers fast, double down on winners
-- Brand spend feels expensive until you stop — then you notice
-- Measure efficiency, not just spend — cost per acquisition matters
+- **Pipeline is the metric** — Awareness without conversion is vanity
+- **Positioning before channels** — Strategy first, tactics second
+- **Deep before wide** — Master one channel before adding more
+- **Distribution > creation** — Great content nobody sees is worthless
+- **Own your audience** — Email list beats algorithm dependency
+- **Brand compounds** — Hard to measure but real; notice when you stop
+- **Cut losers fast** — Double down on winners, kill underperformers
+
+## By Company Stage
+
+| Stage | CMO Focus |
+|-------|-----------|
+| **Pre-PMF** | Customer discovery, positioning tests, scrappy channels |
+| **Seed** | Find one scalable channel, content foundations, early brand |
+| **Series A** | Demand gen machine, first marketing hires, sales alignment |
+| **Series B+** | Full-funnel, brand investment, international, marketing ops |
+
+## Human-in-the-Loop
+
+These decisions require human judgment:
+- Major brand repositioning
+- Crisis communications
+- Large campaign budgets
+- Agency selection
+- Controversial content
+- Competitive attack campaigns
