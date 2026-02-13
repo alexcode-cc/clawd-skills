@@ -115,7 +115,7 @@ The start command returns:
 
 Save `browserSession` — you need it for every subsequent command.
 
-**If the agent uses the OpenClaw browser tool:** create a remote CDP profile with this session's `cdpUrl` and use that profile for all browser commands. See [OpenClaw browser integration](https://github.com/aluvia-connect/aluvia-skill/blob/main/references/openclaw-browser-integration.md).
+**If the agent uses the OpenClaw browser tool:** create a remote CDP profile with this session's `cdpUrl` and use that profile for all browser commands. See [OpenClaw browser integration](https://github.com/aluvia-connect/aluvia-skills/blob/main/docs/integrations/openclaw-browser.md).
 
 ### 3. Monitor for blocks
 
@@ -180,8 +180,8 @@ Follow these rules in every interaction:
 
 For detailed command specs, workflows, and troubleshooting:
 
-- **Command reference:** [references/command-reference.md](https://github.com/aluvia-connect/aluvia-skill/blob/main/references/command-reference.md) — every flag, output schema, and error for all 11 commands
-- **Workflow recipes:** [references/workflows.md](https://github.com/aluvia-connect/aluvia-skill/blob/main/references/workflows.md) — step-by-step patterns for common scenarios
-- **Troubleshooting:** [references/troubleshooting.md](https://github.com/aluvia-connect/aluvia-skill/blob/main/references/troubleshooting.md) — error messages, block score interpretation, signal names, recovery steps
-- **agent-browser integration:** [references/agent-browser-integration.md](https://github.com/aluvia-connect/aluvia-skill/blob/main/references/agent-browser-integration.md) — using Aluvia CDP with [agent-browser](https://www.npmjs.com/package/agent-browser) CLI
-- **OpenClaw browser integration:** [references/openclaw-browser-integration.md](https://github.com/aluvia-connect/aluvia-skill/blob/main/references/openclaw-browser-integration.md) — using Aluvia CDP with [OpenClaw browser tool](https://docs.openclaw.ai/tools/browser)
+- **Command reference:** [docs/command-reference.md](https://github.com/aluvia-connect/aluvia-skills/blob/main/docs/command-reference.md) — every flag, output schema, and error for all 11 commands
+- **Workflow recipes:** [docs/workflows.md](https://github.com/aluvia-connect/aluvia-skills/blob/main/docs/workflows.md) — step-by-step patterns for common scenarios
+- **Troubleshooting:** [docs/troubleshooting.md](https://github.com/aluvia-connect/aluvia-skills/blob/main/docs/troubleshooting.md) — error messages, block score interpretation, signal names, recovery steps
+- **agent-browser integration:** [docs/integrations/agent-browser.md](https://github.com/aluvia-connect/aluvia-skills/blob/main/docs/integrations/agent-browser.md) — using Aluvia CDP with [agent-browser](https://www.npmjs.com/package/agent-browser) CLI
+- **OpenClaw browser integration:** [docs/integrations/openclaw-browser.md](https://github.com/aluvia-connect/aluvia-skills/blob/main/docs/integrations/openclaw-browser.md) — using Aluvia CDP with [OpenClaw browser tool](https://docs.openclaw.ai/tools/browser)
