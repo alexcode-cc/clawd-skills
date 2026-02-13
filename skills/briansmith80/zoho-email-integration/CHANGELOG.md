@@ -5,6 +5,111 @@ All notable changes to the Zoho Email Integration skill will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.1] - 2026-02-12
+
+### 🔒 CRITICAL SECURITY FIXES
+
+**Three additional security vulnerabilities discovered and fixed:**
+
+#### Fixed
+
+- **CRITICAL: Path traversal in attachment download** - The `download_attachment()` function in `scripts/zoho-email.py` used untrusted email attachment filenames directly for file writes. An attacker could send a malicious email with attachment name `../../../../etc/cron.d/backdoor` to write arbitrary files anywhere on the system, leading to remote code execution or privilege escalation.
+  
+  **Fix:** Implemented `_sanitize_filename()` function that:
+  - Strips all directory path components
+  - Removes null bytes and dangerous characters
+  - Prevents hidden files (leading dots)
+  - Limits filename length to 200 characters
+  - Only uses safe basenames for file writes
+
+- **HIGH: Command injection in test script** - The `test-app-password.sh` script used `eval` with environment variables (`TEST_EMAIL`), allowing command injection via malicious email addresses like `user@example.com'; rm -rf /; echo '`.
+  
+  **Fix:** 
+  - Added email format validation with regex before any execution
+  - Replaced `eval` with safer `bash -c` for command execution
+  - Test script now exits immediately on invalid email format
+
+- **All v2.2.0 fixes included** (see v2.2.0 below)
+
+#### Security Impact
+- **Path traversal** → Remote code execution, privilege escalation, data exfiltration
+- **Test script injection** → Arbitrary command execution during testing
+- **JavaScript handler injection** → Same as v2.2.0
+
+#### Upgrade Urgency
+**IMMEDIATE** - All users should upgrade to v2.2.1, especially if:
+- Downloading email attachments from untrusted senders
+- Running test scripts in automated environments
+- Exposing `/email` commands to users
+
+#### Migration
+```bash
+# Upgrade skill
+clawdhub install zoho-email-integration@2.2.1
+
+# No configuration changes required
+# Existing code fully backward compatible
+```
+
+#### Disclosure
+- Vulnerabilities reported by ClawHub security scanner
+- Fixed within 2 hours of disclosure
+- No known exploitation in the wild
+- Coordinated disclosure: SECURITY.md published with fix
+
+---
+
+## [2.2.0] - 2026-02-12
+
+### 🔒 SECURITY FIXES
+
+**Critical security vulnerabilities addressed based on ClawHub security audit:**
+
+#### Fixed
+- **CRITICAL: Command injection in JavaScript handler** - Original `email-command.js` used shell command interpolation with user-supplied arguments, allowing potential command injection attacks. Replaced with `spawn()` using argument arrays (no shell interpretation).
+  
+- **HIGH: Metadata mismatch** - Registry metadata incorrectly claimed "no credentials required" when ZOHO_EMAIL + authentication is actually required. Updated `clawhub.json` with accurate credential declarations.
+
+- **MEDIUM: Insufficient input validation** - Added comprehensive input sanitization:
+  - Email address format validation
+  - Shell metacharacter filtering
+  - Length limits (1000 char max)
+  - Newline/carriage return removal
+
+- **LOW: Token file permission enforcement** - Added automatic permission checks and correction to enforce 0600 on token files (owner read/write only).
+
+#### Added
+- **`email-command-SECURE.js`** - Hardened version of JavaScript handler with security fixes
+- **`SECURITY.md`** - Comprehensive security advisory and best practices guide
+- **`clawhub.json`** - Proper ClawHub metadata with credential declarations
+- Automatic token file permission verification on handler initialization
+- Input sanitization for all user-provided arguments
+- Email address validation
+- Security checklist and deployment guidelines
+
+#### Changed
+- JavaScript handler now uses `spawn()` instead of `execSync()` to prevent shell injection
+- All user inputs are sanitized before processing
+- Token file permissions automatically enforced
+- Enhanced error messages with security context
+
+#### Security Notes
+- **Upgrade recommended for all users, especially if exposing /email commands to untrusted users**
+- No data migration required - drop-in replacement
+- See SECURITY.md for detailed vulnerability descriptions and mitigation steps
+
+#### Migration
+```bash
+# Update to secure handler
+cp examples/clawdbot-extension/email-command-SECURE.js \
+   examples/clawdbot-extension/email-command.js
+
+# Verify token permissions
+chmod 600 ~/.clawdbot/zoho-mail-tokens.json
+```
+
+---
+
 ## [2.1.0] - 2026-02-06
 
 ### ✨ NEW - Clawdbot Extension & Commands

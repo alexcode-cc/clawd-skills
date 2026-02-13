@@ -1012,8 +1012,71 @@ class ZohoEmail:
         finally:
             self.disconnect_imap()
     
+    def _sanitize_filename(self, filename):
+        """Sanitize attachment filename to prevent path traversal attacks
+        
+        Security: Removes path separators and dangerous characters to ensure
+        files are saved in the intended directory only (no directory traversal).
+        
+        Args:
+            filename: Raw filename from email attachment
+        
+        Returns:
+            Sanitized filename safe for filesystem operations
+        """
+        import re
+        
+        if not filename:
+            return "attachment"
+        
+        # Remove null bytes first (potential for bypassing checks)
+        filename = filename.replace('\0', '')
+        
+        # Replace BOTH Unix and Windows path separators with underscores
+        # This handles cross-platform path traversal attempts
+        filename = filename.replace('/', '_').replace('\\', '_')
+        
+        # Remove any remaining directory path components (defense in depth)
+        # os.path.basename handles Unix paths; we already replaced backslashes above
+        filename = os.path.basename(filename)
+        
+        # Remove .. sequences (path traversal component)
+        filename = filename.replace('..', '_')
+        
+        # Remove or replace dangerous characters
+        # Keep: alphanumeric, dash, underscore, dot, space
+        filename = re.sub(r'[^\w\s.-]', '_', filename)
+        
+        # Remove leading/trailing dots and spaces (Windows issues)
+        filename = filename.strip('. ')
+        
+        # Prevent hidden files (starting with dot)
+        if filename.startswith('.'):
+            filename = '_' + filename
+        
+        # Ensure filename is not empty after sanitization
+        if not filename or filename == '.':
+            filename = "attachment"
+        
+        # Limit filename length (filesystem limits, typically 255)
+        max_length = 200  # Leave room for extensions
+        if len(filename) > max_length:
+            # Preserve extension if present
+            name, ext = os.path.splitext(filename)
+            if ext:
+                filename = name[:max_length-len(ext)] + ext
+            else:
+                filename = filename[:max_length]
+        
+        return filename
+    
     def download_attachment(self, folder="INBOX", email_id=None, attachment_index=0, output_path=None):
-        """Download a specific attachment from an email by index"""
+        """Download a specific attachment from an email by index
+        
+        Security: Sanitizes attachment filenames to prevent path traversal attacks.
+        If output_path is provided explicitly, it is used as-is (caller responsibility).
+        If not provided, uses sanitized filename from email attachment.
+        """
         if not email_id:
             raise ValueError("email_id is required")
         
@@ -1053,23 +1116,32 @@ class ZohoEmail:
                                         filename_parts.append(part_data.decode(encoding or 'utf-8', errors='ignore'))
                                     else:
                                         filename_parts.append(str(part_data))
-                                filename = ''.join(filename_parts)
+                                raw_filename = ''.join(filename_parts)
                                 
                                 # Get attachment data
                                 payload = part.get_payload(decode=True)
                                 
-                                # Determine output path
-                                if not output_path:
-                                    output_path = filename
+                                # Determine output path with sanitization
+                                if output_path:
+                                    # Caller provided explicit path - use as-is (caller's responsibility)
+                                    safe_output_path = output_path
+                                else:
+                                    # No explicit path - sanitize filename to prevent path traversal
+                                    safe_filename = self._sanitize_filename(raw_filename)
+                                    safe_output_path = safe_filename
+                                    
+                                    if safe_filename != raw_filename:
+                                        self.log(f"Sanitized filename: '{raw_filename}' -> '{safe_filename}'")
                                 
                                 # Write to file
-                                self.log(f"Saving attachment to {output_path}")
-                                with open(output_path, 'wb') as f:
+                                self.log(f"Saving attachment to {safe_output_path}")
+                                with open(safe_output_path, 'wb') as f:
                                     f.write(payload)
                                 
                                 return {
-                                    "filename": filename,
-                                    "output_path": output_path,
+                                    "filename": raw_filename,
+                                    "sanitized_filename": safe_filename if not output_path else raw_filename,
+                                    "output_path": safe_output_path,
                                     "size": len(payload),
                                     "content_type": part.get_content_type()
                                 }

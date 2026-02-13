@@ -3,9 +3,22 @@
 [![GitHub](https://img.shields.io/badge/GitHub-clawdbot--zoho--email-blue?logo=github)](https://github.com/briansmith80/clawdbot-zoho-email)
 [![ClawdHub](https://img.shields.io/badge/ClawdHub-Install-green)](https://clawdhub.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-2.1.0-blue)](https://github.com/briansmith80/clawdbot-zoho-email/releases)
+[![Version](https://img.shields.io/badge/version-2.2.1-blue)](https://github.com/briansmith80/clawdbot-zoho-email/releases)
+[![Security](https://img.shields.io/badge/security-hardened-brightgreen)](SECURITY.md)
 
-**v2.1.0** - Complete Zoho Mail integration with OAuth2, REST API backend (5-10x faster), **Clawdbot extension with /email commands**, and advanced email automation features. Perfect for email workflows, monitoring, and bulk operations in your Clawdbot projects.
+**v2.2.1** - Complete Zoho Mail integration with OAuth2, REST API backend (5-10x faster), **Clawdbot extension with /email commands**, and advanced email automation features. Perfect for email workflows, monitoring, and bulk operations in your Clawdbot projects.
+
+## 🔒 Security Notice (v2.2.0)
+
+**SECURITY UPDATE:** This version fixes critical vulnerabilities identified in security audit. **Upgrade recommended for all users.**
+
+**Fixed vulnerabilities:**
+- ✅ **CRITICAL:** Command injection in JavaScript handler
+- ✅ **HIGH:** Metadata mismatch (credential requirements)
+- ✅ **MEDIUM:** Insufficient input validation
+- ✅ **LOW:** Token file permission enforcement
+
+**See [SECURITY.md](SECURITY.md) for details and migration guide.**
 
 ## 🚀 Quick Start (recommended path)
 
@@ -65,7 +78,33 @@ python3 scripts/zoho-email.py unread --api-mode imap
 
 - **[SKILL.md](SKILL.md)** - Complete guide with examples
 - **[OAUTH2_SETUP.md](OAUTH2_SETUP.md)** - OAuth2 setup instructions
+- **[SECURITY.md](SECURITY.md)** - Security best practices and audit results
 - **[CHANGELOG.md](CHANGELOG.md)** - Version history
+
+## 🔒 Security & Best Practices
+
+**Credential Management:**
+- ✅ Use OAuth2 (recommended) or app-specific passwords only
+- ✅ Never use your main Zoho password
+- ✅ Token files automatically secured with 0600 permissions
+- ✅ Never commit credentials to version control
+
+**Command Handler Security (if exposing /email commands):**
+- ✅ Use `email-command-SECURE.js` (prevents command injection)
+- ✅ Restrict command access to authorized users only
+- ✅ Add rate limiting at bot level
+- ✅ Enable audit logging for sensitive operations
+
+**Verification:**
+```bash
+# Check token file permissions (should be 600)
+ls -la ~/.clawdbot/zoho-mail-tokens.json
+
+# Fix if needed
+chmod 600 ~/.clawdbot/zoho-mail-tokens.json
+```
+
+**See [SECURITY.md](SECURITY.md) for complete security guide.**
 
 ## 📖 Quick Examples
 

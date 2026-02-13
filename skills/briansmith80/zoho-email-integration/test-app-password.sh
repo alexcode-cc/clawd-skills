@@ -16,6 +16,14 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ZOHO_SCRIPT="$SCRIPT_DIR/scripts/zoho-email.py"
 TEST_RECIPIENT="${TEST_EMAIL:-brian@creativestudio.co.za}"
 
+# Security: Validate TEST_RECIPIENT is a valid email address
+# Prevents command injection via malicious email addresses
+if [[ ! "$TEST_RECIPIENT" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]]; then
+    echo -e "${RED}❌ Error: Invalid email address format: $TEST_RECIPIENT${NC}"
+    echo "TEST_EMAIL must be a valid email address"
+    exit 1
+fi
+
 # Check prerequisites
 echo -e "${BLUE}=== App Password Authentication Test ===${NC}\n"
 
@@ -42,6 +50,8 @@ PASSED=0
 FAILED=0
 
 # Function to run test
+# Security: Executes command directly (bash -c) instead of eval
+# Input validation on TEST_RECIPIENT prevents injection attacks
 run_test() {
     local test_name="$1"
     local command="$2"
@@ -49,7 +59,9 @@ run_test() {
     echo -e "${BLUE}Testing: ${test_name}${NC}"
     echo "Command: $command"
     
-    if eval "$command"; then
+    # Execute with bash -c (safer than eval)
+    # Note: TEST_RECIPIENT is validated above, so no injection risk
+    if bash -c "$command"; then
         echo -e "${GREEN}✓ PASSED${NC}\n"
         ((PASSED++))
         return 0
