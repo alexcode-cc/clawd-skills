@@ -1,0 +1,11 @@
+{
+  "owner": "geodeterra",
+  "slug": "strava-cli",
+  "displayName": "Strava CLI",
+  "latest": {
+    "version": "0.1.0",
+    "publishedAt": 1770967578491,
+    "commit": null
+  },
+  "history": []
+}
