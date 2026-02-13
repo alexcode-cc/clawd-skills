@@ -1,7 +1,21 @@
 ---
 name: protoss-voice
 description: Apply Protoss-style (StarCraft) psionic effects to ANY audio file. Use as a post-processing layer for TTS or user recordings.
-metadata: {"clawdbot":{"emoji":"🔮","requires":{"bins":["ffmpeg","sox"]},"install":[{"id":"brew","kind":"brew","formula":"sox ffmpeg","bins":["sox","ffmpeg"],"label":"Install Dependencies (brew)"}]}}
+metadata:
+  openclaw:
+    emoji: "🔮"
+    requires:
+      bins:
+        - ffmpeg
+        - sox
+    install:
+      - id: brew
+        kind: brew
+        formula: "sox ffmpeg"
+        bins:
+          - sox
+          - ffmpeg
+        label: "Install Dependencies (brew)"
 ---
 
 # Protoss Voice Effect

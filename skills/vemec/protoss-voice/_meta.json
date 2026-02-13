@@ -3,11 +3,16 @@
   "slug": "protoss-voice",
   "displayName": "Generate Protoss-style (StarCraft) voice effects using SoX and FFmpeg.",
   "latest": {
-    "version": "1.1.0",
-    "publishedAt": 1770845971863,
-    "commit": "https://github.com/openclaw/skills/commit/671ccc2be1b1bcccb1504ac151627ff48894515d"
+    "version": "1.1.1",
+    "publishedAt": 1770939319186,
+    "commit": null
   },
   "history": [
+    {
+      "version": "1.1.0",
+      "publishedAt": 1770845971863,
+      "commit": "https://github.com/openclaw/skills/commit/671ccc2be1b1bcccb1504ac151627ff48894515d"
+    },
     {
       "version": "1.0.1",
       "publishedAt": 1770065841175,
