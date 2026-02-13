@@ -3,11 +3,16 @@
   "slug": "sendgrid-skills",
   "displayName": "Sendgrid Skills",
   "latest": {
-    "version": "1.1.0",
-    "publishedAt": 1770876446689,
-    "commit": "https://github.com/openclaw/skills/commit/56c00ae930664ee42fe05824121b3a7e1374abec"
+    "version": "1.2.1",
+    "publishedAt": 1770953715389,
+    "commit": null
   },
   "history": [
+    {
+      "version": "1.1.0",
+      "publishedAt": 1770876446689,
+      "commit": "https://github.com/openclaw/skills/commit/56c00ae930664ee42fe05824121b3a7e1374abec"
+    },
     {
       "version": "1.0.1",
       "publishedAt": 1769984651562,
