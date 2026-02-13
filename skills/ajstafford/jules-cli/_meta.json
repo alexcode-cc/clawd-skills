@@ -3,11 +3,16 @@
   "slug": "jules-cli",
   "displayName": "Jules CLI",
   "latest": {
-    "version": "1.0.1",
-    "publishedAt": 1770074300609,
-    "commit": "https://github.com/clawdbot/skills/commit/43ed86a7dec90daf75a28a0e6f77d64e84f71f94"
+    "version": "1.0.2",
+    "publishedAt": 1770937922767,
+    "commit": null
   },
   "history": [
+    {
+      "version": "1.0.1",
+      "publishedAt": 1770074300609,
+      "commit": "https://github.com/clawdbot/skills/commit/43ed86a7dec90daf75a28a0e6f77d64e84f71f94"
+    },
     {
       "version": "1.0.0",
       "publishedAt": 1769909590922,

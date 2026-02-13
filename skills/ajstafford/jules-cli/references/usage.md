@@ -20,19 +20,30 @@ jules remote list --repo
 ## Manual Workflow
 
 ### 1. New Session
+Always quote the repository name and session description.
 ```bash
-jules remote new --repo <repo> --session "Detailed task description" < /dev/null
+jules remote new --repo "<repo>" --session "Detailed task description" < /dev/null
 ```
 
 ### 2. Status Monitoring
-The `jules remote list --session` command returns a table. Use this Python one-liner to get the exact status for an ID:
+The `jules remote list --session` command returns a table. Use this Python one-liner to get the exact status safely:
 ```bash
-jules remote list --session | python3 -c "import sys, re; [print(re.split(r'\s{2,}', l.strip())[-1]) for l in sys.stdin if l.startswith('<SESSION_ID>')] "
+export JULES_SESSION_ID="<SESSION_ID>"
+jules remote list --session | python3 -c "
+import sys, re, os
+session_id = os.environ.get('JULES_SESSION_ID', '')
+if not session_id: sys.exit(0)
+for line in sys.stdin:
+    line = line.strip()
+    if line.startswith(session_id):
+        print(re.split(r'\s{2,}', line)[-1])
+"
+unset JULES_SESSION_ID
 ```
 
 ### 3. Applying Changes
 ```bash
-jules remote pull --session <SESSION_ID> --apply < /dev/null
+jules remote pull --session "<SESSION_ID>" --apply < /dev/null
 ```
 
 ---
