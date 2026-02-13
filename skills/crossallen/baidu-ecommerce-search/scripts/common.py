@@ -18,7 +18,7 @@ try:
 except ImportError:
     from lock import wait_for_rate_limit, set_qps   # 直接运行脚本时
 
-BASE_URL = "http://mcp-youxuan.baidu.com/skill"
+BASE_URL = "https://mcp-youxuan.baidu.com/skill"
 
 
 def get_token():

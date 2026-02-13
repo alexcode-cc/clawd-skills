@@ -2,7 +2,7 @@
 name: baidu-ecommerce-search
 description: 百度电商搜索，包括cps商品查询、全网比价、榜单、商品参数、品牌品类知识等能力
 homepage: https://openai.baidu.com
-metadata: {"clawdbot":{"emoji":"🛒","slug":"baidu-ecommerce-search","requires":{"bins":["python3"],"env":["BAIDU_EC_SEARCH_TOKEN","BAIDU_EC_SEARCH_QPS"]},"primaryEnv":"BAIDU_EC_SEARCH_TOKEN"}}
+metadata: {"openclaw":{"emoji":"🛒","slug":"baidu-ecommerce-search","requires":{"bins":["python3"],"env":["BAIDU_EC_SEARCH_TOKEN"]},"primaryEnv":"BAIDU_EC_SEARCH_TOKEN"}}
 ---
 
 # baidu-ecommerce-search
@@ -344,3 +344,4 @@ python3 scripts/bijia.py sku_goods "shv2_62a16fd98771e0ed3aee0f2a6b40dbb9"
    - 可通过 `BAIDU_EC_SEARCH_QPS` 环境变量调整
 3. 部分能力需要单独申请权限，未申请会返回 `token权限不足`
 4. Python 脚本使用标准库，无需额外安装依赖
+5. 返回的商品链接中可能有 `|` 等特殊字符，在以markdown形式展现链接时需要注意转义
