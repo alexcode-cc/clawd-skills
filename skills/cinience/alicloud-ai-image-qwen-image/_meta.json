@@ -3,11 +3,16 @@
   "slug": "alicloud-ai-image-qwen-image",
   "displayName": "Alicloud Ai Image Qwen Image",
   "latest": {
-    "version": "1.0.1",
-    "publishedAt": 1770768414112,
-    "commit": "https://github.com/openclaw/skills/commit/6e13b6eb21301472bad5e78dc6c7ed9fb1edcf89"
+    "version": "1.0.2",
+    "publishedAt": 1770973126208,
+    "commit": null
   },
   "history": [
+    {
+      "version": "1.0.1",
+      "publishedAt": 1770768414112,
+      "commit": "https://github.com/openclaw/skills/commit/6e13b6eb21301472bad5e78dc6c7ed9fb1edcf89"
+    },
     {
       "version": "1.0.0",
       "publishedAt": 1770768212508,
