@@ -3,9 +3,15 @@
   "slug": "molt-board-art",
   "displayName": "Moltboard.art",
   "latest": {
-    "version": "1.0.0",
-    "publishedAt": 1770855341153,
-    "commit": "https://github.com/openclaw/skills/commit/6aa4e19acac00cacc48ef9e24247660d11c53589"
+    "version": "1.0.1",
+    "publishedAt": 1770890008864,
+    "commit": null
   },
-  "history": []
+  "history": [
+    {
+      "version": "1.0.0",
+      "publishedAt": 1770855341153,
+      "commit": "https://github.com/openclaw/skills/commit/6aa4e19acac00cacc48ef9e24247660d11c53589"
+    }
+  ]
 }
