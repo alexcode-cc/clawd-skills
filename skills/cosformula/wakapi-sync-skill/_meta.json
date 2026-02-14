@@ -1,0 +1,11 @@
+{
+  "owner": "cosformula",
+  "slug": "wakapi-sync-skill",
+  "displayName": "Wakapi Sync",
+  "latest": {
+    "version": "0.1.1",
+    "publishedAt": 1771057912722,
+    "commit": null
+  },
+  "history": []
+}
