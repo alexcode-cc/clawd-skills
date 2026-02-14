@@ -3,9 +3,15 @@
   "slug": "java",
   "displayName": "Java",
   "latest": {
-    "version": "1.0.0",
-    "publishedAt": 1770679276509,
-    "commit": "https://github.com/openclaw/skills/commit/317d95963f9115a37a868a336d40791b5f19aa01"
+    "version": "1.0.1",
+    "publishedAt": 1771100274959,
+    "commit": null
   },
-  "history": []
+  "history": [
+    {
+      "version": "1.0.0",
+      "publishedAt": 1770679276509,
+      "commit": "https://github.com/openclaw/skills/commit/317d95963f9115a37a868a336d40791b5f19aa01"
+    }
+  ]
 }
