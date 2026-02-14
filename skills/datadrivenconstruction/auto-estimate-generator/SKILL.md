@@ -1,7 +1,8 @@
 ---
-slug: "auto-estimate-generator"
-display_name: "Auto Estimate Generator"
+name: "auto-estimate-generator"
 description: "Automatically generate estimates from QTO data. Apply pricing rules to BIM quantities for cost estimates."
+homepage: "https://datadrivenconstruction.io"
+metadata: {"openclaw":{"emoji":"⚡","os":["darwin","linux","win32"],"homepage":"https://datadrivenconstruction.io","requires":{"bins":["python3"]}}}
 ---
 
 # Auto Estimate Generator
