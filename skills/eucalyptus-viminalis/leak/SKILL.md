@@ -2,7 +2,7 @@
 name: leak
 description: Sell or buy x402-gated digital content using the leak CLI tool. On the seller side, use this skill when the user wants to publish, release, or "leak" a file and wants to charge a price. On the buyer side, use this when the user wants to download a file that requires payment.
 compatibility: Requires access to the internet
-version: 2026.2.14
+version: 2026.2.15-beta.1
 metadata:
   openclaw:
     emoji: 💦
@@ -24,227 +24,176 @@ metadata:
 ## Overview
 
 This skill operates the `leak` CLI tool:
-- **Publish** a file behind an x402 `402 Payment Required` gate and mint a time-limited token after payment.
-- **Share** `/` as the promo URL (social-card friendly) and use `/download` for the purchase flow.
-- **Buy** from either a promo URL (`/`) or x402 URL (`/download`) and save the artifact locally.
+- **Publish** a local file behind an x402 `402 Payment Required` gate.
+- **Share** the promo URL (`/`) for social cards and agent discovery.
+- **Buy** from promo URL (`/`) or download URL (`/download`) and save locally.
 
-## Terminology Guide
+## Safety Policy (required)
 
-- Terms `content`, `file`, `artifact`, `media`, `digital good` can be used interchangeably to refer to some kind of digital file in any format; `.mp3`, `.zip`, `.png`, `.md`, etc.
-- Terms `publish`, `release`, `sell`, `leak`, `drop`, `serve` can be used interchangeably to refer to the act of booting up a server from this host machine to serve a digital file to the internet with an x402-gated download link.
+Follow these rules every time:
+1. Never request, store, or pass raw private keys in command arguments.
+2. Do not create wallets by default. Wallet creation is allowed only as an explicit user opt-in fallback in the buyer flow.
+3. Require explicit user confirmation of the file path before publishing.
+4. Require explicit user consent before internet exposure (`--public`).
+5. Never print private key material in normal output.
 
-## Install / ensure CLI exists (first step)
+## Command Resolution
 
-Prefer the `leak` CLI on PATH. If missing, install it globally from npm first:
+Prefer `leak` on PATH:
 
 ```bash
-npm i -g leak-cli
+leak --help
 ```
 
-If that fails or you need a dev checkout, use the `scripts/ensure_leak.sh` fallback:
-
-Run:
+If `leak` is not installed, use pinned one-off execution:
 
 ```bash
-bash scripts/ensure_leak.sh
+npx -y leak-cli@2026.2.14 --help
 ```
 
-Notes:
-- Tries `npm i -g leak-cli` first.
-- Fallback installs into `~/leak` (clones if missing over HTTPS), then runs `npm install` and `npm link`.
-- Clone source can be overridden with `LEAK_REPO_URL=...`.
-- Helper scripts run `leak` when available, otherwise they fall back to `npx -y leak-cli`.
+Do not run auto-install or git-clone fallback scripts from this skill.
 
-## Publish content (server)
+## Publish Content (seller)
 
-Activate when the user says things like:
-- "publish this"
-- "share this file"
-- "make this downloadable"
-- "leak this"
+Activate when user asks to publish/release/sell/leak a file.
 
-Preferred: use the helper script, which ensures install and prints a clear share link.
+### Required inputs
+1. File path (must be a regular file).
+2. Price in USDC.
+3. Sale window duration.
+4. Seller payout address (`--pay-to`).
+5. Whether to expose publicly (`--public`).
 
-### Interactive flow (recommended)
+### Guardrails enforced by CLI
+1. Reject directories and symlinks.
+2. Block sensitive paths by default (`~/.ssh`, `~/.aws`, `~/.gnupg`, `~/.config/gcloud`, `/etc`, `/proc`, `/sys`, `/var/run/secrets`).
+3. If `--public` is used, require explicit confirmation phrase.
 
-When the user wants to publish, guide them through:
-1. **File**: Which file or folder?
-2. **Price**: How much USDC? (e.g., 0.01, 1.00)
-3. **Duration**: How long? (15m, 1h, 6h, 24h)
-4. **Public**: Do you want a public link? (requires cloudflared)
-5. **Pay-to address**: Where should payments go? (must be a valid Ethereum address)
-
-Then run the publish command and provide both promo + buy URLs, with promo URL as the default share URL.
-
-### Local-only (good for a trial run)
-
-Only use this method for testing purposes; use this when the user wants to test how the server will function before exposing it to the public.
+### Local publish
 
 ```bash
-bash scripts/publish.sh \
-  --file /absolute/or/relative/path/to/file \
+bash skills/leak/scripts/publish.sh \
+  --file ./protected/asset.bin \
   --price 0.01 \
   --window 15m \
   --pay-to 0xSELLER_ADDRESS \
   --network eip155:84532
 ```
 
-Direct CLI equivalent:
+### Public publish
 
 ```bash
-leak \
-  --file /absolute/or/relative/path/to/file \
+bash skills/leak/scripts/publish.sh \
+  --file ./protected/asset.bin \
   --price 0.01 \
   --window 15m \
   --pay-to 0xSELLER_ADDRESS \
-  --network eip155:84532
+  --public
 ```
 
-What to share with the buyer:
-- `http://127.0.0.1:4021/` (promo URL for sharing)
-- `http://127.0.0.1:4021/download` (direct buy URL)
-- or your LAN IP (if you want another device on the same network to test)
+The tool prints:
+- `PROMO LINK: https://.../`
+- `BUY LINK: https://.../download`
 
-### Public link (Cloudflare quick tunnel)
+Share the promo link (`/`) in social posts.
 
-Prereq: `cloudflared` installed.
+## Buy Content (buyer)
 
-Install examples:
+Activate when user asks to buy/download a leak URL.
+
+### Buyer Fast Path Protocol (required)
+
+Use this default conversation sequence for unknown leak links:
+1. Install `leak` if missing.
+2. Ask for an existing buyer key file path.
+3. If the user does not have one, offer this fallback:
+
+`I can generate a fresh buyer key at ./.leak/buyer.key and continue. This is a hot wallet, so keep funds minimal and back up the key safely.`
+
+4. Only if the user explicitly agrees, run the Opt-in Key Creation Subflow below.
+5. Run:
 
 ```bash
-# macOS (Homebrew)
-brew install cloudflared
-
-# Windows (winget)
-winget install --id Cloudflare.cloudflared
+bash skills/leak/scripts/buy.sh "<promo_or_download_url>" --buyer-private-key-file <buyer_key_file_path>
 ```
 
-Linux packages/docs:
-`https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/`
+6. Report saved file path and bytes downloaded.
+
+Default key mode is `--buyer-private-key-file`. Only use `--buyer-private-key-stdin` if the user asks for stdin flow.
+
+Do not:
+1. Ask for raw private key text in chat.
+2. Start with manual x402 transfer/signing explanations.
+3. Present multiple speculative option trees before attempting the buy script.
+
+If the user explicitly asks protocol details, then explain x402 internals.
+
+### Opt-in Key Creation Subflow (deterministic)
+
+Use this subflow only after explicit user consent to create a key:
+1. Confirm destination path: `./.leak/buyer.key`.
+2. Create directory and key file with owner-only permissions:
+  - directory: `0700`
+  - key file: `0600`
+3. Write private key as a single hex line in the key file (no `0x` prefix).
+4. Do not print key material in normal output. It is acceptable to show only the derived wallet address.
+5. If current workspace is a git repository, tell the user you will add the key path to `.gitignore` to prevent tracking, then apply idempotently:
 
 ```bash
-bash scripts/publish.sh --file ./protected/asset.bin --price 0.01 --window 15m --pay-to 0x... --public
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  touch .gitignore
+  grep -qxF "./.leak/buyer.key" .gitignore || echo "./.leak/buyer.key" >> .gitignore
+fi
 ```
 
-Direct CLI equivalent:
+6. Continue buyer flow using:
 
 ```bash
-leak --file ./protected/asset.bin --price 0.01 --window 15m --pay-to 0x... --public
+bash skills/leak/scripts/buy.sh "<promo_or_download_url>" --buyer-private-key-file ./.leak/buyer.key
 ```
 
-The CLI will print something like:
-- `[leak] public URL: https://xxxx.trycloudflare.com`
-- `[leak] promo link: https://xxxx.trycloudflare.com/`
-- `[leak] buy link:   https://xxxx.trycloudflare.com/download`
+### Buyer first-response template
 
-Share `/` in social posts. Use `/download` for agent-assisted purchases.
+Use this shape for first reply after receiving a leak URL:
+1. Confirm link type (promo `/` or `/download`).
+2. Request install approval: `clawhub install leak`.
+3. Ask for existing buyer key file path.
+4. Include concise alternative: `I can create one safely in ./.leak/buyer.key if you want.`
 
-Optional OpenGraph card metadata flags:
+### Key handling requirements
+
+Use exactly one of:
+1. `--buyer-private-key-file <path>`
+2. `--buyer-private-key-stdin`
+
+Do not use `--buyer-private-key`; it is blocked.
+
+### Buy examples
 
 ```bash
-leak --file ./protected/asset.bin --price 0.01 --window 15m --pay-to 0x... --public \
-  --og-title "Nightwire" \
-  --og-description "Limited release, agent-assisted purchase" \
-  --og-image-url https://cdn.example.com/nightwire-cover.jpg \
-  --ended-window-seconds 86400
+bash skills/leak/scripts/buy.sh "https://xxxx.trycloudflare.com/" --buyer-private-key-file ./buyer.key
 ```
-
-### Confirmed settlement (optional)
-
-Use `--confirmed` to settle on-chain before issuing the token:
 
 ```bash
-leak --file ./protected/asset.bin --price 0.01 --window 15m --pay-to 0x... --confirmed
+cat ./buyer.key | bash skills/leak/scripts/buy.sh "https://xxxx.trycloudflare.com/" --buyer-private-key-stdin
 ```
 
-This flag must be used when the user wants to sell their content as it ensures that buyers can only download the content if their payments are confirmed onchain.
-
-## Buy content
-
-Activate when user says:
-- "buy this"
-- "download this"
-- "get this file"
-- "purchase this"
-- Or provides a leak URL directly
-
-Preferred: use the helper script (ensures install first).
-
-Prereq: An EVM-compatible private key
-
-### Buyer flow
-
-When the user wants to buy/download:
-
-1. **URL**: Get the promo URL or download URL (if not already provided)
-   - Example promo URL: `https://xxxx.trycloudflare.com/`
-   - Example download URL: `https://xxxx.trycloudflare.com/download`
-
-2. **Check prerequisites** (in order):
-   - Do they have a wallet/private key?
-   - Do they have enough USDC to cover the price?
-
-3. **Missing wallet?** 
-   - Tell them the price
-   - Help them create an EVM-compatible wallet
-   - Save the key pair securely and tell them where
-
-4. **Missing funds?**
-   - Tell them exactly how much USDC to send
-   - Wait for confirmation, then retry
-
-5. **Execute purchase**:
-   - Run the buy script with their private key
-   - Show them the receipt (transaction hash, network)
-   - Confirm file saved location
-
-6. **Success**:
-   - Confirm the file is saved
-   - Show them the path
-
+Optional output controls:
 
 ```bash
-bash scripts/buy.sh "https://xxxx.trycloudflare.com/" --buyer-private-key 0xBUYER_KEY
+bash skills/leak/scripts/buy.sh "https://xxxx.trycloudflare.com/" --buyer-private-key-file ./buyer.key --out ./downloads/myfile.bin
 ```
-
-Direct CLI equivalent:
 
 ```bash
-leak buy "https://xxxx.trycloudflare.com/" --buyer-private-key 0xBUYER_KEY
+bash skills/leak/scripts/buy.sh "https://xxxx.trycloudflare.com/" --buyer-private-key-file ./buyer.key --basename myfile
 ```
-
-Optional save naming:
-
-```bash
-# choose exact output path
-leak buy "https://xxxx.trycloudflare.com/" --buyer-private-key 0x... --out ./downloads/myfile.bin
-
-# choose basename, keep server extension
-leak buy "https://xxxx.trycloudflare.com/" --buyer-private-key 0x... --basename myfile
-```
-
-### Common buyer issues
-
-| Issue | Agent response |
-|-------|---------------|
-| "I don't have a wallet" | Create one using eth-account, save securely |
-| "I don't have USDC" | Explain amount needed + where to get it |
-| "Transaction failed" | Check gas, retry, or check if sale ended |
-| "File already exists" | Ask to overwrite or choose new name |
-
-### Example buyer interaction
-
-User: "buy this https://abc123.trycloudflare.com/"
-
-Agent: 
-- "I'll help you download that. First, I'll check what it costs..."
-- [Fetches 402 response to get price]
-- "This costs 0.01 USDC. Do you have a wallet with USDC, or do you need help setting one up?"
-
 
 ## Troubleshooting
 
-- **`leak: command not found`** → run `bash skills/leak/scripts/ensure_leak.sh` or use `npx -y leak-cli --help` for one-off commands.
-- **`Invalid seller payout address`** → use a valid Ethereum address for `--pay-to` / `SELLER_PAY_TO` (`0x` + 40 hex chars).
-- **`--public` tunnel fails** → install `cloudflared` (`brew install cloudflared` on macOS), then retry.
-- **Port in use** → add `--port 4021` with a different number and use that port in the tunnel.
+- `leak: command not found`:
+  - Install globally: `npm i -g leak-cli`
+  - Or run pinned: `npx -y leak-cli@2026.2.14 --help`
+- `Invalid seller payout address`:
+  - Use a valid Ethereum address (`0x` + 40 hex chars).
+- `--public` confirmation failed:
+  - Re-run and provide the exact confirmation phrase when prompted.
