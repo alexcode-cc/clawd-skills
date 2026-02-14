@@ -3,11 +3,16 @@
   "slug": "botcoin",
   "displayName": "Botcoin",
   "latest": {
-    "version": "1.1.0",
-    "publishedAt": 1770915318790,
-    "commit": "https://github.com/openclaw/skills/commit/3d2926679681c5f07c99fbaebe4c61cf2d8037d4"
+    "version": "1.1.2",
+    "publishedAt": 1771056558478,
+    "commit": null
   },
   "history": [
+    {
+      "version": "1.1.0",
+      "publishedAt": 1770915318790,
+      "commit": "https://github.com/openclaw/skills/commit/3d2926679681c5f07c99fbaebe4c61cf2d8037d4"
+    },
     {
       "version": "2.1.1",
       "publishedAt": 1770848713153,
