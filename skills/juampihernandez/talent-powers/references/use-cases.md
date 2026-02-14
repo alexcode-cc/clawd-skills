@@ -9,7 +9,8 @@
 ```bash
 # 1. Search by identity
 curl -H "X-API-KEY: $TALENT_API_KEY" \
-  "https://api.talentprotocol.com/search/advanced/profiles?query%5Bidentity%5D=jessepollak&query%5Bidentity_type%5D=twitter"
+  "https://api.talentprotocol.com/search/advanced/profiles?query%5Bidentity%5D={handle}&query%5Bidentity_type%5D={identity_type}"
+# Response: profiles[0].id → use as profile_id
 
 # 2. Get wallets from profile ID
 curl -H "X-API-KEY: $TALENT_API_KEY" \
@@ -21,7 +22,7 @@ curl -H "X-API-KEY: $TALENT_API_KEY" \
 
 ---
 
-## Get Rank
+## Get Rank (default behavior)
 
 Response from `/search/advanced/profiles` includes:
 
@@ -29,20 +30,22 @@ Response from `/search/advanced/profiles` includes:
 {
   "builder_score": { "rank_position": 127 },
   "scores": [
-    { "slug": "builder_score_2025", "rank_position": 154 }
+    { "slug": "builder_score", "rank_position": 154 }
   ]
 }
 ```
 
-Use `builder_score_2025.rank_position` for latest rank.
+**Default:** Always return `rank_position` values. Use `builder_score.rank_position` for latest rank.
+
+**Only when user explicitly asks for scores:** include `points` values from `builder_score.points` or `scores[].points`.
 
 ---
 
-## Top Builders
+## Get the Top Builders
 
 ```bash
 curl -H "X-API-KEY: $TALENT_API_KEY" \
-  "https://api.talentprotocol.com/search/advanced/profiles?query%5Bhuman_checkmark%5D=true&sort%5Bscore%5D%5Border%5D=desc&sort%5Bscore%5D%5Bscorer%5D=Builder%20Score&per_page=250"
+  "https://api.talentprotocol.com/search/advanced/profiles?sort%5Bscore%5D%5Border%5D=desc&sort%5Bscore%5D%5Bscorer%5D=Builder%20Score&per_page=250"
 ```
 
 ---
@@ -67,7 +70,6 @@ curl -X POST -H "X-API-KEY: $TALENT_API_KEY" -H "Content-Type: application/json"
         }
       }
     },
-    "humanCheckmark": true,
     "sort": { "score": { "order": "desc", "scorer": "Builder Score" } },
     "perPage": 50
   }'
@@ -87,7 +89,6 @@ curl -X POST -H "X-API-KEY: $TALENT_API_KEY" -H "Content-Type: application/json"
         }
       }
     },
-    "humanCheckmark": true,
     "sort": { "score": { "order": "desc", "scorer": "Builder Score" } },
     "perPage": 50
   }'
@@ -124,7 +125,14 @@ This matches locations ending with ", argentina" (e.g., "Buenos Aires, Argentina
 
 All from `/credentials?id={profile_id}`.
 
-**Example queries** (there are many more available):
+**Discover all available data points:** Use `/data_issuers_meta` to get the full list of data issuers and credential slugs available. [API docs](https://docs.talentprotocol.com/docs/talent-api/api-reference/get-data-issuers-and-credentials-available)
+
+```bash
+curl -H "X-API-KEY: $TALENT_API_KEY" \
+  "https://api.talentprotocol.com/data_issuers_meta"
+```
+
+**Common credential slugs:**
 
 | Data | Slug |
 |------|------|

@@ -23,8 +23,8 @@ curl -H "X-API-KEY: $TALENT_API_KEY" \
 |-----------|---------|
 | `query[identity]` | `jessepollak` |
 | `query[identity_type]` | `twitter`, `github`, `farcaster`, `ens`, `wallet` |
-| `query[human_checkmark]` | `true` |
 | `query[verified_nationality]` | `true` |
+| `query[human_checkmark]` | `true` (optional - reduces results, only use when user asks) |
 | `query[tags][]` | `developer` |
 | `sort[score][order]` | `desc` |
 | `sort[score][scorer]` | `Builder Score` |
@@ -49,11 +49,12 @@ curl -X POST -H "X-API-KEY: $TALENT_API_KEY" -H "Content-Type: application/json"
         }
       }
     },
-    "humanCheckmark": true,
     "sort": { "score": { "order": "desc", "scorer": "Builder Score" } },
     "perPage": 50
   }'
 ```
+
+> **Note:** `"humanCheckmark": true` is optional. Don't include it by default — it reduces results. Only add when user explicitly asks.
 
 See [use-cases.md](use-cases.md#by-location-country) for more location examples.
 
@@ -71,12 +72,14 @@ See [use-cases.md](use-cases.md#by-location-country) for more location examples.
     "tags": ["developer"],
     "builder_score": { "rank_position": 127, "points": 229 },
     "scores": [
-      { "slug": "builder_score_2025", "rank_position": 154 }
+      { "slug": "builder_score", "rank_position": 154 }
     ]
   }],
   "pagination": { "current_page": 1, "total": 100 }
 }
 ```
+
+**Default:** Use `rank_position` fields. Only include `points` when user explicitly asks for scores.
 
 ---
 
