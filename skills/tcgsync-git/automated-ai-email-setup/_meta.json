@@ -1,0 +1,11 @@
+{
+  "owner": "tcgsync-git",
+  "slug": "automated-ai-email-setup",
+  "displayName": "Ai Email No Human Interaction Needed",
+  "latest": {
+    "version": "1.0.0",
+    "publishedAt": 1771072657695,
+    "commit": null
+  },
+  "history": []
+}
