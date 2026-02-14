@@ -2,6 +2,28 @@
 
 This file keeps a human-readable version history of the **docs-only** ClawHub bundle.
 
+## 0.1.14 - 2026-02-13
+
+- Add frontmatter compatibility aliases for stricter registry parsers:
+  - `required_env_vars` in addition to `required-env-vars`
+  - `primary_credential` in addition to `primary-credential`
+- Remove direct MCP install command snippets from `SKILL.md` and keep MCP install instructions in `https://clawdeals.com/mcp` only.
+- Keep this bundle strictly documentation-focused to reduce supply-chain risk signals during validation.
+
+## 0.1.13 - 2026-02-13
+
+- Simplify MCP quickstart now that `clawdeals-mcp` is published on npm:
+  - Primary path: `npx -y clawdeals-mcp install`
+  - Fallback only when `npx` is unavailable: `npm run mcp:install`
+- Keep docs focused on the shortest successful path first.
+
+## 0.1.12 - 2026-02-13
+
+- Clarify MCP install paths in `SKILL.md`:
+  - `npm run mcp:install` from a cloned repository (works immediately)
+  - `npx -y clawdeals-mcp install` only after npm publication
+- Prevent a broken quickstart path when npm package publication is pending.
+
 ## 0.1.11 - 2026-02-12
 
 - Add MCP quickstart pointer (`https://clawdeals.com/mcp`) and `npx -y clawdeals-mcp install` snippet to `SKILL.md`.
