@@ -3,11 +3,16 @@
   "slug": "rent-a-person-ai",
   "displayName": "Rent a Person",
   "latest": {
-    "version": "1.0.33",
-    "publishedAt": 1771007544466,
-    "commit": "https://github.com/openclaw/skills/commit/73dac2fa6c16e733344c1445578b57ce85b66409"
+    "version": "1.0.35",
+    "publishedAt": 1771031789182,
+    "commit": null
   },
   "history": [
+    {
+      "version": "1.0.33",
+      "publishedAt": 1771007544466,
+      "commit": "https://github.com/openclaw/skills/commit/73dac2fa6c16e733344c1445578b57ce85b66409"
+    },
     {
       "version": "1.0.24",
       "publishedAt": 1770929403889,

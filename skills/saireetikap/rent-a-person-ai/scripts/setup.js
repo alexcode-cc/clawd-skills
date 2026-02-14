@@ -371,7 +371,7 @@ async function main() {
   // 2. Agent details
   console.log('👤 Step 2: Agent details');
   console.log('─'.repeat(70));
-  const agentName = await ask(rl, 'Friendly agent name', 'my-openclaw-agent');
+  let agentName = await ask(rl, 'Friendly agent name', 'my-openclaw-agent');
   let contactEmail = await ask(rl, 'Contact email', '');
   if (!contactEmail) {
     console.error('\n❌ Error: Contact email is required.');
@@ -383,7 +383,8 @@ async function main() {
     console.warn(`   Email: ${contactEmail}\n`);
   }
   console.log(`✓ Agent name: ${agentName}`);
-  console.log(`✓ Contact email: ${contactEmail}\n`);
+  console.log(`✓ Contact email: ${contactEmail}`);
+  console.log('  (If you sign up on the site with this email later, this agent will appear in Dashboard → Agents.)\n');
 
   // Resolve skill directory once (used throughout setup)
   const skillDir = path.resolve(__dirname, '..');
@@ -514,29 +515,68 @@ async function main() {
     }
   }
 
-  rl.close();
-
-  // 5. Register agent
-  console.log('🚀 Step 5: Registering your agent');
+  // 4b. Use existing agent or register new
+  console.log('🤖 Step 4b: Agent (new or existing)');
   console.log('─'.repeat(70));
-  console.log('Registering with RentAPerson...');
-  
+  console.log('You can register a new agent or use one you already created (e.g. from Dashboard → Agents).');
+  const useExisting = await askYesNo(rl, 'Use an existing agent? (enter agent ID + API key)', false);
+
   let agentId, apiKey;
-  try {
-    const reg = await registerAgent(apiBase, agentName, contactEmail);
-    agentId = reg.agent?.agentId;
-    apiKey = reg.apiKey;
-    if (!agentId || !apiKey) {
-      console.error('\n❌ Error: Unexpected response from registration:', reg);
+  if (useExisting) {
+    const existingAgentId = await ask(rl, 'Agent ID (e.g. agent_abc123...)', '');
+    const existingApiKey = await ask(rl, 'API key (rap_...)', '');
+    if (!existingAgentId?.trim() || !existingApiKey?.trim()) {
+      console.error('\n❌ Agent ID and API key are required.');
+      rl.close();
       process.exit(1);
     }
-    console.log(`✓ Agent registered successfully!`);
-    console.log(`  Agent ID: ${agentId}`);
-    console.log(`  API Key: ${apiKey.substring(0, 10)}...${apiKey.substring(apiKey.length - 4)}\n`);
-  } catch (err) {
-    console.error(`\n❌ Error registering agent: ${err.message}`);
-    process.exit(1);
+    console.log('Verifying agent...');
+    try {
+      const res = await fetch(`${apiBase}/api/agents/me`, {
+        headers: { 'X-API-Key': existingApiKey.trim() },
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        console.error(`\n❌ Invalid API key or agent not found (${res.status}). Check Agent ID and key from Dashboard → Agents.`);
+        rl.close();
+        process.exit(1);
+      }
+      const data = await res.json();
+      agentId = data.agent?.agentId || existingAgentId.trim();
+      apiKey = existingApiKey.trim();
+      if (data.agent?.agentName) agentName = data.agent.agentName;
+      console.log(`✓ Using existing agent: ${agentId}`);
+      console.log(`  Name: ${agentName}\n`);
+    } catch (err) {
+      console.error(`\n❌ Error verifying agent: ${err.message}`);
+      rl.close();
+      process.exit(1);
+    }
+  } else {
+    // Register new agent
+    console.log('Registering new agent with RentAPerson...');
+    try {
+      const reg = await registerAgent(apiBase, agentName, contactEmail);
+      agentId = reg.agent?.agentId;
+      apiKey = reg.apiKey;
+      if (!agentId || !apiKey) {
+        console.error('\n❌ Error: Unexpected response from registration:', reg);
+        rl.close();
+        process.exit(1);
+      }
+      console.log(`✓ Agent registered successfully!`);
+      console.log(`  Agent ID: ${agentId}`);
+      console.log(`  API Key: ${apiKey.substring(0, 10)}...${apiKey.substring(apiKey.length - 4)}\n`);
+    } catch (err) {
+      console.error(`\n❌ Error registering agent: ${err.message}`);
+      rl.close();
+      process.exit(1);
+    }
   }
+
+  rl.close();
+
+  // 5. (Registration done above) Continue with config and webhook
 
   // Store credentials in memory (only write to file if user wants)
   const credentialsPath = path.join(skillDir, 'rentaperson-agent.json');
@@ -774,20 +814,25 @@ async function main() {
     console.log('');
   }
 
-  // 10. Send SKILL.md to sessions (optional)
-  console.log('📚 Step 9: Loading skill documentation into sessions');
+  // 10. Send concise agent brief (workflows + API usage) to sessions (optional)
+  console.log('📚 Step 9: Loading agent brief into sessions');
   console.log('─'.repeat(70));
   const rl3 = readline.createInterface({ input: process.stdin, output: process.stdout });
-  const doLoadSkill = await askYesNo(rl3, 'Send SKILL.md documentation to sessions? (recommended)', true);
+  const doLoadSkill = await askYesNo(rl3, 'Send workflows + API usage brief to sessions? (recommended)', true);
   rl3.close();
   if (doLoadSkill) {
+    const briefPath = path.join(skillDir, 'AGENT_BRIEF.md');
     const skillMdPath = path.join(skillDir, 'SKILL.md');
-    if (fs.existsSync(skillMdPath)) {
+    let briefContent = '';
+    if (fs.existsSync(briefPath)) {
+      briefContent = fs.readFileSync(briefPath, 'utf8');
+    } else if (fs.existsSync(skillMdPath)) {
+      console.warn('⚠️  AGENT_BRIEF.md not found, using short inline brief.');
+      briefContent = `# RentAPerson — Agent brief\n\nYou process webhooks and reply via the RentAPerson API only. One flow per event (<30s).\n\n**Workflows:** message.received → read thread, if time then POST calendar event else POST reply. application.received → evaluate; if HIGH accept (PATCH status accepted) and calendar/message, else GET/POST conversation and message. work_evidence.submitted → find/create conversation, POST reply ack; optional PATCH bounty completed.\n\n**APIs:** Headers: X-API-Key, Content-Type: application/json. Body: one JSON object, double quotes, no trailing commas. Send message: {"senderType":"agent","senderId":"AGENT_ID","senderName":"Name","content":"..."}. Accept: {"status":"accepted"}. Calendar: {"title","startTime","endTime","humanId","agentId","bountyId"}.\n\nFull docs: SKILL.md or https://rentaperson.ai/skill.md`;
+    }
+    if (briefContent) {
       try {
-        const skillContent = fs.readFileSync(skillMdPath, 'utf8');
         const openclawUrl = process.env.OPENCLAW_URL || 'http://127.0.0.1:18789';
-        
-        // Include API credentials in the message so agent knows them immediately
         const credentialsSection = `🔑 Your RentAPerson Credentials (use these for all API calls):
 
 - **API Key**: ${apiKey}
@@ -801,66 +846,48 @@ Example: \`curl -H "X-API-Key: ${apiKey}" "${apiBase}/api/conversations"\`
 
 ---
 `;
-        
-        const message = `📚 RentAPerson Skill Documentation
+
+        const message = `📚 RentAPerson — Workflows & API usage
 
 ${credentialsSection}
 
-This is the complete skill documentation for RentAPerson. Read this carefully - it contains all the APIs, workflows, and instructions you need to help users hire humans for real-world tasks.
-
-${skillContent}
+${briefContent}
 
 ---
-Setup complete! You now have access to all RentAPerson APIs and can help users:
-- Search for humans by skill and budget
-- Post bounties (jobs) for humans to apply to
-- Accept/reject applications
-- Book humans directly
-- Communicate via conversations
-- Manage calendar events
-- Leave reviews
+Setup complete. Use the credentials above and the workflows/API bodies in this message. Full reference: SKILL.md or ${apiBase.replace(/\/$/, '')}/skill.md`;
 
-Your credentials are shown above. Use the API key in the X-API-Key header for all API calls.`;
-        
-        // Send to main session
-        console.log(`Sending SKILL.md to main session: ${mainSessionKey}...`);
+        console.log(`Sending agent brief to main session: ${mainSessionKey}...`);
         await sendMessageToOpenClawSession(mainSessionKey, message, openclawUrl, hooksToken);
-        console.log('✓ Skill documentation loaded into main session');
-        
-        // Also send directly to webhook session
-        const webhookMessage = `📚 RentAPerson Skill Documentation & Credentials
+        console.log('✓ Agent brief loaded into main session');
+
+        const webhookMessage = `📚 RentAPerson — Workflows & API usage (webhook session)
 
 ${credentialsSection}
 
-This is the complete skill documentation for RentAPerson. This session handles webhook events automatically.
-
-${skillContent}
+${briefContent}
 
 ---
-This webhook session is configured to automatically process RentAPerson webhooks (messages and applications).
-Your credentials are shown above. Use the API key in the X-API-Key header for all API calls.`;
-        
-        console.log(`Sending SKILL.md to webhook session: ${webhookSessionKey}...`);
+This session processes RentAPerson webhooks. Use the credentials and API bodies above. Full reference: SKILL.md or ${apiBase.replace(/\/$/, '')}/skill.md`;
+
+        console.log(`Sending agent brief to webhook session: ${webhookSessionKey}...`);
         await sendMessageToOpenClawSession(webhookSessionKey, webhookMessage, openclawUrl, hooksToken);
-        console.log('✓ Skill documentation loaded into webhook session');
+        console.log('✓ Agent brief loaded into webhook session');
         console.log(`  Main session: ${mainSessionKey}`);
         console.log(`  Webhook session: ${webhookSessionKey}\n`);
-        
-        // Note about double-prefix issue
+
         console.log('⚠️  Note: If you see a session named "agent:main:agent:main:rentaperson",');
         console.log('   that is a stale session from before the fix. The correct session is:');
         console.log(`   ${webhookSessionKey}`);
         console.log('   New webhooks will use the correct session.\n');
       } catch (err) {
-        console.warn(`⚠️  Failed to send skill documentation: ${err.message}`);
-        console.warn('  You can manually send SKILL.md to your sessions later.\n');
+        console.warn(`⚠️  Failed to send agent brief: ${err.message}`);
+        console.warn('  You can manually send AGENT_BRIEF.md or SKILL.md to your sessions later.\n');
       }
     } else {
-      console.warn(`⚠️  SKILL.md not found at ${skillMdPath}`);
-      console.warn('  Skipping skill documentation load.\n');
+      console.warn('⚠️  AGENT_BRIEF.md and SKILL.md not found. Skipping.\n');
     }
   } else {
-    console.log('⏭️  Skipped loading skill documentation.\n');
+    console.log('⏭️  Skipped loading agent brief.\n');
   }
 
   // 11. Verification (optional)
