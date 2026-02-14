@@ -3,11 +3,16 @@
   "slug": "notion-sync",
   "displayName": "Notion Sync",
   "latest": {
-    "version": "2.2.0",
-    "publishedAt": 1770938462987,
-    "commit": "https://github.com/openclaw/skills/commit/ef96ca081c3134dba3c8a132f1c839925f4ead3f"
+    "version": "2.4.0",
+    "publishedAt": 1770980849307,
+    "commit": null
   },
   "history": [
+    {
+      "version": "2.2.0",
+      "publishedAt": 1770938462987,
+      "commit": "https://github.com/openclaw/skills/commit/ef96ca081c3134dba3c8a132f1c839925f4ead3f"
+    },
     {
       "version": "1.0.6",
       "publishedAt": 1770934851305,
