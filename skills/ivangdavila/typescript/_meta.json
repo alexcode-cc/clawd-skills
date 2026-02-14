@@ -3,9 +3,15 @@
   "slug": "typescript",
   "displayName": "TypeScript",
   "latest": {
-    "version": "1.0.0",
-    "publishedAt": 1770679470408,
-    "commit": "https://github.com/openclaw/skills/commit/17ef53305c8b14ebac048cd571b9c3750cc07227"
+    "version": "1.0.1",
+    "publishedAt": 1771005377722,
+    "commit": null
   },
-  "history": []
+  "history": [
+    {
+      "version": "1.0.0",
+      "publishedAt": 1770679470408,
+      "commit": "https://github.com/openclaw/skills/commit/17ef53305c8b14ebac048cd571b9c3750cc07227"
+    }
+  ]
 }
