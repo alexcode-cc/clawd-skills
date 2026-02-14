@@ -204,14 +204,17 @@ If omitted, the gateway uses the default (oldest) active connection for that app
 | ElevenLabs | `elevenlabs` | `api.elevenlabs.io` |
 | Eventbrite | `eventbrite` | `www.eventbriteapi.com` |
 | Fathom | `fathom` | `api.fathom.ai` |
+| Firebase | `firebase` | `firebase.googleapis.com` |
 | Fireflies | `fireflies` | `api.fireflies.ai` |
 | GetResponse | `getresponse` | `api.getresponse.com` |
 | GitHub | `github` | `api.github.com` |
 | Gumroad | `gumroad` | `api.gumroad.com` |
 | Google Ads | `google-ads` | `googleads.googleapis.com` |
+| Google BigQuery | `google-bigquery` | `bigquery.googleapis.com` |
 | Google Analytics Admin | `google-analytics-admin` | `analyticsadmin.googleapis.com` |
 | Google Analytics Data | `google-analytics-data` | `analyticsdata.googleapis.com` |
 | Google Calendar | `google-calendar` | `www.googleapis.com` |
+| Google Classroom | `google-classroom` | `classroom.googleapis.com` |
 | Google Contacts | `google-contacts` | `people.googleapis.com` |
 | Google Docs | `google-docs` | `docs.googleapis.com` |
 | Google Drive | `google-drive` | `www.googleapis.com` |
@@ -256,6 +259,7 @@ If omitted, the gateway uses the default (oldest) active connection for that app
 | Salesforce | `salesforce` | `{instance}.salesforce.com` |
 | SignNow | `signnow` | `api.signnow.com` |
 | Slack | `slack` | `slack.com` |
+| Snapchat | `snapchat` | `adsapi.snapchat.com` |
 | Square | `squareup` | `connect.squareup.com` |
 | Stripe | `stripe` | `api.stripe.com` |
 | Systeme.io | `systeme` | `api.systeme.io` |
@@ -310,6 +314,7 @@ See [references/](references/) for detailed routing guides per provider:
 - [ElevenLabs](references/elevenlabs.md) - Text-to-speech, voice cloning, sound effects, audio processing
 - [Eventbrite](references/eventbrite.md) - Events, venues, tickets, orders, attendees
 - [Fathom](references/fathom.md) - Meeting recordings, transcripts, summaries, webhooks
+- [Firebase](references/firebase.md) - Projects, web apps, Android apps, iOS apps, configurations
 - [Fireflies](references/fireflies.md) - Meeting transcripts, summaries, AskFred AI, channels
 - [GetResponse](references/getresponse.md) - Campaigns, contacts, newsletters, autoresponders, tags, segments
 - [GitHub](references/github.md) - Repositories, issues, pull requests, commits
@@ -317,7 +322,9 @@ See [references/](references/) for detailed routing guides per provider:
 - [Google Ads](references/google-ads.md) - Campaigns, ad groups, GAQL queries
 - [Google Analytics Admin](references/google-analytics-admin.md) - Reports, dimensions, metrics
 - [Google Analytics Data](references/google-analytics-data.md) - Reports, dimensions, metrics
+- [Google BigQuery](references/google-bigquery.md) - Datasets, tables, jobs, SQL queries
 - [Google Calendar](references/google-calendar.md) - Events, calendars, free/busy
+- [Google Classroom](references/google-classroom.md) - Courses, coursework, students, teachers, announcements
 - [Google Contacts](references/google-contacts.md) - Contacts, contact groups, people search
 - [Google Docs](references/google-docs.md) - Document creation, batch updates
 - [Google Drive](references/google-drive.md) - Files, folders, permissions
@@ -363,6 +370,7 @@ See [references/](references/) for detailed routing guides per provider:
 - [SignNow](references/signnow.md) - Documents, templates, invites, e-signatures
 - [SendGrid](references/sendgrid.md) - Email sending, contacts, templates, suppressions, statistics
 - [Slack](references/slack.md) - Messages, channels, users
+- [Snapchat](references/snapchat.md) - Ad accounts, campaigns, ad squads, ads, creatives, audiences
 - [Square](references/squareup.md) - Payments, customers, orders, catalog, inventory, invoices
 - [Stripe](references/stripe.md) - Customers, subscriptions, payments
 - [Systeme.io](references/systeme.md) - Contacts, tags, courses, communities, webhooks
