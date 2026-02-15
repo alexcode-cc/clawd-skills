@@ -37,10 +37,10 @@ const CONFIG = {
   
   // Webhook settings
   webhookUrl: 'http://localhost:18789/hooks/agent',
-  webhookToken: '9150a681e056a67677b64dfe1c0da97d',
+  webhookToken: process.env.OPENCLAW_HOOKS_TOKEN || '',
   
   // SEC API settings
-  userAgent: 'SEC-Filing-Watcher/1.0 (contact: admin@xpindustries.xyz)',
+  userAgent: process.env.SEC_WATCHER_USER_AGENT || 'SEC-Filing-Watcher/1.0 (contact: your-email@example.com)',
   secBaseUrl: 'https://www.sec.gov/cgi-bin/browse-edgar',
   filingsPerRequest: 10,
   
@@ -49,7 +49,8 @@ const CONFIG = {
   delayBetweenNotifications: 1000,  // ms between webhook calls
   
   // Notification settings
-  deliverToChannel: 'telegram',
+  deliverToChannel: process.env.SEC_WATCHER_CHANNEL || 'telegram',
+  deliverTo: process.env.SEC_WATCHER_RECIPIENT || '',
 };
 
 // =============================================================================
@@ -194,16 +195,23 @@ function extractTag(xml, tagName) {
 async function sendNotification(ticker, filing) {
   const message = buildNotificationMessage(ticker, filing);
   
-  const res = await fetch(`${CONFIG.webhookUrl}?token=${CONFIG.webhookToken}`, {
+  const headers = {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${CONFIG.webhookToken}`
+  };
+  const body = {
+    message,
+    name: 'SEC',
+    sessionKey: `hook:sec:${filing.accessionNumber}`,
+    deliver: true,
+    channel: CONFIG.deliverToChannel,
+  };
+  if (CONFIG.deliverTo) body.to = CONFIG.deliverTo;
+
+  const res = await fetch(CONFIG.webhookUrl, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      message,
-      name: 'SEC',
-      sessionKey: `hook:sec:${filing.accessionNumber}`,
-      deliver: true,
-      channel: CONFIG.deliverToChannel
-    })
+    headers,
+    body: JSON.stringify(body)
   });
   
   if (!res.ok) {
