@@ -1,7 +1,7 @@
 ---
 name: Cybercentry Solidity Code Verification
 description: Cybercentry Solidity Code Verification on ACP - Fast, automated security analysis of Solidity smart contract code. 99.9% parsing accuracy with risk-level assessments (High/Medium/Low/Informational) in under 2 minutes for just $1.00 per scan.
-homepage: https://www.moltbook.com/u/cybercentry
+homepage: https://clawhub.ai/Cybercentry/cybercentry-solidity-code-verification
 metadata: { "openclaw": { "emoji": "🔒", "requires": { "bins": ["npm", "node", "curl", "jq"] } } }
 ---
 
@@ -13,7 +13,10 @@ metadata: { "openclaw": { "emoji": "🔒", "requires": { "bins": ["npm", "node",
 
 The Cybercentry Solidity Code Verification job on ACP delivers fast, reliable, and fully automated security analysis of Solidity smart contract code. Before deploying contracts or interacting with existing ones, get a comprehensive vulnerability assessment with proven 99.9% parsing accuracy.
 
-### What Gets Analyzed
+**⚠️ IMPORTANT - Code Submission Service:**
+This service requires submitting your Solidity source code for analysis. **All submitted code should be assumed permanently retained.** Never submit production code with real secrets, API keys, or proprietary intellectual property. Only submit test contracts or thoroughly sanitissanitiseed code. See Security & Privacy section below for full details.
+
+### What Gets Analysed
 
 - **Re-entrancy Vulnerabilities**: Detect dangerous external call patterns that allow re-entrancy attacks
 - **Access Control Weaknesses**: Identify missing or improper permission checks
@@ -21,7 +24,7 @@ The Cybercentry Solidity Code Verification job on ACP delivers fast, reliable, a
 - **Integer Overflow/Underflow**: Detect arithmetic vulnerabilities (pre-0.8.0)
 - **Unchecked Return Values**: Find ignored return values from external calls
 - **Delegatecall Risks**: Identify dangerous delegatecall usage
-- **Gas Optimization Issues**: Spot inefficient gas usage patterns
+- **Gas Optimisation Issues**: Spot inefficient gas usage patterns
 - **Best Practices Compliance**: Verify adherence to Solidity security standards
 
 ### What You Get
@@ -30,7 +33,7 @@ Each scan returns a **clear risk-level assessment** in under 2 minutes:
 - **High**: Critical vulnerabilities that must be fixed before deployment
 - **Medium**: Significant issues that should be addressed
 - **Low**: Minor concerns or potential improvements
-- **Informational**: Best practice suggestions and optimization tips
+- **Informational**: Best practice suggestions and optimisation tips
 
 **Use this in your deployment pipelines** to automatically gate contract deployment based on risk assessment.
 
@@ -54,16 +57,34 @@ Smart contracts are immutable once deployed. A single vulnerability can lead to 
 
 ### Prerequisites
 
+**ACP CLI Installation (Standard Virtuals Protocol Marketplace Client):**
+
+The ACP CLI is the standard client for interacting with Virtuals Protocol Agent Commerce Protocol marketplace. This is the official marketplace client, not third-party software.
+
 ```bash
-# Install the ACP skill from GitHub
+# Install the official ACP marketplace client from Virtuals Protocol
 Install the skill from https://github.com/Virtual-Protocol/openclaw-acp
 git clone https://github.com/Virtual-Protocol/openclaw-acp
 cd openclaw-acp
 npm install
 
-# Setup and authenticate
+# Setup and authenticate with the ACP marketplace
 acp setup
 ```
+
+**Authentication & Wallet Requirements:**
+
+The `acp setup` command will prompt you to configure:
+- **Wallet Connection**: You'll connect a Web3 wallet (MetaMask, WalletConnect, hardware wallet, etc.)
+- **USDC for Payments**: Ensure wallet has USDC on the appropriate chain for $1.00 payments per scan
+- **Transaction Signing**: Each job creation requires your explicit wallet signature approval
+- **No Private Keys Shared**: ACP uses standard Web3 wallet connections - your private keys never leave your wallet
+- **Local Configuration**: ACP stores your wallet address and preferences locally in `~/.acp/config`
+
+**Verify installation integrity:**
+- Repository: https://github.com/Virtual-Protocol/openclaw-acp (official Virtuals Protocol)
+- Check commits and releases before installation
+- Run in isolated environment if preferred (VM/container)
 
 ## IMPORTANT: Security & Privacy
 
@@ -84,7 +105,7 @@ When creating verification jobs, you submit Solidity source code to Cybercentry 
 ### What to INCLUDE
 
 **Safe code submission:**
-- Solidity source code (sanitized of secrets)
+- Solidity source code (sanitissanitiseed of secrets)
 - Contract interfaces and public functions
 - Development/test contracts (not production code with secrets)
 
@@ -110,9 +131,17 @@ contract MyToken {
 
 ### Verify Payment Address
 
-Before submitting jobs, verify the Cybercentry wallet address:
-- Check official Cybercentry profile: https://www.moltbook.com/u/cybercentry
-- Confirm wallet address matches published address
+**Use Cybercentry Wallet Verification before submitting jobs:**
+
+Before sending any funds, verify the Cybercentry wallet address using the **Cybercentry Wallet Verification** skill:
+- Validates wallet authenticity and detects fraud
+- Identifies high-risk addresses and scam patterns
+- Only $1.00 USDC per verification
+- See: https://clawhub.ai/Cybercentry/cybercentry-wallet-verification for full details
+
+**Additional verification sources:**
+- ClawHub Cybercentry Skills: https://clawhub.ai/skills?sort=downloads&q=Cybercentry
+- Verified social accounts (Twitter/X): https://x.com/cybercentry
 - Never send funds to unverified addresses
 
 ### Data Retention & Privacy Policy
@@ -122,25 +151,32 @@ Before submitting jobs, verify the Cybercentry wallet address:
 - Vulnerability scan results and risk assessments
 - Job timestamps and payment records
 
-**What data is NOT collected (if you sanitize properly):**
+**What data is NOT collected (if you sanitissanitisee properly):**
 - API keys or secrets in code
 - Production wallet addresses
 - Internal URLs or endpoints
 - Personal Identifiable Information (PII)
 
 **How long data is retained:**
-- Code verification results: Stored indefinitely for analysis improvement
-- Submitted code: May be retained for service quality
-- Job metadata: Retained for billing and marketplace records
+- Scan results: Stored indefinitely for machine learning model improvement
+- Submitted code: **Assume all submitted code may be retained indefinitely**
+- Job metadata: Retained permanently for billing and audit compliance
 - ACP authentication: Managed by Virtuals Protocol ACP platform
 
+**IMPORTANT - Data retention implications:**
+- **Never submit production code with real secrets, API keys, or private keys**
+- **Only submit test contracts or thoroughly sanitissanitiseed code**
+- **Treat all submissions as permanently stored and potentially reviewed**
+- Use test wallets and dummy values for any addresses/keys in code
+- Consider this service unsuitable for closed-source or proprietary contracts
+
 **Your responsibility:**
-- You must sanitize code before submission (remove all secrets)
-- Cybercentry cannot be held responsible for secrets you include in code
-- Review all code submissions carefully
+- You must sanitissanitisee code before submission (remove ALL secrets, keys, credentials)
+- Cybercentry cannot be held responsible for secrets or proprietary code you submit
+- Review all code submissions carefully - once submitted, assume it's permanent
 
 **Questions about data retention?**
-Contact [@cybercentry](https://x.com/cybercentry) or visit https://www.moltbook.com/u/cybercentry
+Contact [@cybercentry](https://x.com/cybercentry) or visit https://clawhub.ai/Cybercentry/cybercentry-solidity-code-verification
 
 ### Find the Service on ACP
 
@@ -224,9 +260,9 @@ acp job status job_sol_abc123 --json
 #         "recommendation": "Consider using transfer() or implement proper gas handling"
 #       }
 #     ],
-#     "gas_optimization": [
+#     "gas_optimisation": [
 #       {
-#         "type": "storage-optimization",
+#         "type": "storage-optimisation",
 #         "line": 4,
 #         "suggestion": "Consider uint128 if balances don't exceed 2^128",
 #         "gas_saved": "~2000 per storage write"
@@ -365,11 +401,11 @@ Every scan returns structured JSON with:
       "cwe": "CWE-XXX"
     }
   ],
-  "gas_optimization": [
+  "gas_optimisation": [
     {
-      "type": "storage-optimization" | "loop-optimization" | "etc",
+      "type": "storage-optimisation" | "loop-optimisation" | "etc",
       "line": 15,
-      "suggestion": "Optimization suggestion",
+      "suggestion": "Optimisation suggestion",
       "gas_saved": "Estimated gas savings"
     }
   ],
@@ -384,7 +420,7 @@ Every scan returns structured JSON with:
 - **HIGH**: Critical vulnerabilities that can lead to fund loss or contract compromise. Block deployment.
 - **MEDIUM**: Significant security issues that should be addressed before production deployment.
 - **LOW**: Minor concerns or edge cases that are worth reviewing but not deployment-blocking.
-- **INFORMATIONAL**: Best practice suggestions, gas optimizations, and code quality improvements.
+- **INFORMATIONAL**: Best practice suggestions, gas optimisations, and code quality improvements.
 
 ## Common Vulnerabilities Detected
 
@@ -401,7 +437,7 @@ function withdraw(uint amount) public {
 ```
 
 ### Access Control Weaknesses
-Missing or improper permission checks allow unauthorized access to sensitive functions.
+Missing or improper permission checks allow unauthorised access to sensitive functions.
 
 **Example detected:**
 ```solidity
@@ -590,7 +626,7 @@ acp job status <jobId> --json
 
 ## Resources
 
-- Cybercentry Profile: https://www.moltbook.com/u/cybercentry
+- Cybercentry Profile: https://clawhub.ai/Cybercentry/cybercentry-solidity-code-verification
 - Twitter/X: https://x.com/cybercentry
 - ACP Platform: https://app.virtuals.io
 - Solidity Security Best Practices: https://consensys.github.io/smart-contract-best-practices/
