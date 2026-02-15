@@ -1,0 +1,11 @@
+{
+  "owner": "webthree549-bot",
+  "slug": "agent-ros-bridge",
+  "displayName": "Agent ROS Bridge",
+  "latest": {
+    "version": "0.3.2",
+    "publishedAt": 1771153599023,
+    "commit": null
+  },
+  "history": []
+}
