@@ -5,7 +5,7 @@ metadata:
   openclaw:
     emoji: "📊"
     requires:
-      bins: ["python3", "curl", "uvx", "jq"]
+      bins: ["python3", "curl"]
 ---
 
 # Crypto Regime Report
@@ -23,6 +23,8 @@ python3 {baseDir}/scripts/regime_report.py --weekly
 ```
 
 Or ask directly: "What's the regime on BTC?" or "Run a market report."
+
+**Note:** The script outputs a formatted report to stdout. The agent handles delivery (e.g., sending to Telegram, displaying in chat).
 
 ---
 
@@ -90,7 +92,8 @@ An example config is provided at `{baseDir}/references/config.example.json` — 
 
 **To find OKX symbols:** Visit [OKX Markets](https://www.okx.com/markets) or use:
 ```bash
-curl -s "https://www.okx.com/api/v5/public/instruments?instType=SWAP" | jq '.data[].instId'
+curl -s "https://www.okx.com/api/v5/public/instruments?instType=SWAP"
+# Optionally pipe through jq to filter: | jq '.data[].instId'
 ```
 
 ### 2. Configure Indicator Settings
@@ -145,21 +148,21 @@ openclaw cron add \
         "name": "Morning Regime Report",
         "schedule": { "kind": "cron", "expr": "0 6 * * *", "tz": "America/Los_Angeles" },
         "sessionTarget": "isolated",
-        "payload": { "kind": "agentTurn", "message": "Run the crypto regime morning report and send it to Telegram" },
+        "payload": { "kind": "agentTurn", "message": "Run the crypto regime morning report" },
         "delivery": { "mode": "announce" }
       },
       {
         "name": "Evening Regime Report",
         "schedule": { "kind": "cron", "expr": "0 15 * * *", "tz": "America/Los_Angeles" },
         "sessionTarget": "isolated",
-        "payload": { "kind": "agentTurn", "message": "Run the crypto regime evening report and send it to Telegram" },
+        "payload": { "kind": "agentTurn", "message": "Run the crypto regime evening report" },
         "delivery": { "mode": "announce" }
       },
       {
         "name": "Friday Weekly Summary",
         "schedule": { "kind": "cron", "expr": "0 16 * * 5", "tz": "America/Los_Angeles" },
         "sessionTarget": "isolated",
-        "payload": { "kind": "agentTurn", "message": "Run the crypto regime weekly report with --weekly flag and send it to Telegram" },
+        "payload": { "kind": "agentTurn", "message": "Run the crypto regime weekly report with --weekly flag" },
         "delivery": { "mode": "announce" }
       }
     ]
