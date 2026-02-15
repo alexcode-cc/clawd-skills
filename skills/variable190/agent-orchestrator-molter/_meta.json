@@ -1,0 +1,11 @@
+{
+  "owner": "variable190",
+  "slug": "agent-orchestrator-molter",
+  "displayName": "Agent Orchestrator",
+  "latest": {
+    "version": "1.0.3",
+    "publishedAt": 1771199179893,
+    "commit": null
+  },
+  "history": []
+}
