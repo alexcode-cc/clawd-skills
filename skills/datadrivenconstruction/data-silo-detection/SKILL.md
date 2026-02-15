@@ -1,9 +1,9 @@
 ---
-slug: "data-silo-detection"
-display_name: "Data Silo Detection"
+name: "data-silo-detection"
 description: "Detect and map data silos in construction organizations. Identify disconnected data sources and integration opportunities"
+homepage: "https://datadrivenconstruction.io"
+metadata: {"openclaw": {"emoji": "🔗", "os": ["win32"], "homepage": "https://datadrivenconstruction.io", "requires": {"bins": ["python3"]}}}
 ---
-
 # Data Silo Detection
 
 ## Overview
