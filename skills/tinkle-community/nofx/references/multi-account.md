@@ -1,114 +1,114 @@
-# NOFX 多账户管理
+# NOFX Multi-Account Management
 
-## 多账户场景
+## Multi-Account Scenarios
 
-1. **风险隔离** - 不同策略用不同账户
-2. **多交易所** - 同时使用多个交易所
-3. **资金分配** - 分散风险
-4. **测试环境** - 主账户 + 测试账户
+1. **Risk Isolation** - Different strategies use different accounts
+2. **Multiple Exchanges** - Use multiple exchanges simultaneously
+3. **Capital Allocation** - Spread risk
+4. **Test Environment** - Main account + test account
 
-## 配置方式
+## Configuration Methods
 
-### 同交易所多账户
+### Multi-Accounts on Same Exchange
 
-在 Config 页面添加多个交易所配置，用不同名称区分：
-
-```
-binance-main       → 主账户
-binance-test       → 测试账户
-binance-grid       → 网格专用
-```
-
-### 多交易所
+Add multiple exchange configurations in Config page, distinguished by different names:
 
 ```
-binance   → 主力交易
-bybit     → 备用
-okx       → 套利
-gate      → 山寨币
+binance-main       → Main account
+binance-test       → Test account
+binance-grid       → Grid trading dedicated
 ```
 
-## 账户命名建议
+### Multiple Exchanges
 
-| 命名模式 | 示例 | 用途 |
-|----------|------|------|
-| `{交易所}-{用途}` | binance-main | 区分用途 |
-| `{交易所}-{策略}` | binance-grid | 区分策略 |
-| `{交易所}-{资金}` | binance-10k | 区分资金量 |
+```
+binance   → Primary trading
+bybit     → Backup
+okx       → Arbitrage
+gate      → Altcoins
+```
 
-## Trader 与账户绑定
+## Account Naming Suggestions
 
-创建 Trader 时选择对应账户：
+| Naming Pattern | Example | Purpose |
+|----------------|---------|---------|
+| `{exchange}-{purpose}` | binance-main | Distinguish purpose |
+| `{exchange}-{strategy}` | binance-grid | Distinguish strategy |
+| `{exchange}-{capital}` | binance-10k | Distinguish capital amount |
+
+## Trader & Account Binding
+
+Select corresponding account when creating Trader:
 
 ```
 Trader: eth-hunter
 ├── AI Model: Claude
-├── Exchange: binance-main    ← 选择账户
-└── Strategy: ai500策略
+├── Exchange: binance-main    ← Select account
+└── Strategy: ai500 strategy
 ```
 
-## 资金分配建议
+## Capital Allocation Recommendations
 
-| 账户类型 | 资金比例 | 风险等级 |
-|----------|----------|----------|
-| 主账户 | 50-60% | 低风险策略 |
-| 激进账户 | 20-30% | 高收益策略 |
-| 测试账户 | 10-20% | 新策略测试 |
+| Account Type | Capital Ratio | Risk Level |
+|--------------|---------------|-------------|
+| Main Account | 50-60% | Low risk strategy |
+| Aggressive Account | 20-30% | High return strategy |
+| Test Account | 10-20% | New strategy testing |
 
-## 风险管理
+## Risk Management
 
-### 单账户限制
+### Single Account Limits
 
-- 最大持仓: 账户资金的 50%
-- 单币最大: 账户资金的 20%
-- 日亏损限: 账户资金的 10%
+- Max position: 50% of account capital
+- Max single coin: 20% of account capital
+- Daily loss limit: 10% of account capital
 
-### 多账户总限
+### Multi-Account Total Limits
 
-- 总暴露: 总资金的 70%
-- 相关性: 避免所有账户持仓高度相关
-- 监控: 汇总查看所有账户 P&L
+- Total exposure: 70% of total capital
+- Correlation: Avoid all accounts holding highly correlated positions
+- Monitoring: View all accounts P&L in aggregate
 
-## Dashboard 切换
+## Dashboard Switching
 
-在 Dashboard 页面顶部下拉菜单切换 Trader/账户：
+Switch Trader/account in dropdown menu at top of Dashboard page:
 
 ```javascript
-// 浏览器自动化切换账户
+// Browser automation to switch account
 browser.act({kind: "click", ref: "traderSelector"})
 browser.act({kind: "click", ref: "targetTrader"})
 ```
 
-## API 多账户
+## Multi-Account API
 
-调用不同账户的 API 时，使用对应的 API Key：
+When calling APIs for different accounts, use corresponding API Keys:
 
 ```bash
-# 账户 A
+# Account A
 curl -H "Authorization: Bearer $KEY_A" ...
 
-# 账户 B
+# Account B
 curl -H "Authorization: Bearer $KEY_B" ...
 ```
 
-## 子账户功能 (交易所)
+## Sub-Account Features (Exchange)
 
-### Binance 子账户
+### Binance Sub-Accounts
 
-1. 用户中心 → 子账户
-2. 创建子账户
-3. 划转资金
-4. 生成子账户 API
+1. User Center → Sub-Accounts
+2. Create sub-account
+3. Transfer funds
+4. Generate sub-account API
 
-### OKX 子账户
+### OKX Sub-Accounts
 
-1. 用户中心 → 子账户管理
-2. 创建交易子账户
-3. 设置权限和限额
+1. User Center → Sub-Account Management
+2. Create trading sub-account
+3. Set permissions and limits
 
-## 安全建议
+## Security Recommendations
 
-1. **不同 IP 白名单** - 每个账户用不同服务器
-2. **独立 2FA** - 每个账户独立验证
-3. **权限最小化** - 只开必要权限
-4. **定期审计** - 检查异常交易
+1. **Different IP Whitelist** - Each account uses different server
+2. **Independent 2FA** - Each account has independent verification
+3. **Minimal Permissions** - Only enable necessary permissions
+4. **Regular Auditing** - Check for abnormal trades

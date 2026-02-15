@@ -23,17 +23,17 @@ timestamp=$(date "+%Y-%m-%d %H:%M")
 
 # Generate report
 cat << EOF
-📊 **NOFX 市场行情 | $timestamp**
+📊 **NOFX Market Report | $timestamp**
 
 ---
 
-🤖 **AI500 高潜力信号**
+🤖 **AI500 High Potential Signals**
 EOF
 
 echo "$ai500" | jq -r '
   .data.coins[:5] | 
-  "| 币种 | AI评分 | 累计涨幅 |",
-  "|------|--------|----------|",
+  "| Coin | AI Score | Cumulative Gain |",
+  "|------|----------|-----------------|",
   (.[] | "| \(.pair | gsub("USDT$";"")) | \(.score | . * 100 | floor / 100) | +\(.increase_percent | . * 100 | floor / 100)% |")
 ' 2>/dev/null || echo "No AI500 data"
 
@@ -41,7 +41,7 @@ cat << EOF
 
 ---
 
-💰 **机构资金流入 TOP10** (1h)
+💰 **Institutional Inflow TOP10** (1h)
 EOF
 
 echo "$flow_in" | jq -r '
@@ -54,7 +54,7 @@ cat << EOF
 
 ---
 
-🚀 **1小时涨幅 TOP10**
+🚀 **1h Gainers TOP10**
 EOF
 
 echo "$price" | jq -r '
@@ -67,7 +67,7 @@ cat << EOF
 
 ---
 
-📈 **1小时OI增加 TOP10**
+📈 **1h OI Increase TOP10**
 EOF
 
 echo "$oi_up" | jq -r '
@@ -80,7 +80,7 @@ cat << EOF
 
 ---
 
-📉 **1小时OI减少 TOP10**
+📉 **1h OI Decrease TOP10**
 EOF
 
 echo "$oi_down" | jq -r '
@@ -96,7 +96,7 @@ cat << EOF
 
 ---
 
-⚠️ **跌幅预警**
+⚠️ **Drop Alert**
 EOF
 echo "$losers" | jq -r '.[] | "- 🔴 \(.symbol) \((.price_delta * 100) | . * 100 | floor / 100)%"' 2>/dev/null
 fi

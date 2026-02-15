@@ -1,99 +1,99 @@
-# NOFX 支持的交易所
+# NOFX Supported Exchanges
 
-## CEX 中心化交易所
+## CEX Centralized Exchanges
 
-| 交易所 | 注册链接 (返佣) | 状态 |
-|--------|----------------|------|
-| **Binance** | [注册](https://www.binance.com/join?ref=NOFXENG) | ✅ 支持 |
-| **Bybit** | [注册](https://partner.bybit.com/b/83856) | ✅ 支持 |
-| **OKX** | [注册](https://www.okx.com/join/1865360) | ✅ 支持 |
-| **Bitget** | [注册](https://www.bitget.com/referral/register?from=referral&clacCode=c8a43172) | ✅ 支持 |
-| **KuCoin** | [注册](https://www.kucoin.com/r/broker/CXEV7XKK) | ✅ 支持 |
-| **Gate.io** | [注册](https://www.gatenode.xyz/share/VQBGUAxY) | ✅ 支持 |
+| Exchange | Registration Link (Referral) | Status |
+|----------|------------------------------|--------|
+| **Binance** | [Register](https://www.binance.com/join?ref=NOFXENG) | ✅ Supported |
+| **Bybit** | [Register](https://partner.bybit.com/b/83856) | ✅ Supported |
+| **OKX** | [Register](https://www.okx.com/join/1865360) | ✅ Supported |
+| **Bitget** | [Register](https://www.bitget.com/referral/register?from=referral&clacCode=c8a43172) | ✅ Supported |
+| **KuCoin** | [Register](https://www.kucoin.com/r/broker/CXEV7XKK) | ✅ Supported |
+| **Gate.io** | [Register](https://www.gatenode.xyz/share/VQBGUAxY) | ✅ Supported |
 
-## DEX 去中心化永续交易所
+## DEX Decentralized Perpetual Exchanges
 
-| 交易所 | 注册链接 | 状态 |
-|--------|----------|------|
-| **Hyperliquid** | [注册](https://app.hyperliquid.xyz/join/AITRADING) | ✅ 支持 |
-| **Aster DEX** | [注册](https://www.asterdex.com/en/referral/fdfc0e) | ✅ 支持 |
-| **Lighter** | [注册](https://app.lighter.xyz/?referral=68151432) | ✅ 支持 |
+| Exchange | Registration Link | Status |
+|----------|------------------|--------|
+| **Hyperliquid** | [Register](https://app.hyperliquid.xyz/join/AITRADING) | ✅ Supported |
+| **Aster DEX** | [Register](https://www.asterdex.com/en/referral/fdfc0e) | ✅ Supported |
+| **Lighter** | [Register](https://app.lighter.xyz/?referral=68151432) | ✅ Supported |
 
-## 支持的 AI 模型
+## Supported AI Models
 
-| 模型 | 获取 API Key | 推荐 |
-|------|-------------|------|
-| **DeepSeek** | [获取](https://platform.deepseek.com) | ⭐ 性价比高 |
-| **Qwen** | [获取](https://dashscope.console.aliyun.com) | 中文优化 |
-| **OpenAI (GPT)** | [获取](https://platform.openai.com) | 通用强 |
-| **Claude** | [获取](https://console.anthropic.com) | 推理强 |
-| **Gemini** | [获取](https://aistudio.google.com) | 免费额度 |
-| **Grok** | [获取](https://console.x.ai) | 新兴 |
-| **Kimi** | [获取](https://platform.moonshot.cn) | 中文强 |
+| Model | Get API Key | Recommendation |
+|-------|------------|----------------|
+| **DeepSeek** | [Get](https://platform.deepseek.com) | ⭐ High cost-effectiveness |
+| **Qwen** | [Get](https://dashscope.console.aliyun.com) | Chinese optimized |
+| **OpenAI (GPT)** | [Get](https://platform.openai.com) | General purpose strong |
+| **Claude** | [Get](https://console.anthropic.com) | Strong reasoning |
+| **Gemini** | [Get](https://aistudio.google.com) | Free quota |
+| **Grok** | [Get](https://console.x.ai) | Emerging |
+| **Kimi** | [Get](https://platform.moonshot.cn) | Strong Chinese |
 
-## 交易所 API 配置
+## Exchange API Configuration
 
 ### Binance
 
-1. 登录 Binance
-2. 进入 API 管理: 用户中心 → API 管理
-3. 创建 API → 系统生成
-4. 开启权限:
-   - ✅ 读取
-   - ✅ 现货和杠杆交易
-   - ✅ 合约交易
-5. IP 白名单 (推荐): 添加服务器 IP
-6. 复制 API Key 和 Secret
+1. Login to Binance
+2. Go to API Management: User Center → API Management
+3. Create API → System Generated
+4. Enable permissions:
+   - ✅ Read
+   - ✅ Spot & Margin Trading
+   - ✅ Futures Trading
+5. IP Whitelist (recommended): Add server IP
+6. Copy API Key and Secret
 
 ### Bybit
 
-1. 登录 Bybit
-2. 进入 API: 账户 → API 管理
-3. 创建新 API
-4. 权限设置:
-   - ✅ 合约 - 订单
-   - ✅ 合约 - 仓位
-5. 绑定 IP (可选)
+1. Login to Bybit
+2. Go to API: Account → API Management
+3. Create New API
+4. Permission settings:
+   - ✅ Derivatives - Order
+   - ✅ Derivatives - Position
+5. Bind IP (optional)
 
 ### OKX
 
-1. 登录 OKX
-2. 进入 API: 用户中心 → API
-3. 创建 V5 API
-4. 权限:
-   - ✅ 读取
-   - ✅ 交易
-5. 设置 Passphrase (必须记住)
+1. Login to OKX
+2. Go to API: User Center → API
+3. Create V5 API
+4. Permissions:
+   - ✅ Read
+   - ✅ Trade
+5. Set Passphrase (must remember)
 
 ### Gate.io
 
-1. 登录 Gate.io
-2. 进入 API: 用户中心 → API 管理
-3. 创建 API Key
-4. 权限:
-   - ✅ 现货交易
-   - ✅ 合约交易
-   - ✅ 提现 (可选，建议关闭)
+1. Login to Gate.io
+2. Go to API: User Center → API Management
+3. Create API Key
+4. Permissions:
+   - ✅ Spot Trading
+   - ✅ Futures Trading
+   - ✅ Withdrawal (optional, recommended to disable)
 
 ### Hyperliquid
 
-1. 访问 [Hyperliquid](https://app.hyperliquid.xyz)
-2. 连接钱包
-3. 进入 API: 设置 → API
-4. 创建 API Key (需要签名授权)
+1. Visit [Hyperliquid](https://app.hyperliquid.xyz)
+2. Connect wallet
+3. Go to API: Settings → API
+4. Create API Key (requires signature authorization)
 
 ### Aster DEX
 
-1. 访问 [Aster DEX](https://www.asterdex.com)
-2. 连接钱包
-3. 设置 → API 管理
-4. 创建交易 API
+1. Visit [Aster DEX](https://www.asterdex.com)
+2. Connect wallet
+3. Settings → API Management
+4. Create Trading API
 
-## 安全建议
+## Security Recommendations
 
-1. **开启 IP 白名单** - 只允许服务器 IP 访问
-2. **最小权限原则** - 只开启需要的权限
-3. **关闭提现权限** - 除非绝对必要
-4. **定期轮换 API Key** - 每月更新一次
-5. **使用独立子账户** - 隔离交易资金
-6. **设置合理杠杆** - 建议 ≤5x
+1. **Enable IP Whitelist** - Only allow server IP access
+2. **Principle of Least Privilege** - Only enable necessary permissions
+3. **Disable Withdrawal Permission** - Unless absolutely necessary
+4. **Regular API Key Rotation** - Update monthly
+5. **Use Independent Sub-accounts** - Isolate trading funds
+6. **Set Reasonable Leverage** - Recommend ≤5x

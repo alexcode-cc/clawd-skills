@@ -204,9 +204,9 @@ Navigate to https://nofxai.com/debate
 1. Click "New Debate"
 2. Select symbol
 3. Select AI models and roles:
-   - Bull (多头): Finds long opportunities
-   - Bear (空头): Finds short opportunities  
-   - Analyst (分析师): Neutral analysis
+   - Bull: Finds long opportunities
+   - Bear: Finds short opportunities  
+   - Analyst: Neutral analysis
 4. Run debate rounds
 5. Get consensus recommendation
 
@@ -228,7 +228,7 @@ Navigate to https://nofxai.com/backtest
 
 ```json
 {
-  "name": "NOFX市场行情汇报",
+  "name": "NOFX Market Report",
   "schedule": {"kind": "cron", "expr": "*/30 * * * *"},
   "sessionTarget": "isolated",
   "payload": {

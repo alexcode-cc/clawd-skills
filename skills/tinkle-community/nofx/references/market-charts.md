@@ -1,100 +1,100 @@
-# NOFX Market 页面使用
+# NOFX Market Page Usage
 
-## 访问方式
+## Access Method
 
 URL: `https://nofxai.com/market`
 
-## 功能概览
+## Feature Overview
 
-### K线图表
+### K-line Charts
 
-- TradingView 风格 K 线图
-- 支持多时间周期: 1m, 5m, 15m, 30m, 1h, 4h, 1d
-- 实时价格更新
+- TradingView style K-line charts
+- Supports multiple timeframes: 1m, 5m, 15m, 30m, 1h, 4h, 1d
+- Real-time price updates
 
-### 技术指标
+### Technical Indicators
 
-| 指标 | 说明 | 用法 |
-|------|------|------|
-| EMA | 指数移动平均 | 趋势方向 |
-| MACD | 异同移动平均 | 动量/背离 |
-| RSI | 相对强弱指数 | 超买超卖 |
-| BOLL | 布林带 | 支撑阻力/波动率 |
-| Volume | 成交量 | 量价配合 |
+| Indicator | Description | Usage |
+|-----------|-------------|-------|
+| EMA | Exponential Moving Average | Trend direction |
+| MACD | Moving Average Convergence Divergence | Momentum/divergence |
+| RSI | Relative Strength Index | Overbought/oversold |
+| BOLL | Bollinger Bands | Support/resistance/volatility |
+| Volume | Trading volume | Price-volume relationship |
 
-### 订单簿深度
+### Order Book Depth
 
-- 买卖挂单分布
-- 大单标记
-- 买卖压力对比
+- Buy/sell order distribution
+- Large order marking
+- Buy/sell pressure comparison
 
-### 实时数据
+### Real-time Data
 
-- 当前价格
-- 24h 涨跌幅
-- 24h 成交量
-- 资金费率
-- 持仓量
+- Current price
+- 24h change percentage
+- 24h trading volume
+- Funding rate
+- Open interest
 
-## 浏览器自动化
+## Browser Automation
 
-### 打开 Market 页面
+### Open Market Page
 
 ```javascript
 browser.navigate("https://nofxai.com/market")
 browser.snapshot()
 ```
 
-### 切换交易对
+### Switch Trading Pair
 
 ```javascript
-// 点击交易对选择器
-// 输入或选择目标交易对
+// Click trading pair selector
+// Input or select target trading pair
 browser.act({kind: "click", ref: "symbolSelector"})
 browser.act({kind: "type", ref: "searchBox", text: "ETHUSDT"})
 ```
 
-### 切换时间周期
+### Switch Timeframe
 
 ```javascript
-// 点击对应时间按钮
+// Click corresponding time button
 browser.act({kind: "click", ref: "timeframe1h"})
 ```
 
-## 数据解读
+## Data Interpretation
 
-### K线形态
+### K-line Patterns
 
-| 形态 | 含义 | 操作建议 |
-|------|------|----------|
-| 大阳线 | 强势上涨 | 顺势做多 |
-| 大阴线 | 强势下跌 | 顺势做空 |
-| 十字星 | 犹豫/转折 | 等待确认 |
-| 锤子线 | 底部反转 | 考虑做多 |
-| 倒锤子 | 顶部反转 | 考虑做空 |
+| Pattern | Meaning | Trading Suggestion |
+|---------|---------|-------------------|
+| Large bullish candle | Strong uptrend | Go long with trend |
+| Large bearish candle | Strong downtrend | Go short with trend |
+| Doji | Hesitation/reversal | Wait for confirmation |
+| Hammer | Bottom reversal | Consider going long |
+| Inverted hammer | Top reversal | Consider going short |
 
-### RSI 信号
+### RSI Signals
 
-| 数值 | 状态 | 操作 |
-|------|------|------|
-| > 70 | 超买 | 考虑做空/止盈 |
-| < 30 | 超卖 | 考虑做多/抄底 |
-| 50 附近 | 中性 | 等待方向 |
+| Value | Status | Action |
+|-------|---------|--------|
+| > 70 | Overbought | Consider short/take profit |
+| < 30 | Oversold | Consider long/buy dip |
+| Around 50 | Neutral | Wait for direction |
 
-### MACD 信号
+### MACD Signals
 
-| 信号 | 含义 |
-|------|------|
-| 金叉 | DIF 上穿 DEA，看涨 |
-| 死叉 | DIF 下穿 DEA，看跌 |
-| 顶背离 | 价格新高 MACD 不新高，警惕回调 |
-| 底背离 | 价格新低 MACD 不新低，可能反弹 |
+| Signal | Meaning |
+|--------|---------|
+| Golden cross | DIF crosses above DEA, bullish |
+| Death cross | DIF crosses below DEA, bearish |
+| Top divergence | Price makes new high but MACD doesn't, beware pullback |
+| Bottom divergence | Price makes new low but MACD doesn't, possible bounce |
 
-### 布林带用法
+### Bollinger Bands Usage
 
-| 位置 | 含义 |
-|------|------|
-| 触及上轨 | 超买，可能回调 |
-| 触及下轨 | 超卖，可能反弹 |
-| 收窄 | 即将突破 |
-| 扩张 | 波动加大 |
+| Position | Meaning |
+|----------|---------|
+| Touch upper band | Overbought, possible pullback |
+| Touch lower band | Oversold, possible bounce |
+| Bands narrowing | Breakout approaching |
+| Bands widening | Increasing volatility |

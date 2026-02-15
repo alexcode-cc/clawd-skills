@@ -1,24 +1,24 @@
-# NOFX 网格交易详细指南
+# NOFX Grid Trading Detailed Guide
 
-## 网格交易原理
+## Grid Trading Principles
 
-网格交易在设定的价格区间内自动低买高卖，适合震荡行情。
+Grid trading automatically buys low and sells high within a set price range, suitable for ranging markets.
 
 ```
-上界 $2200 ─────────────────
-         │  卖出 │  卖出 │
+Upper $2200 ─────────────────
+         │  Sell │  Sell │
          ├───────┼───────┤
          │       │       │
-         ├───────┼───────┤  ← 网格
+         ├───────┼───────┤  ← Grid
          │       │       │
          ├───────┼───────┤
-         │  买入 │  买入 │
-下界 $1800 ─────────────────
+         │  Buy  │  Buy  │
+Lower $1800 ─────────────────
 ```
 
-## 完整配置示例
+## Complete Configuration Examples
 
-### 示例 1: ETH 均匀网格
+### Example 1: ETH Uniform Grid
 
 ```json
 {
@@ -41,7 +41,7 @@
 }
 ```
 
-### 示例 2: BTC 自适应边界
+### Example 2: BTC Adaptive Boundaries
 
 ```json
 {
@@ -63,7 +63,7 @@
 }
 ```
 
-### 示例 3: 多头偏向网格
+### Example 3: Long-Biased Grid
 
 ```json
 {
@@ -82,101 +82,101 @@
 }
 ```
 
-## 参数详解
+## Parameter Details
 
-### 基础参数
+### Basic Parameters
 
-| 参数 | 说明 | 建议值 |
-|------|------|--------|
-| `symbol` | 交易对 | BTCUSDT, ETHUSDT 等 |
-| `grid_count` | 网格数量 | 10-50，越多越精细 |
-| `total_investment` | 总投资额(USDT) | 根据资金量定 |
-| `leverage` | 杠杆倍数 | 1-5x 建议 |
+| Parameter | Description | Suggested Value |
+|-----------|-------------|-----------------|
+| `symbol` | Trading pair | BTCUSDT, ETHUSDT etc. |
+| `grid_count` | Grid quantity | 10-50, more for precision |
+| `total_investment` | Total investment (USDT) | Based on capital |
+| `leverage` | Leverage multiplier | 1-5x recommended |
 
-### 边界设置
+### Boundary Settings
 
-| 参数 | 说明 |
-|------|------|
-| `upper_price` | 上边界价格 |
-| `lower_price` | 下边界价格 |
-| `use_atr_bounds` | 使用 ATR 自动计算边界 |
-| `atr_multiplier` | ATR 倍数 (默认 2.0) |
+| Parameter | Description |
+|-----------|-------------|
+| `upper_price` | Upper boundary price |
+| `lower_price` | Lower boundary price |
+| `use_atr_bounds` | Use ATR to auto-calculate boundaries |
+| `atr_multiplier` | ATR multiplier (default 2.0) |
 
-### 分布类型
+### Distribution Types
 
-| 类型 | 说明 | 适用场景 |
-|------|------|----------|
-| `uniform` | 均匀分布 | 无明确方向判断 |
-| `gaussian` | 中间密集 | 预期价格在中间震荡 |
-| `pyramid` | 当前价密集 | 预期小幅震荡 |
+| Type | Description | Use Case |
+|------|-------------|----------|
+| `uniform` | Even distribution | No clear direction bias |
+| `gaussian` | Dense in middle | Expect price to range in center |
+| `pyramid` | Dense at current price | Expect small range |
 
-### 风控参数
+### Risk Control Parameters
 
-| 参数 | 说明 | 建议值 |
-|------|------|--------|
-| `max_drawdown_pct` | 最大回撤止损 | 10-20% |
-| `stop_loss_pct` | 单仓止损 | 3-5% |
-| `daily_loss_limit_pct` | 日亏损限制 | 5-10% |
+| Parameter | Description | Suggested Value |
+|-----------|-------------|-----------------|
+| `max_drawdown_pct` | Max drawdown stop-loss | 10-20% |
+| `stop_loss_pct` | Single position stop-loss | 3-5% |
+| `daily_loss_limit_pct` | Daily loss limit | 5-10% |
 
-### 高级参数
+### Advanced Parameters
 
-| 参数 | 说明 |
-|------|------|
-| `use_maker_only` | 只挂 Maker 单，手续费更低 |
-| `enable_direction_adjust` | 自动调整网格方向 |
-| `direction_bias_ratio` | 方向偏向比例 (0.7 = 70%多/30%空) |
+| Parameter | Description |
+|-----------|-------------|
+| `use_maker_only` | Only place Maker orders, lower fees |
+| `enable_direction_adjust` | Auto-adjust grid direction |
+| `direction_bias_ratio` | Direction bias ratio (0.7 = 70% long/30% short) |
 
-## 网格计算
+## Grid Calculations
 
-### 每格间距
-
-```
-间距 = (上界 - 下界) / 网格数
-例: (2200 - 1800) / 20 = $20/格
-```
-
-### 每格仓位
+### Grid Spacing
 
 ```
-每格投资 = 总投资 / 网格数 * 杠杆
-例: 5000 / 20 * 3 = $750/格
+Spacing = (Upper - Lower) / Grid Count
+Example: (2200 - 1800) / 20 = $20/grid
 ```
 
-### 预期收益
+### Position per Grid
 
 ```
-单次套利 = 每格投资 * 间距%
-例: 750 * (20/2000) = $7.5/次
+Per Grid Investment = Total Investment / Grid Count * Leverage
+Example: 5000 / 20 * 3 = $750/grid
 ```
 
-## 适用行情
+### Expected Return
 
-| 行情类型 | 适合网格 | 建议 |
-|----------|----------|------|
-| 震荡横盘 | ✅ 非常适合 | 标准网格 |
-| 缓慢上涨 | ✅ 适合 | 多头偏向网格 |
-| 缓慢下跌 | ⚠️ 谨慎 | 空头偏向 + 小仓位 |
-| 剧烈波动 | ❌ 不适合 | 暂停网格 |
-| 单边行情 | ❌ 不适合 | 使用趋势策略 |
+```
+Single Arbitrage = Per Grid Investment * Spacing%
+Example: 750 * (20/2000) = $7.5/trade
+```
 
-## 常见问题
+## Suitable Market Conditions
 
-### Q: 网格数量怎么选？
+| Market Type | Grid Suitable | Recommendation |
+|-------------|---------------|----------------|
+| Range-bound | ✅ Very suitable | Standard grid |
+| Slow uptrend | ✅ Suitable | Long-biased grid |
+| Slow downtrend | ⚠️ Cautious | Short-bias + small position |
+| High volatility | ❌ Not suitable | Pause grid |
+| Trending market | ❌ Not suitable | Use trend strategy |
 
-- 波动大: 10-15 格，间距大
-- 波动小: 25-50 格，间距小
-- 资金少: 10-20 格
-- 资金多: 30-50 格
+## Common Questions
 
-### Q: 边界怎么设？
+### Q: How to choose grid count?
 
-1. 看近期支撑/阻力位
-2. 用 ATR 自动计算 (推荐)
-3. 上下各留 10-20% 空间
+- High volatility: 10-15 grids, large spacing
+- Low volatility: 25-50 grids, small spacing
+- Small capital: 10-20 grids
+- Large capital: 30-50 grids
 
-### Q: 什么时候停止？
+### Q: How to set boundaries?
 
-- 价格突破边界
-- 达到最大回撤
-- 单边行情出现
-- 重大消息前
+1. Look at recent support/resistance levels
+2. Use ATR auto-calculation (recommended)
+3. Leave 10-20% buffer above and below
+
+### Q: When to stop?
+
+- Price breaks boundaries
+- Reaches maximum drawdown
+- Trending market appears
+- Before major news events

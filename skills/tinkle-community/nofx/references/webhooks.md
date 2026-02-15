@@ -1,19 +1,19 @@
-# NOFX Webhook 通知集成
+# NOFX Webhook Notification Integration
 
-## 支持的通知渠道
+## Supported Notification Channels
 
-| 渠道 | 用途 | 配置方式 |
-|------|------|----------|
-| Telegram | 即时消息 | Bot Token + Chat ID |
-| Discord | 团队协作 | Webhook URL |
-| Slack | 工作通知 | Webhook URL |
-| 自定义 | 第三方系统 | HTTP POST |
+| Channel | Purpose | Configuration |
+|---------|---------|---------------|
+| Telegram | Instant messaging | Bot Token + Chat ID |
+| Discord | Team collaboration | Webhook URL |
+| Slack | Work notifications | Webhook URL |
+| Custom | Third-party systems | HTTP POST |
 
-## Telegram 通知
+## Telegram Notifications
 
-### 通过 Clawdbot
+### Via Clawdbot
 
-已集成 Clawdbot，直接使用 cron job 发送：
+Clawdbot is integrated, use cron job to send directly:
 
 ```json
 {
@@ -25,12 +25,12 @@
 }
 ```
 
-### 直接调用 Telegram API
+### Direct Telegram API Call
 
 ```bash
 TELEGRAM_BOT_TOKEN="your_bot_token"
 CHAT_ID="your_chat_id"
-MESSAGE="🚀 NOFX Alert: ETH 突破 $2000"
+MESSAGE="🚀 NOFX Alert: ETH breaks $2000"
 
 curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
   -d "chat_id=$CHAT_ID" \
@@ -40,12 +40,12 @@ curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
 
 ## Discord Webhook
 
-### 创建 Webhook
+### Create Webhook
 
-1. 服务器设置 → 整合 → Webhook
-2. 创建 Webhook，复制 URL
+1. Server Settings → Integrations → Webhooks
+2. Create Webhook, copy URL
 
-### 发送通知
+### Send Notification
 
 ```bash
 DISCORD_WEBHOOK="https://discord.com/api/webhooks/xxx/yyy"
@@ -55,8 +55,8 @@ curl -H "Content-Type: application/json" \
   -d '{
     "content": "🚀 NOFX Alert",
     "embeds": [{
-      "title": "AI500 新信号",
-      "description": "POWER 入榜，评分 88.5",
+      "title": "AI500 New Signal",
+      "description": "POWER enters ranking, score 88.5",
       "color": 5763719
     }]
   }'
@@ -64,12 +64,12 @@ curl -H "Content-Type: application/json" \
 
 ## Slack Webhook
 
-### 创建 Webhook
+### Create Webhook
 
 1. Slack App → Incoming Webhooks
-2. 添加到频道，复制 URL
+2. Add to channel, copy URL
 
-### 发送通知
+### Send Notification
 
 ```bash
 SLACK_WEBHOOK="https://hooks.slack.com/services/xxx/yyy/zzz"
@@ -77,13 +77,13 @@ SLACK_WEBHOOK="https://hooks.slack.com/services/xxx/yyy/zzz"
 curl -X POST "$SLACK_WEBHOOK" \
   -H "Content-Type: application/json" \
   -d '{
-    "text": "🚀 NOFX Alert: ETH 机构流入 $10M"
+    "text": "🚀 NOFX Alert: ETH institutional inflow $10M"
   }'
 ```
 
-## 自定义 Webhook
+## Custom Webhook
 
-### 通用 HTTP POST
+### Generic HTTP POST
 
 ```bash
 WEBHOOK_URL="https://your-server.com/webhook"
@@ -98,91 +98,91 @@ curl -X POST "$WEBHOOK_URL" \
   }'
 ```
 
-## Clawdbot 集成示例
+## Clawdbot Integration Examples
 
-### 价格告警
+### Price Alert
 
 ```bash
-# 监控 BTC 价格，突破 70000 时通知
+# Monitor BTC price, notify when breaks 70000
 if [ $(curl -s "https://nofxos.ai/api/coin/BTC?auth=$KEY" | jq '.data.price') -gt 70000 ]; then
-  # 发送 Telegram 通知
+  # Send Telegram notification
   curl -s "https://api.telegram.org/bot$BOT_TOKEN/sendMessage" \
     -d "chat_id=$CHAT_ID" \
-    -d "text=🚀 BTC 突破 $70,000!"
+    -d "text=🚀 BTC breaks $70,000!"
 fi
 ```
 
-### AI500 新币告警
+### AI500 New Coin Alert
 
 ```bash
-# 检查 AI500 新币
+# Check AI500 new coins
 NEW_COINS=$(curl -s "https://nofxos.ai/api/ai500/list?auth=$KEY" | \
   jq -r '.data.coins[] | select(.start_time > (now - 3600)) | .pair')
 
 if [ -n "$NEW_COINS" ]; then
-  # 发送通知
-  MESSAGE="🆕 AI500 新入榜: $NEW_COINS"
-  # ... 发送到 Telegram/Discord/Slack
+  # Send notification
+  MESSAGE="🆕 AI500 new entry: $NEW_COINS"
+  # ... send to Telegram/Discord/Slack
 fi
 ```
 
-### 大额资金流告警
+### Large Fund Flow Alert
 
 ```bash
-# 检查机构资金流入 > $10M
+# Check institutional inflow > $10M
 BIG_FLOWS=$(curl -s "https://nofxos.ai/api/netflow/top-ranking?auth=$KEY&limit=5&duration=1h&type=institution" | \
   jq -r '.data.netflows[] | select(.amount > 10000000) | "\(.symbol): $\(.amount/1000000)M"')
 
 if [ -n "$BIG_FLOWS" ]; then
-  MESSAGE="💰 大额机构流入:\n$BIG_FLOWS"
-  # ... 发送通知
+  MESSAGE="💰 Large institutional inflow:\n$BIG_FLOWS"
+  # ... send notification
 fi
 ```
 
-## 通知模板
+## Notification Templates
 
-### 行情汇报模板
+### Market Report Template
 
 ```
-📊 NOFX 市场行情 | {time}
+📊 NOFX Market Report | {time}
 
-🤖 AI500信号
+🤖 AI500 Signals
 {ai500_list}
 
-💰 机构流入 TOP5
+💰 Institutional Inflow TOP5
 {flow_list}
 
-🚀 1h涨幅 TOP5
+🚀 1h Gainers TOP5
 {gainers_list}
 
-⚠️ 风险提示
+⚠️ Risk Alert
 {alerts}
 ```
 
-### 交易信号模板
+### Trading Signal Template
 
 ```
-🎯 交易信号 | {symbol}
+🎯 Trading Signal | {symbol}
 
-方向: {direction}
-入场: ${entry_price}
-止损: ${stop_loss}
-止盈: ${take_profit}
-仓位: {position_size}%
+Direction: {direction}
+Entry: ${entry_price}
+Stop Loss: ${stop_loss}
+Take Profit: ${take_profit}
+Position: {position_size}%
 
-AI评分: {ai_score}
-资金流: {fund_flow}
+AI Score: {ai_score}
+Fund Flow: {fund_flow}
 ```
 
-### P&L 汇报模板
+### P&L Report Template
 
 ```
-💰 {trader_name} 日报
+💰 {trader_name} Daily Report
 
-权益: ${equity}
+Equity: ${equity}
 P&L: ${pnl} ({pnl_pct}%)
-持仓: {positions_count}
+Positions: {positions_count}
 
-今日交易: {trades_count}
-胜率: {win_rate}%
+Today's Trades: {trades_count}
+Win Rate: {win_rate}%
 ```

@@ -135,7 +135,7 @@
   "success": true,
   "data": {
     "count": 10,
-    "desc": "正费率排行(多头拥挤)",
+    "desc": "Positive funding rate ranking (crowded longs)",
     "rank_type": "top",
     "rates": [
       {
