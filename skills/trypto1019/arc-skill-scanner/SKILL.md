@@ -40,6 +40,21 @@ python3 {baseDir}/scripts/scanner.py scan --path ~/.openclaw/skills/some-skill/ 
 python3 {baseDir}/scripts/scanner.py scan-all
 ```
 
+### Scan with binary checksum verification
+```bash
+python3 {baseDir}/scripts/scanner.py scan --path ~/.openclaw/skills/some-skill/ --checksum checksums.json
+```
+
+### Generate checksums for binary assets
+```bash
+python3 {baseDir}/scripts/scanner.py checksum --path ~/.openclaw/skills/some-skill/ -o checksums.json
+```
+
+### Verify checksums against a manifest
+```bash
+python3 {baseDir}/scripts/scanner.py checksum --path ~/.openclaw/skills/some-skill/ --verify checksums.json
+```
+
 ### Output as JSON
 ```bash
 python3 {baseDir}/scripts/scanner.py scan --path ./skill-dir/ --json
@@ -72,6 +87,12 @@ python3 {baseDir}/scripts/scanner.py scan --path ./skill-dir/ --json
 ### Name Analysis
 - Typosquatting detection (compares against known popular skills)
 - Edit distance calculation to catch misspellings and character swaps
+
+### Binary/Asset Checksum Verification
+- SHA-256 checksums for all binary files (.exe, .dll, .so, .wasm, .pyc, etc.)
+- Generate checksum manifests for trusted skill versions
+- Verify binaries against expected checksums on update
+- Flags unverified binaries and checksum mismatches (tampering detection)
 
 ### Metadata Analysis
 - Excessive permission requirements

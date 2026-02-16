@@ -6,6 +6,7 @@ Detects credential stealers, data exfiltration, malicious URLs, and more.
 """
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -113,6 +114,13 @@ BINARY_ASSET_PATTERNS = [
     (r'chmod\s+\+x|chmod\s+[0-7]*[1357]', "Makes file executable"),
     (r'LD_PRELOAD|DYLD_INSERT_LIBRARIES', "Library injection via environment"),
 ]
+
+# Binary file extensions that should be checksummed
+BINARY_EXTENSIONS = {
+    ".exe", ".dll", ".so", ".dylib", ".bin", ".wasm", ".pyc", ".pyo",
+    ".class", ".jar", ".war", ".ear", ".deb", ".rpm", ".apk", ".ipa",
+    ".tar", ".gz", ".zip", ".7z", ".rar", ".bz2", ".xz",
+}
 
 # Known popular skill names (for typosquatting detection)
 POPULAR_SKILLS = [
@@ -265,7 +273,66 @@ def _edit_distance(s1, s2):
     return prev_row[-1]
 
 
-def scan_directory(skill_path, verbose=False):
+def checksum_binaries(skill_path, checksum_file=None):
+    """Scan for binary/asset files and compute or verify SHA-256 checksums.
+
+    If checksum_file is provided, verify binaries against expected hashes.
+    Otherwise, compute and report checksums for all binary/asset files found.
+    """
+    skill_path = Path(skill_path)
+    findings = []
+    binaries_found = []
+
+    # Find all binary/asset files
+    for root, dirs, files in os.walk(skill_path):
+        for f in files:
+            fpath = Path(root) / f
+            if fpath.suffix.lower() in BINARY_EXTENSIONS:
+                rel_path = str(fpath.relative_to(skill_path))
+                sha256 = hashlib.sha256(fpath.read_bytes()).hexdigest()
+                binaries_found.append({"path": rel_path, "sha256": sha256, "size": fpath.stat().st_size})
+
+    if not binaries_found:
+        return findings, binaries_found
+
+    # If a checksum file is provided, verify against it
+    if checksum_file and os.path.exists(checksum_file):
+        with open(checksum_file) as cf:
+            expected = json.load(cf)
+
+        expected_map = {e["path"]: e["sha256"] for e in expected}
+        for b in binaries_found:
+            if b["path"] not in expected_map:
+                findings.append({
+                    "file": b["path"],
+                    "line": 0,
+                    "severity": "HIGH",
+                    "description": f"Binary not in checksum manifest — unverified asset ({b['size']} bytes)",
+                    "match": f"SHA-256: {b['sha256']}",
+                })
+            elif b["sha256"] != expected_map[b["path"]]:
+                findings.append({
+                    "file": b["path"],
+                    "line": 0,
+                    "severity": "CRITICAL",
+                    "description": "Binary checksum MISMATCH — file has been tampered with",
+                    "match": f"Expected: {expected_map[b['path']][:32]}... Got: {b['sha256'][:32]}...",
+                })
+    else:
+        # No checksum file — flag all binaries as unverified
+        for b in binaries_found:
+            findings.append({
+                "file": b["path"],
+                "line": 0,
+                "severity": "HIGH" if b["size"] > 100000 else "MEDIUM",
+                "description": f"Unverified binary asset ({b['size']} bytes) — no checksum manifest",
+                "match": f"SHA-256: {b['sha256']}",
+            })
+
+    return findings, binaries_found
+
+
+def scan_directory(skill_path, verbose=False, checksum_file=None):
     """Scan an entire skill directory."""
     skill_path = Path(skill_path)
     findings = []
@@ -302,6 +369,12 @@ def scan_directory(skill_path, verbose=False):
                 except Exception as e:
                     if verbose:
                         print(f"  Warning: Could not scan {fpath}: {e}", file=sys.stderr)
+
+    # Checksum verification for binary/asset files
+    checksum_findings, binaries = checksum_binaries(skill_path, checksum_file)
+    findings.extend(checksum_findings)
+    if binaries and verbose:
+        print(f"  Found {len(binaries)} binary/asset file(s)", file=sys.stderr)
 
     return findings
 
@@ -376,7 +449,8 @@ def cmd_scan(args):
         skill_name = skill_path.name
         if args.verbose:
             print(f"Scanning {skill_path}...", file=sys.stderr)
-        findings = scan_directory(skill_path, verbose=args.verbose)
+        checksum_file = args.checksum if hasattr(args, 'checksum') else None
+        findings = scan_directory(skill_path, verbose=args.verbose, checksum_file=checksum_file)
     elif args.file:
         skill_name = os.path.basename(args.file)
         with open(args.file) as f:
@@ -394,6 +468,46 @@ def cmd_scan(args):
     critical = sum(1 for f in findings if f["severity"] in ("CRITICAL", "HIGH"))
     if critical > 0:
         sys.exit(1)
+
+
+def cmd_checksum(args):
+    """Generate or verify checksums for binary assets in a skill."""
+    skill_path = Path(args.path)
+    if not skill_path.exists():
+        print(f"ERROR: Path {skill_path} does not exist", file=sys.stderr)
+        sys.exit(1)
+
+    if args.verify:
+        # Verify mode
+        if not os.path.exists(args.verify):
+            print(f"ERROR: Checksum file {args.verify} not found", file=sys.stderr)
+            sys.exit(1)
+        findings, binaries = checksum_binaries(skill_path, args.verify)
+        if findings:
+            print(f"CHECKSUM VERIFICATION FAILED — {len(findings)} issue(s)")
+            for f in findings:
+                sev = f["severity"]
+                print(f"  [{sev}] {f['file']}: {f['description']}")
+            sys.exit(1)
+        else:
+            print(f"All {len(binaries)} binary checksum(s) verified OK")
+    else:
+        # Generate mode
+        _, binaries = checksum_binaries(skill_path)
+        if not binaries:
+            print("No binary/asset files found.")
+            return
+        if args.json:
+            print(json.dumps(binaries, indent=2))
+        else:
+            print(f"Found {len(binaries)} binary/asset file(s):")
+            for b in binaries:
+                print(f"  {b['path']} ({b['size']} bytes)")
+                print(f"    SHA-256: {b['sha256']}")
+        if args.output:
+            with open(args.output, 'w') as f:
+                json.dump(binaries, f, indent=2)
+            print(f"\nChecksum manifest written to {args.output}")
 
 
 def cmd_scan_all(args):
@@ -435,18 +549,25 @@ def main():
     p_scan = sub.add_parser("scan", help="Scan a skill")
     p_scan.add_argument("--path", help="Path to skill directory")
     p_scan.add_argument("--file", help="Path to a single file to scan")
+    p_scan.add_argument("--checksum", help="Path to checksum manifest JSON for binary verification")
     p_scan.add_argument("--verbose", action="store_true")
     p_scan.add_argument("--json", action="store_true")
 
     p_all = sub.add_parser("scan-all", help="Scan all installed skills")
     p_all.add_argument("--json", action="store_true")
 
+    p_chk = sub.add_parser("checksum", help="Generate or verify checksums for binary assets")
+    p_chk.add_argument("--path", required=True, help="Path to skill directory")
+    p_chk.add_argument("--verify", help="Path to checksum manifest to verify against")
+    p_chk.add_argument("--output", "-o", help="Write checksum manifest to this file")
+    p_chk.add_argument("--json", action="store_true")
+
     args = parser.parse_args()
     if not args.command:
         parser.print_help()
         sys.exit(1)
 
-    {"scan": cmd_scan, "scan-all": cmd_scan_all}[args.command](args)
+    {"scan": cmd_scan, "scan-all": cmd_scan_all, "checksum": cmd_checksum}[args.command](args)
 
 
 if __name__ == "__main__":
