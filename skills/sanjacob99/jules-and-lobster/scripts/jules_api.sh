@@ -20,7 +20,7 @@ Usage:
   jules_api.sh activities --session <id> [--page-size N]
   jules_api.sh send-message --session <id> --prompt "..."
   jules_api.sh approve-plan --session <id>
-  jules_api.sh new-session --source "sources/github/owner/repo" --title "..." --prompt "..." [--branch main] [--auto-pr] [--require-plan-approval]
+  jules_api.sh new-session --source "sources/github/owner/repo" --title "..." --prompt "..." [--branch main] [--auto-pr] [--no-plan-approval]
 EOF
   exit 2
 }
@@ -42,7 +42,7 @@ source=""
 title=""
 branch="main"
 auto_pr=0
-require_plan_approval=0
+require_plan_approval=1
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -54,6 +54,7 @@ while [[ $# -gt 0 ]]; do
     --branch) branch="$2"; shift 2;;
     --auto-pr) auto_pr=1; shift 1;;
     --require-plan-approval) require_plan_approval=1; shift 1;;
+    --no-plan-approval) require_plan_approval=0; shift 1;;
     -h|--help) usage;;
     *) echo "Unknown arg: $1" >&2; usage;;
   esac
