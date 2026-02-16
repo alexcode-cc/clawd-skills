@@ -1,71 +1,62 @@
 ---
 name: "Explain"
-description: "Auto-learns how to explain things to your human. Adapts format, depth, and style by topic."
+version: "1.0.2"
+description: "Learns how to explain things to your human. Adapts format, depth, and style by topic."
+changelog: "Restructured with auxiliary files; added Quick Reference"
 ---
 
-## Auto-Adaptive Explanation Preferences
+## Adaptive Explanation Preferences
 
-This skill auto-evolves. Observe what explanations land and which miss, then adapt.
+**Scope:** Human-facing explanations only. Track what lands and what misses.
 
-**Scope:** Only human-facing explanations. Agent-to-agent communication doesn't apply.
+### Quick Reference
 
-**Core Loop:**
+| File | Purpose |
+|------|---------|
+| `formats.md` | When bullets/prose/headers work or fail |
+| `depth.md` | Calibrating detail level by signals |
+| `analogies.md` | When comparisons help vs hurt |
+| `domains.md` | Patterns for code, concepts, debugging, decisions |
+| `dimensions.md` | Full list of trackable dimensions |
+
+### Core Loop
 1. **Observe** — Notice when explanations work vs confuse
-2. **Signals** — "Got it" = worked. "Wait, what?" / follow-ups = missed.
-3. **Pattern** — After 2+ consistent signals per topic, propose confirmation
-4. **Confirm** — Ask: "For [topic], should I explain with [style]?"
-5. **Store** — Only after explicit yes, add below
+2. **Signal** — "Got it" = worked. Follow-ups / "wait what?" = missed
+3. **Pattern** — After 2+ consistent signals, note it
+4. **Confirm** — Only after explicit yes, add to memory
 
----
-
-## Entry Format
-
-One line: `topic: preference (level)`
-
-Levels: `pattern` (2+ signals), `confirmed` (explicit yes), `locked` (reinforced)
-
-Dimensions to track (see `dimensions.md` for full list):
-- **format:** bullets | prose | numbered | headers
-- **depth:** tldr | summary | standard | deep
-- **examples:** none | one | multiple | analogies
-- **jargon:** avoid | define | assume-knowledge
-- **pacing:** upfront | progressive | chunked
-
-Examples:
-- `code/errors: fix first, explain after (confirmed)`
-- `finance: bullets, no jargon (pattern)`
-- `ai-concepts: use analogies (locked)`
-- `quick-tasks: just the answer (confirmed)`
-
----
-
-### Format
-<!-- bullets vs prose, headers, length. Format: "topic: preference (level)" -->
-
-### Depth
-<!-- which topics need more/less detail. Format: "topic: depth-level (level)" -->
-
-### Examples
-<!-- when examples help vs noise. Format: "topic: example-style (level)" -->
-
-### Jargon
-<!-- technical terms by domain. Format: "domain: jargon-level (level)" -->
-
-### Pacing
-<!-- all at once vs incremental. Format: "topic: pacing-style (level)" -->
-
-### Never
-<!-- approaches that consistently fail -->
-
----
-
-## Defaults (Until Learned)
-
+### Defaults (Until Learned)
 - Lead with direct answer, context after
 - Match question length (short Q = short A)
 - One concept at a time for complex topics
-- Ask "want me to go deeper?" rather than dumping
+- Offer depth: "want more detail?" rather than dumping
 
 ---
 
-*Empty sections = still learning. Observe, propose, confirm.*
+## Memory Storage
+
+Preferences persist in `~/explain/memory.md`. Create on first use:
+
+```markdown
+## Format
+<!-- Format: "topic: preference (level)" -->
+<!-- Ex: code: bullets (confirmed), concepts: prose (pattern) -->
+
+## Depth
+<!-- Format: "topic: depth (level)" -->
+<!-- Ex: React: deep (confirmed), Git: tldr (pattern) -->
+
+## Examples
+<!-- Format: "topic: example-style (level)" -->
+<!-- Ex: SQL: always examples (confirmed), theory: minimal (pattern) -->
+
+## Jargon
+<!-- Format: "domain: jargon-level (level)" -->
+<!-- Ex: programming: full jargon (confirmed), finance: simplify (pattern) -->
+
+## Never
+<!-- Approaches that fail. Format: "approach (level)" -->
+<!-- Ex: walls of text (confirmed), over-analogizing (pattern) -->
+```
+
+*Levels: pattern (2+ signals) → confirmed (explicit yes) → locked (reinforced)*
