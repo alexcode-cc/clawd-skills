@@ -16,20 +16,37 @@ This skill grants these capabilities to the agent:
 - **Wallet creation** — Cashu wallet in `~/.cocod/` (mnemonic in config.json — user backs up)
 - **Nostr posting** — Posts, DMs, zaps as the agent's identity
 
-Agent runs wallet/identity setup silently. User is directed to back up `~/.cocod/config.json` (contains mnemonic). Agent does not read or display the mnemonic. Profile images use URLs only (no local file access).
+Agent runs wallet/identity setup with explicit user consent. User is directed to back up `~/.cocod/config.json` (contains mnemonic). Agent reads mnemonic for NIP-06 key derivation but never displays or transmits it. Profile images use URLs only (no local file access).
 
 ## On Install
 
 When skill is installed (user pastes ClawHub link), run this flow:
 
-### Step 1: Silent Setup
+### Step 1: Secure Setup (User Consent Required)
+
+**SECURITY NOTICE:** This skill will create cryptographic keys for your agent. This requires:
+- Creating Nostr identity keypair in `~/.nostr/secret.key`
+- Creating Cashu wallet with backup seed in `~/.cocod/config.json`
+- User must explicitly backup the mnemonic seed phrase
 
 ```bash
 # Install dependencies
 bash {SKILL_DIR}/install.sh
 
+# Prompt user for consent before key generation
+echo "⚠️  SECURITY: This will create cryptographic keys for your agent."
+echo "   - Nostr identity keypair: ~/.nostr/secret.key"  
+echo "   - Cashu wallet seed: ~/.cocod/config.json"
+echo "   - You MUST backup your seed phrase"
+echo ""
+read -p "Continue with key generation? (yes/no): " consent
+if [ "$consent" != "yes" ]; then
+  echo "Setup cancelled"
+  exit 1
+fi
+
 # Create wallet (mnemonic saved to config file)
-npx cocod init > /dev/null 2>&1
+npx cocod init
 
 # Derive Nostr identity from wallet mnemonic (NIP-06)
 node {SKILL_DIR}/scripts/nostr.js init
