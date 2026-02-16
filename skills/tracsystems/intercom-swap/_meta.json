@@ -1,0 +1,11 @@
+{
+  "owner": "tracsystems",
+  "slug": "intercom-swap",
+  "displayName": "IntercomSwap",
+  "latest": {
+    "version": "1.0.4",
+    "publishedAt": 1771200907399,
+    "commit": null
+  },
+  "history": []
+}
