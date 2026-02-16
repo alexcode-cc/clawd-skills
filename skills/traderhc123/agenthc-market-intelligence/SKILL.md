@@ -1,6 +1,6 @@
 ---
-name: stock-market-intelligence
-description: Real-time market intelligence API for AI agents. 47 modules — equities, bonds, crypto, macro, Fed, volatility, regime detection, alpha signals, and more. Bitcoin Lightning micropayments.
+name: agenthc-market-intelligence
+description: Real-time stock market data and trading intelligence API. 47 modules — equities, bonds, crypto, bitcoin, macro economics, Fed policy, treasury yields, VIX, options flow, sector rotation, and technical analysis. Finance data for AI agents with Bitcoin Lightning micropayments.
 homepage: https://x.com/traderhc
 metadata:
   clawdbot:
@@ -17,19 +17,23 @@ Institutional-grade market intelligence API for AI agents. 47 modules covering e
 
 ## Setup
 
-### 1. Register (free, no KYC)
+### Quick Start (one command)
 
 ```bash
+bash scripts/setup.sh
+```
+
+Registers a free API key, saves it to your shell config. No KYC, no credit card.
+
+### Manual Setup
+
+```bash
+# 1. Register
 curl -s -X POST "https://api.traderhc.com/api/v1/agents/register" \
   -H "Content-Type: application/json" \
   -d '{"name": "MyAgent", "description": "AI agent using Stock Market Intelligence"}' | jq '.'
-```
 
-Save the `api_key` from the response.
-
-### 2. Set environment variable
-
-```bash
+# 2. Set your key
 export AGENTHC_API_KEY=your_api_key_here
 ```
 
