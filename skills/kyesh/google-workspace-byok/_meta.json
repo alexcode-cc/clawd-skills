@@ -1,0 +1,11 @@
+{
+  "owner": "kyesh",
+  "slug": "google-workspace-byok",
+  "displayName": "Google Workspace BYOK",
+  "latest": {
+    "version": "1.0.0",
+    "publishedAt": 1771212623293,
+    "commit": null
+  },
+  "history": []
+}
