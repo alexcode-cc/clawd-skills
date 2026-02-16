@@ -31,7 +31,7 @@ def calculate_tdee(height_cm, weight_kg, age, gender, activity_level):
 
 def get_user_info():
     try:
-        with open("/home/zhaoyh/clawd/USER.md", "r") as f:
+        with open("/root/clawd/USER.md", "r") as f:
             content = f.read()
 
         height_match = re.search(r"身高:.*?(\d+\.?\d*)\s*(cm|厘米)", content)
@@ -40,27 +40,38 @@ def get_user_info():
         gender_match = re.search(r"性别:.*?([男女])", content)
         activity_level_match = re.search(r"活动水平:.*?(\w+.*)", content)
 
+        # Parse macronutrient targets
+        protein_match = re.search(r"蛋白质[:：]\s*(\d+)\s*g", content)
+        carbs_match = re.search(r"碳水[:：]\s*(\d+)\s*g", content)
+        fat_match = re.search(r"脂肪[:：]\s*(\d+)\s*g", content)
+
         height_cm = float(height_match.group(1)) if height_match else None
         weight_kg = float(weight_match.group(1)) if weight_match else None
         age = int(age_match.group(1)) if age_match else None
         gender = "male" if gender_match and "男" in gender_match.group(1) else "female" if gender_match and "女" in gender_match.group(1) else None
         activity_level = activity_level_match.group(1).lower().replace(' ', '') if activity_level_match else None
+        
+        # Macronutrient targets
+        protein_target = int(protein_match.group(1)) if protein_match else None
+        carbs_target = int(carbs_match.group(1)) if carbs_match else None
+        fat_target = int(fat_match.group(1)) if fat_match else None
 
         if all([height_cm, weight_kg, age, gender, activity_level]):
             print(f"get_user_info: height_cm={height_cm}, weight_kg={weight_kg}, age={age}, gender={gender}, activity_level={activity_level}")
-            return height_cm, weight_kg, age, gender, activity_level
+            print(f"Macronutrient targets: protein={protein_target}g, carbs={carbs_target}g, fat={fat_target}g")
+            return height_cm, weight_kg, age, gender, activity_level, protein_target, carbs_target, fat_target
         else:
             print("Could not retrieve all required user information from USER.md.")
-            return None, None, None, None, None
+            return None, None, None, None, None, None, None, None
 
     except FileNotFoundError:
         print("USER.md not found.")
-        return None, None, None, None, None
+        return None, None, None, None, None, None, None, None
 
 def get_nutrition(food_item):
     # First, try local database
     try:
-        with open("/home/zhaoyh/clawd/skills/diet-tracker/references/food_database.json", "r") as f:
+        with open("/root/clawd/skills/diet-tracker/references/food_database.json", "r") as f:
             db = json.load(f)
 
         # Search for exact match or partial match (case insensitive)
@@ -122,7 +133,7 @@ def get_nutrition(food_item):
 
 
 if __name__ == '__main__':
-    height_cm, weight_kg, age, gender, activity_level = get_user_info()
+    height_cm, weight_kg, age, gender, activity_level, protein_target, carbs_target, fat_target = get_user_info()
 
     if all([height_cm, weight_kg, age, gender, activity_level]):
         tdee = calculate_tdee(height_cm, weight_kg, age, gender, activity_level)
