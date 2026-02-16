@@ -260,7 +260,7 @@ do_lists() {
   uuid="$(get_uuid)"
   local result
   result=$(api_call GET "${API_BASE}/bringusers/${uuid}/lists")
-  echo "$result" | jq -r '.lists[] | "\(.listUuid)\t\(.name)\t\(.theme)"' | \
+  echo "$result" | jq -r '.lists[] | select(.name != null and .name != "null") | "\(.listUuid)\t\(.name)\t\(.theme)"' | \
     while IFS=$'\t' read -r id name theme; do
       echo "${id}  ${name}  (theme: ${theme})"
     done
@@ -578,6 +578,61 @@ do_complete_multi() {
 ###############################################################################
 # Setup credentials helper
 ###############################################################################
+# Available themes: grocery, home, work, school, trip, party, baby, pet, christmas, easter
+THEMES=(
+  "grocery:ch.publisheria.bring.theme.grocery"
+  "home:ch.publisheria.bring.theme.home"
+  "work:ch.publisheria.bring.theme.work"
+  "school:ch.publisheria.bring.theme.school"
+  "trip:ch.publisheria.bring.theme.trip"
+  "party:ch.publisheria.bring.theme.party"
+  "baby:ch.publisheria.bring.theme.baby"
+  "pet:ch.publisheria.bring.theme.pet"
+  "christmas:ch.publisheria.bring.theme.christmas"
+  "easter:ch.publisheria.bring.theme.easter"
+)
+
+resolve_theme() {
+  local input="${1:-grocery}"
+  input=$(echo "$input" | tr '[:upper:]' '[:lower:]')
+  for entry in "${THEMES[@]}"; do
+    local key="${entry%%:*}"
+    local val="${entry#*:}"
+    if [[ "$key" == "$input" ]]; then
+      echo "$val"
+      return 0
+    fi
+  done
+  # Default to grocery if unknown
+  echo "ch.publisheria.bring.theme.grocery"
+}
+
+do_create_list() {
+  local name="$1"
+  local theme_key="${2:-grocery}"
+  [[ -n "$name" ]] || die "Usage: bring.sh create-list <name> [theme]"
+
+  ensure_auth
+  local uuid
+  uuid="$(get_uuid)"
+  local theme
+  theme="$(resolve_theme "$theme_key")"
+
+  local body
+  body=$(api_call POST "${API_BASE}/bringusers/${uuid}/lists" \
+    -H "Content-Type: application/x-www-form-urlencoded" \
+    -d "name=$(urlencode "$name")&theme=${theme}")
+
+  local new_uuid
+  new_uuid=$(echo "$body" | jq -r '.bringListUUID // empty')
+  echo "Created list '${name}' (theme: ${theme_key}, uuid: ${new_uuid})"
+}
+
+do_delete_list() {
+  die "The Bring! API does not support deleting lists. Please delete lists in the Bring! app."
+}
+
+###############################################################################
 do_setup() {
   echo "Bring! Credentials Setup"
   echo "========================"
@@ -714,6 +769,9 @@ main() {
       else
         do_lists
       fi
+      ;;
+    create-list|delete-list)
+      die "The Bring! API does not reliably support creating or deleting lists. Please manage lists in the Bring! app."
       ;;
     show)
       load_credentials

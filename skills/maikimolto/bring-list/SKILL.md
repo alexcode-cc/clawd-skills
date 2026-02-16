@@ -147,3 +147,4 @@ scripts/bring.sh show "Einkaufsliste" --json
 - `country` in credentials.json controls the item catalog language (default: `DE`)
 - When showing items to the user, consider only showing the "TO BUY" section unless they specifically ask for recently completed items — the recently list can be very long
 - If `remove` fails with "not found", suggest the user check the exact item name with `show`
+- **Creating/deleting lists is not supported by the Bring! API** — users must manage lists in the Bring! app
