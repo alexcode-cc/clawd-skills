@@ -3,11 +3,16 @@
   "slug": "cybercentry-solidity-code-verification",
   "displayName": "Cybercentry Solidity Code Verification",
   "latest": {
-    "version": "1.0.5",
-    "publishedAt": 1771155126535,
-    "commit": "https://github.com/openclaw/skills/commit/db71296712d9d996dd8cb48ae00da7651a7f2251"
+    "version": "1.0.7",
+    "publishedAt": 1771172989308,
+    "commit": null
   },
   "history": [
+    {
+      "version": "1.0.5",
+      "publishedAt": 1771155126535,
+      "commit": "https://github.com/openclaw/skills/commit/db71296712d9d996dd8cb48ae00da7651a7f2251"
+    },
     {
       "version": "1.0.2",
       "publishedAt": 1771071403973,
