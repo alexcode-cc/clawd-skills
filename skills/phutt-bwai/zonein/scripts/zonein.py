@@ -23,6 +23,27 @@ Commands:
   perp-coins       — Perp coin distribution
   perp-trader <addr> — Perp trader details
   agents           — List your trading agents
+  agent-get <id>   — Get agent details
+  agent-create     — Create a new trading agent
+  agent-update <id>— Update agent config
+  agent-deploy <id>— Deploy agent (validate + enable)
+  agent-enable <id>— Enable agent
+  agent-disable <id>— Disable agent
+  agent-pause <id> — Pause agent
+  agent-delete <id>— Delete agent
+  agent-stats <id> — Agent performance stats
+  agent-trades <id>— Agent trade history
+  agent-vault <id> — Agent vault/wallet info
+  agent-balance <id>— Live vault balance (Hyperliquid)
+  agent-positions <id>— Open positions (live)
+  agent-deposit <id>— Get deposit address (USDC on Arbitrum)
+  agent-open <id>  — Open a position (manual order)
+  agent-close <id> — Close a position
+  agent-orders <id>— Manual order history
+  agent-withdraw <id>— Withdraw funds to your wallet
+  agent-templates  — Available agent types & config templates
+  agent-assets     — Available trading assets
+  agent-categories — Smart money categories with stats
   status           — Check API key status
 """
 
@@ -67,8 +88,8 @@ def get_api_key():
     return key
 
 
-def api_request(path, params=None):
-    """Make authenticated GET request to Zonein API."""
+def _do_request(path, params=None, method="GET", body=None):
+    """Make authenticated request to Zonein API."""
     key = get_api_key()
     url = f"{API_BASE}{path}"
     if params:
@@ -76,26 +97,48 @@ def api_request(path, params=None):
         if query:
             url = f"{url}?{query}"
 
-    req = urllib.request.Request(url, headers={
-        "X-API-Key": key,
-        "Accept": "application/json",
-    })
+    data_bytes = None
+    headers = {"X-API-Key": key, "Accept": "application/json"}
+    if body is not None:
+        data_bytes = json.dumps(body).encode("utf-8")
+        headers["Content-Type"] = "application/json"
+
+    req = urllib.request.Request(url, data=data_bytes, headers=headers, method=method)
 
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-            return data
+            return json.loads(resp.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
-        body = e.read().decode("utf-8", errors="replace")
+        raw = e.read().decode("utf-8", errors="replace")
         try:
-            err = json.loads(body)
+            err = json.loads(raw)
         except Exception:
-            err = {"detail": body}
-        print(json.dumps({"error": f"HTTP {e.code}", "detail": err.get("detail", body)}))
+            err = {"detail": raw}
+        print(json.dumps({"error": f"HTTP {e.code}", "detail": err.get("detail", raw)}))
         sys.exit(1)
     except urllib.error.URLError as e:
         print(json.dumps({"error": f"Connection failed: {e.reason}"}))
         sys.exit(1)
+
+
+def api_request(path, params=None):
+    """GET request."""
+    return _do_request(path, params=params, method="GET")
+
+
+def api_post(path, body=None):
+    """POST request."""
+    return _do_request(path, method="POST", body=body or {})
+
+
+def api_patch(path, body=None):
+    """PATCH request."""
+    return _do_request(path, method="PATCH", body=body or {})
+
+
+def api_delete(path):
+    """DELETE request."""
+    return _do_request(path, method="DELETE")
 
 
 def cmd_signals(args):
@@ -188,6 +231,195 @@ def cmd_agents(args):
     print(json.dumps(data, indent=2))
 
 
+def cmd_agent_get(args):
+    """Get agent details."""
+    data = api_request(f"/agents/{args.agent_id}")
+    print(json.dumps(data, indent=2))
+
+
+def cmd_agent_create(args):
+    """Create a new trading agent."""
+    body = {"name": args.name, "agent_type": args.type}
+    if args.assets:
+        body["allowed_assets"] = args.assets.split(",")
+    if args.categories:
+        body["smart_money_categories"] = args.categories.split(",")
+    if args.leverage:
+        body["max_leverage"] = args.leverage
+    if args.description:
+        body["description"] = args.description
+    if args.risk_per_trade:
+        body.setdefault("risk_profile", {})["risk_per_trade_percent"] = args.risk_per_trade
+    if args.max_daily_loss:
+        body.setdefault("risk_profile", {})["max_daily_loss"] = args.max_daily_loss
+    if args.risk_reward:
+        body.setdefault("risk_profile", {})["risk_reward_ratio"] = args.risk_reward
+    if args.max_trades_per_day:
+        body.setdefault("trading_preferences", {})["max_trades_per_day"] = args.max_trades_per_day
+    if args.min_confidence:
+        body.setdefault("trading_preferences", {})["min_confidence_threshold"] = args.min_confidence
+    if args.min_consensus:
+        body.setdefault("trading_preferences", {})["min_smart_money_consensus"] = args.min_consensus
+    data = api_post("/agents/", body)
+    print(json.dumps(data, indent=2))
+
+
+def cmd_agent_update(args):
+    """Update agent config."""
+    body = {}
+    if args.name:
+        body["name"] = args.name
+    if args.description:
+        body["description"] = args.description
+    if args.assets:
+        body["allowed_assets"] = args.assets.split(",")
+    if args.categories:
+        body["smart_money_categories"] = args.categories.split(",")
+    if args.leverage:
+        body["max_leverage"] = args.leverage
+    if args.methodology:
+        body.setdefault("prompt_config", {})["trading_methodology"] = args.methodology
+    if args.entry_strategy:
+        body.setdefault("prompt_config", {})["entry_strategy"] = args.entry_strategy
+    if args.exit_framework:
+        body.setdefault("prompt_config", {})["exit_framework"] = args.exit_framework
+    if not body:
+        print(json.dumps({"error": "No updates provided"}))
+        sys.exit(1)
+    data = api_patch(f"/agents/{args.agent_id}", body)
+    print(json.dumps(data, indent=2))
+
+
+def cmd_agent_deploy(args):
+    """Deploy agent."""
+    data = api_post(f"/agents/{args.agent_id}/deploy")
+    print(json.dumps(data, indent=2))
+
+
+def cmd_agent_enable(args):
+    """Enable agent."""
+    data = api_post(f"/agents/{args.agent_id}/enable")
+    print(json.dumps(data, indent=2))
+
+
+def cmd_agent_disable(args):
+    """Disable agent."""
+    data = api_post(f"/agents/{args.agent_id}/disable")
+    print(json.dumps(data, indent=2))
+
+
+def cmd_agent_pause(args):
+    """Pause agent."""
+    data = api_post(f"/agents/{args.agent_id}/pause")
+    print(json.dumps(data, indent=2))
+
+
+def cmd_agent_delete(args):
+    """Delete agent."""
+    data = api_delete(f"/agents/{args.agent_id}")
+    print(json.dumps(data, indent=2))
+
+
+def cmd_agent_stats(args):
+    """Agent performance stats."""
+    data = api_request(f"/agents/{args.agent_id}/stats")
+    print(json.dumps(data, indent=2))
+
+
+def cmd_agent_trades(args):
+    """Agent trade history."""
+    params = {"limit": args.limit}
+    data = api_request(f"/agents/{args.agent_id}/trades", params)
+    print(json.dumps(data, indent=2))
+
+
+def cmd_agent_vault(args):
+    """Agent vault/wallet info."""
+    data = api_request(f"/agents/{args.agent_id}/vault")
+    print(json.dumps(data, indent=2))
+
+
+def cmd_agent_templates(args):
+    """Available agent types & config templates."""
+    data = api_request("/agents/config/templates")
+    print(json.dumps(data, indent=2))
+
+
+def cmd_agent_assets(args):
+    """Available trading assets."""
+    data = api_request("/agents/config/assets")
+    print(json.dumps(data, indent=2))
+
+
+def cmd_agent_categories(args):
+    """Smart money categories with stats."""
+    data = api_request("/agents/config/categories")
+    print(json.dumps(data, indent=2))
+
+
+def cmd_agent_balance(args):
+    """Agent vault balance (live from Hyperliquid)."""
+    data = api_request(f"/agents/{args.agent_id}/balance")
+    print(json.dumps(data, indent=2))
+
+
+def cmd_agent_positions(args):
+    """Agent open positions (live from Hyperliquid)."""
+    data = api_request(f"/agents/{args.agent_id}/positions")
+    print(json.dumps(data, indent=2))
+
+
+def cmd_agent_deposit(args):
+    """Get deposit address for funding agent."""
+    data = api_request(f"/agents/{args.agent_id}/deposit-info")
+    print(json.dumps(data, indent=2))
+
+
+def cmd_agent_fund(args):
+    """Bridge USDC from Arbitrum to Hyperliquid (auto, gasless)."""
+    data = api_post(f"/agents/{args.agent_id}/fund", {})
+    print(json.dumps(data, indent=2))
+
+
+def cmd_agent_open(args):
+    """Open a position (manual order via chat)."""
+    body = {
+        "action": "open",
+        "coin": args.coin,
+        "direction": args.direction,
+        "size_usd": args.size,
+    }
+    if args.leverage:
+        body["leverage"] = args.leverage
+    data = api_post(f"/agents/{args.agent_id}/orders", body)
+    print(json.dumps(data, indent=2))
+
+
+def cmd_agent_close(args):
+    """Close a position (manual order via chat)."""
+    body = {
+        "action": "close",
+        "coin": args.coin,
+        "direction": "LONG",
+    }
+    data = api_post(f"/agents/{args.agent_id}/orders", body)
+    print(json.dumps(data, indent=2))
+
+
+def cmd_agent_orders(args):
+    """Manual order history."""
+    params = {"limit": args.limit}
+    data = api_request(f"/agents/{args.agent_id}/orders", params)
+    print(json.dumps(data, indent=2))
+
+
+def cmd_agent_withdraw(args):
+    """Withdraw funds from agent vault."""
+    body = {"destination_address": args.to}
+    data = api_post(f"/agents/{args.agent_id}/withdraw", body)
+    print(json.dumps(data, indent=2))
+
+
 def cmd_status(args):
     """Check API key status."""
     data = api_request("/auth/api-key/status")
@@ -262,6 +494,140 @@ def main():
     # --- Agents ---
     p = sub.add_parser("agents", help="List trading agents")
     p.set_defaults(func=cmd_agents)
+
+    # --- Agent Get ---
+    p = sub.add_parser("agent-get", help="Get agent details")
+    p.add_argument("agent_id", type=str)
+    p.set_defaults(func=cmd_agent_get)
+
+    # --- Agent Create ---
+    p = sub.add_parser("agent-create", help="Create a new trading agent")
+    p.add_argument("--name", type=str, required=True, help="Agent name")
+    p.add_argument("--type", type=str, default="composite", help="Agent type: composite, momentum_hunter, stable_grower, precision_master, whale_follower, scalping_pro, swing_trader")
+    p.add_argument("--assets", type=str, default=None, help="Comma-separated: BTC,ETH,SOL,HYPE")
+    p.add_argument("--categories", type=str, default=None, help="Comma-separated SM categories")
+    p.add_argument("--leverage", type=int, default=None, help="Max leverage (1-20)")
+    p.add_argument("--description", type=str, default=None)
+    p.add_argument("--risk-per-trade", type=float, default=None, help="Risk per trade %")
+    p.add_argument("--max-daily-loss", type=float, default=None, help="Max daily loss %")
+    p.add_argument("--risk-reward", type=str, default=None, help="Risk:reward ratio e.g. 1:2")
+    p.add_argument("--max-trades-per-day", type=int, default=None)
+    p.add_argument("--min-confidence", type=float, default=None, help="Min confidence 0-1")
+    p.add_argument("--min-consensus", type=float, default=None, help="Min SM consensus 0-1")
+    p.set_defaults(func=cmd_agent_create)
+
+    # --- Agent Update ---
+    p = sub.add_parser("agent-update", help="Update agent configuration")
+    p.add_argument("agent_id", type=str)
+    p.add_argument("--name", type=str, default=None)
+    p.add_argument("--description", type=str, default=None)
+    p.add_argument("--assets", type=str, default=None, help="Comma-separated: BTC,ETH,SOL,HYPE")
+    p.add_argument("--categories", type=str, default=None, help="Comma-separated SM categories")
+    p.add_argument("--leverage", type=int, default=None)
+    p.add_argument("--methodology", type=str, default=None, help="Trading methodology text")
+    p.add_argument("--entry-strategy", type=str, default=None, help="Entry strategy text")
+    p.add_argument("--exit-framework", type=str, default=None, help="Exit framework text")
+    p.set_defaults(func=cmd_agent_update)
+
+    # --- Agent Deploy ---
+    p = sub.add_parser("agent-deploy", help="Deploy agent (validate + enable)")
+    p.add_argument("agent_id", type=str)
+    p.set_defaults(func=cmd_agent_deploy)
+
+    # --- Agent Enable ---
+    p = sub.add_parser("agent-enable", help="Enable agent")
+    p.add_argument("agent_id", type=str)
+    p.set_defaults(func=cmd_agent_enable)
+
+    # --- Agent Disable ---
+    p = sub.add_parser("agent-disable", help="Disable agent")
+    p.add_argument("agent_id", type=str)
+    p.set_defaults(func=cmd_agent_disable)
+
+    # --- Agent Pause ---
+    p = sub.add_parser("agent-pause", help="Pause agent")
+    p.add_argument("agent_id", type=str)
+    p.set_defaults(func=cmd_agent_pause)
+
+    # --- Agent Delete ---
+    p = sub.add_parser("agent-delete", help="Delete agent")
+    p.add_argument("agent_id", type=str)
+    p.set_defaults(func=cmd_agent_delete)
+
+    # --- Agent Stats ---
+    p = sub.add_parser("agent-stats", help="Agent performance stats")
+    p.add_argument("agent_id", type=str)
+    p.set_defaults(func=cmd_agent_stats)
+
+    # --- Agent Trades ---
+    p = sub.add_parser("agent-trades", help="Agent trade history")
+    p.add_argument("agent_id", type=str)
+    p.add_argument("--limit", type=int, default=50)
+    p.set_defaults(func=cmd_agent_trades)
+
+    # --- Agent Vault ---
+    p = sub.add_parser("agent-vault", help="Agent vault/wallet info")
+    p.add_argument("agent_id", type=str)
+    p.set_defaults(func=cmd_agent_vault)
+
+    # --- Agent Templates ---
+    p = sub.add_parser("agent-templates", help="Available agent types & config templates")
+    p.set_defaults(func=cmd_agent_templates)
+
+    # --- Agent Assets ---
+    p = sub.add_parser("agent-assets", help="Available trading assets")
+    p.set_defaults(func=cmd_agent_assets)
+
+    # --- Agent Categories ---
+    p = sub.add_parser("agent-categories", help="Smart money categories with live stats")
+    p.set_defaults(func=cmd_agent_categories)
+
+    # --- Agent Balance ---
+    p = sub.add_parser("agent-balance", help="Agent vault balance (live from Hyperliquid)")
+    p.add_argument("agent_id", type=str)
+    p.set_defaults(func=cmd_agent_balance)
+
+    # --- Agent Positions ---
+    p = sub.add_parser("agent-positions", help="Agent open positions (live)")
+    p.add_argument("agent_id", type=str)
+    p.set_defaults(func=cmd_agent_positions)
+
+    # --- Agent Deposit ---
+    p = sub.add_parser("agent-deposit", help="Get deposit address for funding agent")
+    p.add_argument("agent_id", type=str)
+    p.set_defaults(func=cmd_agent_deposit)
+
+    # --- Agent Fund (bridge Arb → HL) ---
+    p = sub.add_parser("agent-fund", help="Bridge USDC from Arbitrum to Hyperliquid")
+    p.add_argument("agent_id", type=str)
+    p.set_defaults(func=cmd_agent_fund)
+
+    # --- Agent Open (manual order) ---
+    p = sub.add_parser("agent-open", help="Open a position (manual order)")
+    p.add_argument("agent_id", type=str)
+    p.add_argument("--coin", type=str, required=True, help="BTC, ETH, SOL, HYPE")
+    p.add_argument("--direction", type=str, default="LONG", help="LONG or SHORT")
+    p.add_argument("--size", type=float, required=True, help="Position size in USD")
+    p.add_argument("--leverage", type=int, default=None, help="Leverage (1-20)")
+    p.set_defaults(func=cmd_agent_open)
+
+    # --- Agent Close (manual order) ---
+    p = sub.add_parser("agent-close", help="Close a position")
+    p.add_argument("agent_id", type=str)
+    p.add_argument("--coin", type=str, required=True, help="BTC, ETH, SOL, HYPE")
+    p.set_defaults(func=cmd_agent_close)
+
+    # --- Agent Orders ---
+    p = sub.add_parser("agent-orders", help="Manual order history")
+    p.add_argument("agent_id", type=str)
+    p.add_argument("--limit", type=int, default=20)
+    p.set_defaults(func=cmd_agent_orders)
+
+    # --- Agent Withdraw ---
+    p = sub.add_parser("agent-withdraw", help="Withdraw funds from agent vault")
+    p.add_argument("agent_id", type=str)
+    p.add_argument("--to", type=str, required=True, help="Destination 0x... wallet address")
+    p.set_defaults(func=cmd_agent_withdraw)
 
     # --- Status ---
     p = sub.add_parser("status", help="Check API key status")
