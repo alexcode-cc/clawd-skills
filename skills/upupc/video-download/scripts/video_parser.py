@@ -1,10 +1,9 @@
 import sys
 import os
 import yt_dlp
-import whisper
+from faster_whisper import WhisperModel
 import json
-
-from whisper import Whisper
+import tqdm
 
 
 def extract_audio(video_path: str) -> str:
@@ -18,21 +17,34 @@ def extract_audio(video_path: str) -> str:
     return audio_path
 
 
-def transcribe_audio(audio_path: str, model: Whisper) -> dict:
-    """使用Whisper转录音频"""
+def transcribe_audio(audio_path: str, model: WhisperModel) -> dict:
+    """使用Faster Whisper转录音频
 
-    result = model.transcribe(audio=audio_path, verbose=True)
+    Args:
+        audio_path: 音频文件路径
+        model: Faster Whisper模型
+    """
+
+    # 获取转录结果和信息
+    result, info = model.transcribe(audio=audio_path)
+
+    # 收集所有片段，带进度条
+    segments = []
+    with tqdm.tqdm(total=info.duration, unit="seconds", desc="Transcribing") as pbar:
+        for segment in result:
+            segments.append({
+                "start": segment.start,
+                "end": segment.end,
+                "text": segment.text
+            })
+            pbar.update(segment.end - pbar.n)
+
+    # 获取完整文本
+    text = "".join([seg["text"] for seg in segments])
 
     return {
-        "text": result["text"],
-        "segments": [
-            {
-                "start": seg["start"],
-                "end": seg["end"],
-                "text": seg["text"]
-            }
-            for seg in result.get("segments", [])
-        ]
+        "text": text,
+        "segments": segments
     }
 
 
@@ -41,27 +53,67 @@ def save_subtitle(audio_path: str, result: dict, output_folder: str, subtitle_fo
 
     Args:
         audio_path: 音频文件路径
-        result: Whisper 转录结果
+        result: Faster Whisper 转录结果
         output_folder: 输出目录
         subtitle_format: 字幕格式，支持: txt, srt, vtt, json
     """
-    from whisper.utils import get_writer
-
     # 获取不带扩展名的音频文件名
     audio_filename = os.path.splitext(os.path.basename(audio_path))[0]
+    output_path = os.path.join(output_folder, f"{audio_filename}.{subtitle_format.lower()}")
 
-    # 支持的格式转换
-    format_map = {
-        'txt': 'txt',
-        'srt': 'srt',
-        'vtt': 'vtt',
-        'json': 'json',
-    }
-    writer_format = format_map.get(subtitle_format.lower(), 'txt')
+    if subtitle_format.lower() == 'txt':
+        # 纯文本格式：直接保存所有文本
+        with open(output_path, 'w', encoding='utf-8') as f:
+            f.write(result['text'].strip())
 
-    writer = get_writer(writer_format, output_folder)
-    writer(result, audio_filename)
-    return ''.join([output_folder,'/',audio_filename,'.',subtitle_format.lower()])
+    elif subtitle_format.lower() == 'json':
+        # JSON格式
+        import json
+        with open(output_path, 'w', encoding='utf-8') as f:
+            json.dump(result, f, ensure_ascii=False, indent=2)
+
+    elif subtitle_format.lower() == 'srt':
+        # SRT格式
+        with open(output_path, 'w', encoding='utf-8') as f:
+            for idx, seg in enumerate(result['segments'], 1):
+                # SRT时间格式: HH:MM:SS,mmm
+                start_time = format_srt_time(seg['start'])
+                end_time = format_srt_time(seg['end'])
+                # 清理文本，去除多余空格
+                text = seg['text'].strip()
+                f.write(f"{idx}\n{start_time} --> {end_time}\n{text}\n\n")
+
+    elif subtitle_format.lower() == 'vtt':
+        # VTT格式
+        with open(output_path, 'w', encoding='utf-8') as f:
+            f.write("WEBVTT\n\n")
+            for seg in result['segments']:
+                # VTT时间格式: HH:MM:SS.mmm
+                start_time = format_vtt_time(seg['start'])
+                end_time = format_vtt_time(seg['end'])
+                # 清理文本，去除多余空格
+                text = seg['text'].strip()
+                f.write(f"{start_time} --> {end_time}\n{text}\n\n")
+
+    return output_path
+
+
+def format_srt_time(seconds: float) -> str:
+    """将秒数转换为SRT时间格式 HH:MM:SS,mmm"""
+    hours = int(seconds // 3600)
+    minutes = int((seconds % 3600) // 60)
+    secs = int(seconds % 60)
+    millis = int((seconds % 1) * 1000)
+    return f"{hours:02d}:{minutes:02d}:{secs:02d},{millis:03d}"
+
+
+def format_vtt_time(seconds: float) -> str:
+    """将秒数转换为VTT时间格式 HH:MM:SS.mmm"""
+    hours = int(seconds // 3600)
+    minutes = int((seconds % 3600) // 60)
+    secs = int(seconds % 60)
+    millis = int((seconds % 1) * 1000)
+    return f"{hours:02d}:{minutes:02d}:{secs:02d}.{millis:03d}"
 
 
 def download_videos(json_input: str) -> dict:
@@ -72,10 +124,11 @@ def download_videos(json_input: str) -> dict:
         json_input: JSON字符串，支持以下参数:
             - urls: 视频URL列表 (必须)
             - output: 下载保存路径 (默认: "./downloads")
-            - model: Whisper模型名称 (默认: "turbo")
+            - model: Faster Whisper模型名称 (默认: "small")
             - transcribe: 是否进行转录 (默认: True)
             - subtitle_format: 字幕格式，支持: txt, srt, vtt, json (默认: "txt")
             - download_subtitle: 是否下载视频自带字幕 (默认: False)
+            - overwrite_subtitle: 是否覆盖已存在的字幕文件 (默认: True)
 
     Returns:
         结果字典
@@ -87,10 +140,11 @@ def download_videos(json_input: str) -> dict:
 
     urls = params.get("urls", [])
     output_path = params.get("output", "./downloads")
-    model_name = params.get("model", "turbo")
+    model_name = params.get("model", "small")
     transcribe = params.get("transcribe", True)  # 是否进行转录
     subtitle_format = params.get("subtitle_format", "txt")  # 字幕格式
     download_subtitle = params.get("download_subtitle", False)  # 是否下载视频自带字幕
+    overwrite_subtitle = params.get("overwrite_subtitle", True)  # 是否覆盖已存在的字幕文件
 
     if not urls:
         return {"success": False, "message": "URL列表为空", "downloaded": [], "transcripts": []}
@@ -215,7 +269,10 @@ def download_videos(json_input: str) -> dict:
     print(f"视频下载完成，开始转录 {len(video_list)} 个视频...")
     print("=" * 50)
 
-    model = whisper.load_model(model_name)
+    # 使用 Faster Whisper 加载模型
+    # device: "auto" 自动选择 CUDA 或 CPU
+    # compute_type: "auto" 自动选择最佳精度 (float16 for CUDA, int8 for CPU)
+    model = WhisperModel(model_name, device="auto", compute_type="auto")
     transcripts = []
     for idx, video_info in enumerate(video_list):
         video_title = video_info["title"]
@@ -223,12 +280,25 @@ def download_videos(json_input: str) -> dict:
         video_path = video_info["video_path"]
         video_folder = video_info["video_folder"]
 
+        # 检查字幕文件是否已存在
+        audio_filename = os.path.splitext(os.path.basename(video_path))[0]
+        subtitle_path = os.path.join(video_folder, f"{audio_filename}.{subtitle_format.lower()}")
+        if os.path.exists(subtitle_path) and not overwrite_subtitle:
+            print(f"\n[{idx + 1}/{len(video_list)}] 字幕文件已存在，跳过转录: {video_title}")
+            transcripts.append({
+                "title": video_title,
+                "url": url,
+                "transcript": subtitle_path,
+                "format": subtitle_format
+            })
+            continue
+
         print(f"\n[{idx + 1}/{len(video_list)}] 正在提取音频: {video_title}")
         try:
             audio_path = extract_audio(video_path)
             print(f"[{idx + 1}/{len(video_list)}] 正在转录: {video_title}")
 
-            transcript = transcribe_audio(audio_path,model)
+            transcript = transcribe_audio(audio_path, model)
             print()  # 换行
 
             # 保存字幕文件
@@ -267,15 +337,17 @@ if __name__ == "__main__":
         print("参数说明:")
         print("  urls: 视频URL列表 (必须)")
         print("  output: 下载保存路径 (默认: './downloads')")
-        print("  model: Whisper模型 (默认: 'turbo', 可选: tiny/base/small/medium/large)")
+        print("  model: Faster Whisper模型 (默认: 'small', 可选: tiny/base/small/medium/large/large-v2/large-v3/turbo)")
         print("  transcribe: 是否转录 (默认: True)")
         print("  subtitle_format: 字幕格式 (默认: 'txt', 可选: txt/srt/vtt/json)")
         print("  download_subtitle: 是否下载视频自带字幕 (默认: False)")
+        print("  overwrite_subtitle: 是否覆盖已存在的字幕文件 (默认: True)")
         print()
         print('示例1 - 下载并转录: python video_parser.py \'{"urls":["URL"],"output":"./downloads"}\'')
         print('示例2 - 只下载不转录: python video_parser.py \'{"urls":["URL"],"output":"./downloads","transcribe":false}\'')
         print('示例3 - 生成SRT字幕: python video_parser.py \'{"urls":["URL"],"output":"./downloads","subtitle_format":"srt"}\'')
         print('示例4 - 下载视频自带字幕: python video_parser.py \'{"urls":["URL"],"output":"./downloads","download_subtitle":true}\'')
+        print('示例5 - 不覆盖已有字幕: python video_parser.py \'{"urls":["URL"],"overwrite_subtitle":false}\'')
         sys.exit(1)
 
     json_input = ''.join(sys.argv[1:])
