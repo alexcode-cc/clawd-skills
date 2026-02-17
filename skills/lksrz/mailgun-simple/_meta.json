@@ -1,0 +1,11 @@
+{
+  "owner": "lksrz",
+  "slug": "mailgun-simple",
+  "displayName": "Mailgun Simple",
+  "latest": {
+    "version": "1.2.0",
+    "publishedAt": 1771362256820,
+    "commit": null
+  },
+  "history": []
+}
