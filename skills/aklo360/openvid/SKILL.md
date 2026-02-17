@@ -1,184 +1,153 @@
+# Skill: openvid
+
+## Description
+AI motion graphics video generation service. Send a prompt + URL, receive a branded explainer video.
+
+**Pricing:** $5 per 15 seconds (15s–3min)
+
+**This is a SERVICE skill** — it calls an external API. No code execution, no local files modified.
+
 ---
-name: openvid
-description: Generate branded motion graphics videos via OpenVid on ACP. Provide a prompt with brand/product info and receive a polished explainer video. Fully automated, no revisions.
-metadata: {"openclaw":{"emoji":"🎬","homepage":"https://openvid.app","primaryEnv":null}}
+
+## Privacy & Data
+
+- **What you send:** Prompt text and (optionally) a public URL for brand extraction
+- **What happens:** The service fetches the URL, extracts brand colors/fonts/logo, generates video
+- **Data retention:** Videos stored on Cloudflare R2 for 7 days, then deleted
+- **Recommendation:** Only send **public URLs**. Do not send internal/private URLs or sensitive text.
+
 ---
 
-# OpenVid — AI Motion Graphics
+## x402 Payment Flow
 
-Generate branded explainer videos from a text prompt via ACP.
+This skill uses the **x402 HTTP payment protocol** — a standard for pay-per-call APIs.
 
-> **New to ACP?** You need the ACP skill to use agent-to-agent commerce.
-> Install it first: `clawhub install virtuals-protocol-acp` then run `acp setup`
-> You'll also need to fund your wallet with at least **$5 USDC on Base** to pay for videos.
-> [Full ACP setup guide →](https://github.com/Virtual-Protocol/virtuals-protocol-acp)
+### How It Works
 
-## Prerequisites
+1. **Request** → You POST to the API
+2. **402 Response** → API returns payment requirements (amount, wallet address, chain)
+3. **Pay** → Your agent/wallet sends payment on-chain (USDC on Base or SOL on Solana)
+4. **Retry with proof** → Re-send request with `X-Payment` header containing the signed transaction
+5. **Job created** → API returns `jobId`, you poll until complete
 
-- ACP skill installed and configured (`acp setup` completed)
-- USDC balance on Base network (for payment)
+### Who Signs Payments?
 
-## Usage
+**Your agent's wallet signs payments, not this skill.** 
 
-### Create a Video
+The skill only documents the API. Payment signing is handled by:
+- Your agent's wallet infrastructure (e.g., OpenClaw's built-in wallet)
+- x402-compatible libraries (`@x402/fetch`, `@x402/client`)
+- Manual wallet signing if calling directly
 
-```bash
-acp job create OpenVid <offering> --requirement '{"prompt": "<your prompt>"}'
-```
+**No private keys are needed or requested by this skill.**
 
-### Offerings
+---
 
-| Offering | Duration | Price |
-|----------|----------|-------|
-| `mograph_15s` | 15 seconds | $5 |
-| `mograph_30s` | 30 seconds | $10 |
-| `mograph_45s` | 45 seconds | $15 |
-| `mograph_60s` | 60 seconds | $20 |
-| `mograph_90s` | 90 seconds | $30 |
-| `mograph_120s` | 2 minutes | $40 |
-| `mograph_150s` | 2.5 minutes | $50 |
-| `mograph_180s` | 3 minutes | $60 |
+## API Reference
 
-### Prompt Format
+**Gateway:** `https://gateway.openvid.app`
 
-Include in your prompt:
-- **Brand/product name** (required)
-- **What it does** — 1-2 sentences
-- **Website URL** — for brand extraction (colors, fonts, logo)
-- **Twitter URL** — alternative if no website
+### Create Video
 
-**Example prompts:**
+```http
+POST /v1/video/generate
+Content-Type: application/json
 
-```
-AGDP - Agent GDP Protocol. A marketplace where AI agents transact autonomously. Website: https://agdp.io
-```
-
-```
-Stripe Checkout - Seamless payment integration for developers. Website: https://stripe.com/checkout
-```
-
-```
-My Startup - AI-powered task automation for teams. Twitter: https://x.com/mystartup
-```
-
-### Example: 30-Second Video
-
-```bash
-acp job create OpenVid mograph_30s --json \
-  --requirement '{"prompt": "AGDP - Agent GDP Protocol. A marketplace for autonomous agent commerce. Website: https://agdp.io"}'
-```
-
-**Response:**
-```json
 {
-  "jobId": "abc123",
-  "status": "pending",
-  "offering": "mograph_30s",
-  "price": 10
+  "prompt": "Make a video about Stripe https://stripe.com",
+  "duration": 30
 }
 ```
 
-### Check Job Status
-
-```bash
-acp job status <jobId> --json
-```
-
-**Completed response:**
+**First response (402 Payment Required):**
 ```json
 {
-  "jobId": "abc123",
-  "status": "completed",
-  "deliverable": "{\"status\":\"success\",\"videoUrl\":\"https://...\",\"duration\":30}"
-}
-```
-
-### Parse the Result
-
-The `deliverable` field contains JSON:
-
-```json
-{
-  "status": "success",
-  "videoUrl": "https://cdn.example.com/video.mp4",
+  "error": "Payment Required",
+  "price": "$10",
   "duration": 30,
-  "productName": "AGDP - Agent GDP Protocol"
+  "options": {
+    "baseUsdc": {
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "amount": "10000000",
+      "payTo": "0xc0A11946195525c5b6632e562d3958A2eA4328EE"
+    },
+    "solanaSol": {
+      "network": "solana:mainnet",
+      "asset": "SOL",
+      "amount": "116000000",
+      "payTo": "DzQB5aqnq8myCGm166v6AfWkJ4fsEq9HdWqhFLX6LQfi"
+    }
+  }
 }
 ```
 
-On error:
+**After payment, retry with X-Payment header:**
+```http
+POST /v1/video/generate
+Content-Type: application/json
+X-Payment: <base64-encoded-payment-proof>
+
+{
+  "prompt": "Make a video about Stripe https://stripe.com",
+  "duration": 30
+}
+```
+
+**Success response:**
 ```json
 {
-  "status": "error",
-  "message": "Description of what went wrong"
+  "jobId": "abc-123",
+  "status": "processing",
+  "pollUrl": "https://gateway.openvid.app/v1/jobs/abc-123"
+}
+```
+
+### Poll Job Status
+
+```http
+GET /v1/jobs/{jobId}
+```
+
+**Response (completed):**
+```json
+{
+  "jobId": "abc-123",
+  "status": "completed",
+  "videoUrl": "https://api.openvid.app/api/renders/...",
+  "productName": "Stripe",
+  "duration": 30
 }
 ```
 
 ---
 
-## Full Workflow Example
+## Pricing
 
-```bash
-# 1. Create job
-JOB=$(acp job create OpenVid mograph_30s --json \
-  --requirement '{"prompt": "My Product - Does amazing things. Website: https://myproduct.com"}')
-
-JOB_ID=$(echo $JOB | jq -r '.jobId')
-echo "Job created: $JOB_ID"
-
-# 2. Poll until complete (typically ~90 seconds)
-while true; do
-  STATUS=$(acp job status $JOB_ID --json)
-  STATE=$(echo $STATUS | jq -r '.status')
-  
-  if [ "$STATE" = "completed" ]; then
-    VIDEO_URL=$(echo $STATUS | jq -r '.deliverable | fromjson | .videoUrl')
-    echo "✅ Video ready: $VIDEO_URL"
-    break
-  elif [ "$STATE" = "failed" ]; then
-    echo "❌ Job failed"
-    exit 1
-  fi
-  
-  echo "⏳ Status: $STATE"
-  sleep 10
-done
-```
+| Duration | Price |
+|----------|-------|
+| 15s | $5 |
+| 30s | $10 |
+| 45s | $15 |
+| 60s | $20 |
+| 90s | $30 |
+| 2min | $40 |
+| 2:30 | $50 |
+| 3min | $60 |
 
 ---
 
-## Agent Details
+## ACP (Virtuals Protocol)
 
-| Field | Value |
-|-------|-------|
-| Agent Name | `OpenVid` |
-| Agent ID | `1869` |
-| Wallet | `0xc0A11946195525c5b6632e562d3958A2eA4328EE` |
-| Network | Base (via ACP) |
-| SLA | 5 minutes |
+For agent-to-agent commerce via Virtuals Protocol:
+- **Agent ID:** `1869`
+- **Wallet:** `0xc0A11946195525c5b6632e562d3958A2eA4328EE`
 
 ---
 
-## What You Get
+## Best Practices
 
-- **1920×1080 HD** video (H.264 MP4)
-- **30fps** smooth motion graphics
-- **Brand-accurate** colors, fonts, logo extracted from your URL
-- **Verified data only** — no fabricated statistics
-- **~90 second** typical delivery time
-
----
-
-## Tips
-
-1. **Always include a URL** — OpenVid extracts brand identity from websites/Twitter
-2. **Be specific** — "Payment checkout flow" is better than "payments"
-3. **One concept per video** — Don't try to cover everything
-4. **Longer isn't always better** — 30s is the sweet spot for most use cases
-
----
-
-## Support
-
-- Website: https://openvid.app
-- Creator: AKLO Labs ([@aklolabs](https://x.com/aklolabs))
+- **Include a public URL** for accurate brand extraction
+- **Be specific** about what the video should communicate
+- **Shorter is better** — 15-30s videos have highest quality
+- **Never send private/internal URLs** — all URLs are fetched by the service
