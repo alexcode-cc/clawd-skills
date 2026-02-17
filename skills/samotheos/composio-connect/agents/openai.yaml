@@ -1,4 +1,0 @@
-interface:
-  display_name: "Composio Connect"
-  short_description: "Connect 850+ apps via Composio and mcporter"
-  default_prompt: "Use $composio-connect to access 850+ app integrations (Gmail, Slack, GitHub, Calendar, Notion, Jira, and more) via Composio."
