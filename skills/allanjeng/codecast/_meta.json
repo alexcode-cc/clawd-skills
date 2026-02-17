@@ -3,11 +3,16 @@
   "slug": "codecast",
   "displayName": "Codecast",
   "latest": {
-    "version": "3.2.0",
-    "publishedAt": 1771136962827,
-    "commit": "https://github.com/openclaw/skills/commit/8a2de15987aea27345ceffcf4de1fe3fd1cc86fd"
+    "version": "4.1.0",
+    "publishedAt": 1771256363947,
+    "commit": null
   },
   "history": [
+    {
+      "version": "3.2.0",
+      "publishedAt": 1771136962827,
+      "commit": "https://github.com/openclaw/skills/commit/8a2de15987aea27345ceffcf4de1fe3fd1cc86fd"
+    },
     {
       "version": "3.1.0",
       "publishedAt": 1771136246409,
