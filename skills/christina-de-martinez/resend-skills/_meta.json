@@ -3,11 +3,16 @@
   "slug": "resend-skills",
   "displayName": "Resend Skills",
   "latest": {
-    "version": "2.2.0",
-    "publishedAt": 1770077303162,
-    "commit": "https://github.com/clawdbot/skills/commit/44f4e42f3ed977b753f43d06e3e5a698032ac345"
+    "version": "2.5.0",
+    "publishedAt": 1771370107650,
+    "commit": null
   },
   "history": [
+    {
+      "version": "2.2.0",
+      "publishedAt": 1770077303162,
+      "commit": "https://github.com/clawdbot/skills/commit/44f4e42f3ed977b753f43d06e3e5a698032ac345"
+    },
     {
       "version": "2.0.1",
       "publishedAt": 1769630388565,
