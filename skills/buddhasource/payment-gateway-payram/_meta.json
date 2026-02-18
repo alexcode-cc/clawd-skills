@@ -1,0 +1,11 @@
+{
+  "owner": "buddhasource",
+  "slug": "payment-gateway-payram",
+  "displayName": "Payment Gateway Payram",
+  "latest": {
+    "version": "1.0.0",
+    "publishedAt": 1771435349675,
+    "commit": null
+  },
+  "history": []
+}
