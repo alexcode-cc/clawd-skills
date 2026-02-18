@@ -1,13 +1,18 @@
 {
   "owner": "sltelitsyn",
   "slug": "kallyai",
-  "displayName": "Clawdbot Skill",
+  "displayName": "KallyAI Executive Assistant",
   "latest": {
-    "version": "1.0.1",
-    "publishedAt": 1769415940153,
-    "commit": "https://github.com/clawdbot/skills/commit/32b33844ba4cd2977ff61f616e36de2fc7e81e6f"
+    "version": "1.0.2",
+    "publishedAt": 1771342524826,
+    "commit": null
   },
   "history": [
+    {
+      "version": "1.0.1",
+      "publishedAt": 1769415940153,
+      "commit": "https://github.com/clawdbot/skills/commit/32b33844ba4cd2977ff61f616e36de2fc7e81e6f"
+    },
     {
       "version": "1.0.0",
       "publishedAt": 1769364225362,
