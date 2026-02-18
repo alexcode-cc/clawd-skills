@@ -1,17 +1,13 @@
 ---
 name: tools-ui
-description: |
-  Tool lifecycle UI components for React/Next.js from ui.inference.sh.
-  Display tool calls: pending, progress, approval required, results.
-  Capabilities: tool status, progress indicators, approval flows, results display.
-  Use for: showing agent tool calls, human-in-the-loop approvals, tool output.
-  Triggers: tool ui, tool calls, tool status, tool approval, tool results,
-  agent tools, mcp tools ui, function calling ui, tool lifecycle, tool pending
+description: "Tool lifecycle UI components for React/Next.js from ui.inference.sh. Display tool calls: pending, progress, approval required, results. Capabilities: tool status, progress indicators, approval flows, results display. Use for: showing agent tool calls, human-in-the-loop approvals, tool output. Triggers: tool ui, tool calls, tool status, tool approval, tool results,"  agent tools, mcp tools ui, function calling ui, tool lifecycle, tool pending
 ---
 
 # Tool UI Components
 
 Tool lifecycle components from [ui.inference.sh](https://ui.inference.sh).
+
+![Tool UI Components](https://cloud.inference.sh/app/files/u/4mg21r6ta37mpaz6ktzwtt8krr/01kgjw8atdxgkrsr8a2t5peq7b.jpeg)
 
 ## Quick Start
 
@@ -156,13 +152,13 @@ import { Agent } from "@/registry/blocks/agent/agent"
 
 ```bash
 # Full agent component (recommended)
-npx skills add inference-sh/agent-skills@agent-ui
+npx skills add inference-sh/skills@agent-ui
 
 # Chat UI blocks
-npx skills add inference-sh/agent-skills@chat-ui
+npx skills add inference-sh/skills@chat-ui
 
 # Widgets for tool results
-npx skills add inference-sh/agent-skills@widgets-ui
+npx skills add inference-sh/skills@widgets-ui
 ```
 
 ## Documentation
