@@ -3,11 +3,16 @@
   "slug": "inkjet",
   "displayName": "InkJet - Bluetooth Thermal Printer",
   "latest": {
-    "version": "1.0.1",
-    "publishedAt": 1770511786760,
-    "commit": "https://github.com/openclaw/skills/commit/7a6bae08d3cc53726a8b7183d41529ec14f7bbdd"
+    "version": "1.0.2",
+    "publishedAt": 1771360389901,
+    "commit": null
   },
   "history": [
+    {
+      "version": "1.0.1",
+      "publishedAt": 1770511786760,
+      "commit": "https://github.com/openclaw/skills/commit/7a6bae08d3cc53726a8b7183d41529ec14f7bbdd"
+    },
     {
       "version": "0.1.3",
       "publishedAt": 1769955349341,
