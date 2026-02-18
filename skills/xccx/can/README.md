@@ -1,57 +1,59 @@
 # CAN: Clock Address Naming
 
-Three-pole naming + routing for agents and humans.
+6D naming + routing for agents and humans.
 
 ```
-CLOCK    = WHEN     (millisecond unix timestamp)
-ADDRESS  = WHERE    (SHA-256 content hash)
-NAMES    = HOW      (petnames, tags, whatever you want)
+WHEN   = clock      (millisecond unix timestamp)
+WHERE  = address    (SHA-256 content hash)
+HOW    = names      (petnames, tags, whatever you want)
+```
+
+Plus three more dimensions:
+
+```
+WHO    = identity   (free machine-id → keypair → nostr/farcaster/oauth)
+WHY    = bags       (SAVE, GOOD, HUSH, POST)
+WHAT   = bits       (the thing itself)
 ```
 
 ## What
 
-Every thing gets named three ways: by time, by content hash, and optionally by human words. Computer handles the first two automatically. Human adds or edits naming whenever they feel like it. Both find things fast.
+Every thing gets named three ways at minimum: by time, by content hash, and by human words. Computer handles WHEN, WHERE, HOW and WHO automatically. Human adds WHY in one keystroke. Both find things fast.
 
 ## Why
 
-Paths lie. Hashes don't. Timestamps prove ordering. Petnames make it all findable by humans. Agents waste significant compute on security theatre — DNS lookups, TLS negotiation, certificate validation, redirect chains — plus expensive reasoning about whether what they fetched is real. CAN eliminates that entire category. Hash matches = done thinking.
+Paths lie. Hashes don't. Timestamps prove ordering. Names make it findable. WHO proves accountability. Agents waste powerplants on security theatre — DNS lookups, TLS negotiation, certificate validation, redirect chains — plus expensive reasoning about whether what they fetched is real. CAN eliminates that entire category. Hash matches = done thinking. WHO matches = done wondering.
 
-## How it works
+## WHO: identity in three tiers
 
-**CLOCK** — when content was created or witnessed. Millisecond unix timestamp. Time-sorting for free.
+- **WHO-0** (free): `sha256(username + machine-id)`, automatic, zero config. One login is enough.
+- **WHO-1** (opt-in): local ed25519 keypair, proves consistency across saves
+- **WHO-2** (auth): Nostr, Farcaster, OAuth — portable, externally verifiable
 
-**ADDRESS** — SHA-256 of the content. The content's true address in hashspace. Two agents anywhere hashing the same content get the same ADDRESS. If the hash matches, the content is what it claims to be. No trust in source required.
-
-**NAMES** — tags, petnames, descriptions. Mutable, personal, multiple names can point to one ADDRESS. Rename freely — the objective poles don't change.
+Start free. Upgrade when you need to. Old saves get retroactively claimed.
 
 ## Bags
 
-Content has intent. Bags capture WHY at save time:
+One keystroke captures intent at save time:
 
 ```
 SAVE  →  bag of meh, index silently
-GOOD  →  bag of goodies, tag it
-HUSH  →  hush bag, local only, no sharing
-POST  →  bag of poasted, publish, share, sign
+GOOD  →  bag of goodies, hold me close
+HUSH  →  hush bag, local only, privacy
+POST  →  bag of poasted, publish, sign
 ```
 
-Promote anytime: SAVE → GOOD → POST. HUSH stays HUSH — it doesn't promote, it whispers.
+Promote anytime: SAVE → GOOD → POST. HUSH stays HUSH.
 
 ## Routing
 
-Ask for WHAT you want. Let the network figure out WHERE.
-
 ```
-LOCATION-ADDRESSED (today):
-  agent → DNS → IP → TCP → TLS → HTTP → path → hope
-  7 hops, 4 trust assumptions, 0 verification until too late
+LOCATION (today):  agent → DNS → IP → TCP → TLS → HTTP → path → hope
+                   7 hops, 4 trust assumptions, 0 verification
 
-CONTENT-ADDRESSED (CAN):
-  agent → "I need hash X" → nearest source → verify → done
-  1 request, 0 trust assumptions, instant verification
+CONTENT (CAN):     agent → "I need hash X" → nearest source → verify → done
+                   1 request, 0 trust assumptions, instant verification
 ```
-
-Priority: local store (instant, offline, free) → peer agents (nearby, one hop) → relays (nostr, IPFS) → web fallback (legacy). Hash verifies on receipt. First valid match wins.
 
 ## Install
 
@@ -64,39 +66,46 @@ clawhub install xccx/can
 ```bash
 CLOCK=$(date +%s%3N)
 ADDRESS=$(echo -n "hello world" | sha256sum | awk '{print $1}')
-echo "$CLOCK $ADDRESS greeting:hello"
+WHO=$(echo -n "$(whoami)|$(cat /etc/machine-id 2>/dev/null || hostname)" | sha256sum | awk '{print $1}')
+echo "$CLOCK $ADDRESS WHO:${WHO:0:8} greeting:hello"
 ```
 
-Three poles. One line. That's CAN.
+## Requirements
 
-## Zero dependencies
-
-Only needs `sha256sum` (pre-installed on macOS and Linux). No npm. No pip. No runtime. Works air-gapped.
+`sha256sum` (pre-installed on most Linux; use `shasum -a 256` on macOS). WHO-1 signing uses `openssl` (pre-installed on most systems). Also uses `awk`, `date`, `base64` — standard on Linux and macOS. No npm. No pip. No runtime. Works air-gapped.
 
 ## Roadmap
 
 ```
-v1.3.1  NOW    naming + routing + bags + HUSH
-v1.4    NEXT   WHO: free machine-id auto-identity + auth upgrade path
-v1.5    THEN   CONVO: agents report sightings back, network forms organically
-v1.6    RINA   recursive naming scopes, enrollment, inclusion/exclusion
+v1.3.2  DONE   naming + routing + bags + HUSH
+v1.4    NOW    WHO: free machine-id + auth upgrade path
+v1.5    NEXT   ITC: agents build CAN in the CAN
+v1.6    THEN   RINA: recursive naming scopes
+v1.7    AND    MERKLE: provenance threading
+v1.8    LOL    game-over or insert-coin
+v1.9    MEME   what else are ya gonna do?
 ```
 
 Each version earns the next.
 
-## Philosophy
+## TL;DR
 
-The path `/home/agent/important.txt` is a lie — it says where a thing WAS, not what it IS. The URL `https://example.com/doc` is a promise — it says where to ASK, not what you'll GET. CAN says what it is and when it was, forever, unforgeable, routable by anyone who has it, no authority required.
-
-Name things. Route by name. Trust the hash.
+```
+HASH thing
+TIME when
+WHO says
+INDEX ())
+OWN your things.
+```
 
 ## References
 
+- Paul Baran, On Distributed Communications (RAND, 1964)
 - Van Jacobson, Named Data Networking (NDN)
 - John Day, Recursive InterNetwork Architecture (RINA)
 - Git content-addressable object store
-- Nostr protocol (NIP-01) for identity
-- IPFS content-addressed distribution
+- OpenTimestamps for Bitcoin-anchored WHEN verification
+- Zooko's Triangle (CAN resolves it via six dimensions)
 
 ## License
 
