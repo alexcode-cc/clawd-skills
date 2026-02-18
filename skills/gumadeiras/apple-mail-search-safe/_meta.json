@@ -1,13 +1,18 @@
 {
   "owner": "gumadeiras",
   "slug": "apple-mail-search-safe",
-  "displayName": "apple-mail-search-safe",
+  "displayName": "Apple Mail Search Safe Skillonly.WE1rGU",
   "latest": {
-    "version": "4.0.0",
-    "publishedAt": 1769425452939,
-    "commit": "https://github.com/clawdbot/skills/commit/7e63505e925b67edf19e39c78fccbc9f8c11bb0a"
+    "version": "5.0.1",
+    "publishedAt": 1771448528658,
+    "commit": null
   },
   "history": [
+    {
+      "version": "4.0.0",
+      "publishedAt": 1769425452939,
+      "commit": "https://github.com/clawdbot/skills/commit/7e63505e925b67edf19e39c78fccbc9f8c11bb0a"
+    },
     {
       "version": "2026.1.7",
       "publishedAt": 1768516491763,
