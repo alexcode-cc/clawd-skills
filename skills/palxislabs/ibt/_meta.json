@@ -1,0 +1,11 @@
+{
+  "owner": "palxislabs",
+  "slug": "ibt",
+  "displayName": "Intention Behavior Transformer (IBT)",
+  "latest": {
+    "version": "0.1.0",
+    "publishedAt": 1771289034837,
+    "commit": null
+  },
+  "history": []
+}
