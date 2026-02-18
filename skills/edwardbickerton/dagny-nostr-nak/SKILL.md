@@ -1,6 +1,6 @@
 ---
 name: dagny-nostr-nak
-description: Manage Nostr posting and engagement via the nak CLI. Use for creating notes, replying in threads, tagging npubs, checking replies/mentions, monitoring a relay (default wss://relay.primal.net), and publishing events with correct root/reply tags.
+description: Manage Nostr posting and engagement via the nak CLI. Use for creating notes, replying in threads, tagging npubs, checking replies/mentions, monitoring a relay (default wss://relay.primal.net), and publishing events with correct root/reply tags. Requires access to NOSTR_SECRET_KEY (nsec) for signing/publishing.
 ---
 
 # Nostr (nak)
@@ -12,11 +12,13 @@ Use `nak` for all Nostr actions: publish notes, reply in threads, and query rela
 - **Repo**: https://github.com/fiatjaf/nak
 - **Install** (script): `curl -sSL https://raw.githubusercontent.com/fiatjaf/nak/master/install.sh | sh`
 - **Update**: re-run the install script above (it installs latest)
+- **Tip**: review the script before running if you want to audit what it does.
 
 ## Onboarding (keys)
 - **Generate a new key**: `nak key generate` (prints nsec + npub)
-- **Save the secret**: set `NOSTR_SECRET_KEY` in your shell profile or a local `.env` file.
+- **Save the secret**: store `NOSTR_SECRET_KEY` in a shell profile or a local `.env` with restricted permissions.
   - Example: `export NOSTR_SECRET_KEY="nsec1..."`
+  - Optional: `chmod 600 .env` if you store it locally.
   - Prefer env vars over inline `--sec` in commands.
 
 ## Quick Start (common tasks)
