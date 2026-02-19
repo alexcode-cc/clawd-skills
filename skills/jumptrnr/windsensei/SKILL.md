@@ -195,7 +195,79 @@ GET https://windsensei.com/api/v1/dashboard
 
 ---
 
-### 3. Search Spots
+### 3. Best Conditions (Ranked Spots)
+
+Find the best spots right now. Works with or without auth.
+
+```
+GET https://windsensei.com/api/v1/best-conditions
+```
+
+| Param | Values | Default | Description |
+|-------|--------|---------|-------------|
+| `when` | `now`, `today`, `tomorrow`, `weekend` | `now` | Time window. `now` = current hour onward. |
+| `lat` | number | — | Latitude (required if no API key) |
+| `lng` | number | — | Longitude (required if no API key) |
+| `radius` | number | 100 | Search radius in km (max 500). Only used with lat/lng. |
+| `limit` | number | 5 | Max results (max 20) |
+
+**Auth:** Optional.
+- **With API key:** Evaluates the user's favorite spots using their activity preferences. No lat/lng needed.
+- **Without API key:** Requires lat/lng. Finds nearby public spots and evaluates with default kiting preferences.
+- If authenticated but no favorites, falls back to lat/lng nearby search.
+
+**Response:**
+```json
+{
+  "success": true,
+  "when": "now",
+  "spots": [
+    {
+      "locationId": "abc123",
+      "name": "Cherry Beach",
+      "timezone": "America/Toronto",
+      "distance": 4.2,
+      "current": {
+        "windSpeed": 20,
+        "windGust": 26,
+        "windDirection": "SW",
+        "windQuality": "good",
+        "temperature": 22,
+        "quality": "good"
+      },
+      "waterTemp": 18.5,
+      "bestBlock": {
+        "date": "2026-02-21",
+        "dateLabel": "Saturday, Feb 21",
+        "start": "14:00",
+        "end": "18:00",
+        "quality": "good",
+        "windSpeed": { "avg": 20, "gust": 26 },
+        "windDirection": "SW",
+        "activities": ["Kitefoil", "Twintip"]
+      },
+      "activities": ["Kitefoil", "Twintip"]
+    }
+  ],
+  "total": 1,
+  "authenticated": false,
+  "hint": "Get personalized results with your own spots and preferences at windsensei.com",
+  "generatedAt": "2026-02-21T12:00:00Z"
+}
+```
+
+**Key fields:**
+- `distance`: Distance from the provided lat/lng in km (only present for nearby queries)
+- `current`: Conditions right now (or first hour in the time window)
+- `bestBlock`: The best consecutive window of rideable conditions in the time range
+- Only spots with medium or better conditions are returned — bad spots are excluded
+- Spots are sorted best-first by quality, then wind speed
+
+**When to use:** "What's the best spot right now?", "Where should I go kiting near Toronto?", "Best conditions this weekend?"
+
+---
+
+### 4. Search Spots
 
 Find spots by name. Works without auth.
 
@@ -234,7 +306,7 @@ GET https://windsensei.com/api/v1/locations/search?q={query}
 
 ---
 
-### 4. Nearby Spots
+### 5. Nearby Spots
 
 Find spots near a location. Works without auth.
 
@@ -277,7 +349,7 @@ GET https://windsensei.com/api/v1/locations/nearby?lat={lat}&lng={lng}
 
 ---
 
-### 5. Detailed Forecast
+### 6. Detailed Forecast
 
 Full hourly forecast for a specific spot. More detailed than wind-report.
 
@@ -299,7 +371,7 @@ GET https://windsensei.com/api/v1/forecast/{locationId}/full
 
 ---
 
-### 6. Favorites List
+### 7. Favorites List
 
 Get the user's favorite spots in their saved order.
 
@@ -331,7 +403,7 @@ GET https://windsensei.com/api/v1/favorites
 
 ---
 
-### 7. Session History
+### 8. Session History
 
 Get the user's logged wind sport sessions.
 
@@ -381,7 +453,7 @@ GET https://windsensei.com/api/v1/sessions
 
 ---
 
-### 8. Live Sessions (Friends Activity)
+### 9. Live Sessions (Friends Activity)
 
 See which followed users are currently out riding.
 
@@ -426,7 +498,7 @@ GET https://windsensei.com/api/v1/live-sessions
 
 ---
 
-### 9. Public Profile
+### 10. Public Profile
 
 Look up any WindSensei user's public stats by their handle. No auth needed.
 
@@ -442,7 +514,7 @@ GET https://windsensei.com/api/public/profile/{nickname}
 
 ---
 
-### 10. Request a New Spot
+### 11. Request a New Spot
 
 Submit a request to add a spot that isn't in the system yet.
 
@@ -497,6 +569,8 @@ Duplicate requests are handled automatically — just returns success.
 | "How's the wind?" (has API key) | Dashboard | Yes |
 | "How's the wind at Cherry Beach?" | Wind Report with `spot=` | No |
 | "How's the wind this weekend?" | Wind Report with `when=weekend` | No |
+| "What's the best spot right now?" | Best Conditions | No (lat/lng) or Yes |
+| "Where should I kite near Miami?" | Best Conditions with lat/lng | No |
 | "What spots are near Toronto?" | Nearby (geocode city first) | No |
 | "Find spots called 'cherry'" | Search with `q=cherry` | No |
 | "Give me hour-by-hour for Cherry Beach" | Forecast Full | Yes |
@@ -554,6 +628,17 @@ If there are multiple good blocks, ask which one(s) to add unless the user said 
 > User: "How's the wind?"
 > → Call GET /api/v1/dashboard (with Bearer token)
 > → Summarize: lead with the best spot, mention the rest
+
+**Best spot right now (unauthenticated):**
+> User: "Where should I go kiting near Miami?"
+> → Geocode Miami to lat=25.76, lng=-80.19
+> → Call GET /api/v1/best-conditions?lat=25.76&lng=-80.19&when=now
+> → "Crandon Park has the best conditions right now — 18kt SE, good direction, 28°C. Best window is 2-6pm."
+
+**Best spot right now (authenticated):**
+> User: "What's my best spot today?"
+> → Call GET /api/v1/best-conditions?when=today (with Bearer token)
+> → "Cherry Beach looks best today — good conditions 2-6pm with 20kt SW. Hanlan's is marginal."
 
 **Finding new spots:**
 > User: "What kite spots are near Miami?"
