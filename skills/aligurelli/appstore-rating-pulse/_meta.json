@@ -3,9 +3,15 @@
   "slug": "appstore-rating-pulse",
   "displayName": "AppStore Rating Pulse",
   "latest": {
-    "version": "1.0.0",
-    "publishedAt": 1771465362041,
-    "commit": "https://github.com/openclaw/skills/commit/2f4a7775fe18fca3b48e2f9690dd193cd2d59eb3"
+    "version": "1.1.0",
+    "publishedAt": 1771466539353,
+    "commit": null
   },
-  "history": []
+  "history": [
+    {
+      "version": "1.0.0",
+      "publishedAt": 1771465362041,
+      "commit": "https://github.com/openclaw/skills/commit/2f4a7775fe18fca3b48e2f9690dd193cd2d59eb3"
+    }
+  ]
 }

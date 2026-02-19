@@ -1,6 +1,6 @@
 ---
 name: appstore-rating-pulse
-description: Track and report live App Store overall ratings for any iOS app across multiple countries, delivered daily via cron. Use when you want to monitor App Store ratings for one or more apps in specific regions (e.g. US, UK, Japan, Germany), set up a daily automated rating report, or get an instant snapshot of current ratings. Triggers on requests like "check my app rating", "track App Store ratings daily", "set up a rating monitor for my apps", or "show me ratings across countries".
+description: Monitor App Store ratings for any iOS app across multiple countries. Fetches live overall ratings using Apple's free iTunes Lookup API — no API key needed. Set up a daily cron report or get an instant snapshot. Triggers on "track app ratings", "check my App Store rating", "daily rating report", or "show ratings across countries".
 ---
 
 # AppStore Rating Pulse
