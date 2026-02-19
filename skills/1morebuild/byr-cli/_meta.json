@@ -1,0 +1,11 @@
+{
+  "owner": "1morebuild",
+  "slug": "byr-cli",
+  "displayName": "BYR CLI Skill",
+  "latest": {
+    "version": "0.1.2",
+    "publishedAt": 1771425482317,
+    "commit": null
+  },
+  "history": []
+}
