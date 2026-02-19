@@ -46,8 +46,14 @@ if [[ -z "$QUERY" ]]; then
 fi
 
 if [[ -z "${PERPLEXITY_API_KEY:-}" ]]; then
-  echo "Error: PERPLEXITY_API_KEY not set" >&2
-  exit 1
+  KEY_FILE="${HOME}/.config/perplexity/api_key"
+  if [[ -f "$KEY_FILE" ]]; then
+    PERPLEXITY_API_KEY=$(cat "$KEY_FILE")
+    export PERPLEXITY_API_KEY
+  else
+    echo "Error: PERPLEXITY_API_KEY not set and no key file found at $KEY_FILE" >&2
+    exit 1
+  fi
 fi
 
 # Map mode to model

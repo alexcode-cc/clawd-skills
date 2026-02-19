@@ -3,9 +3,15 @@
   "slug": "perplexity-deep-search",
   "displayName": "Perplexity Deep Search",
   "latest": {
-    "version": "1.0.0",
-    "publishedAt": 1769558682192,
-    "commit": "https://github.com/clawdbot/skills/commit/01754ae85ff51be072b0d9030b495b64a5ef09fa"
+    "version": "1.1.0",
+    "publishedAt": 1771453158466,
+    "commit": null
   },
-  "history": []
+  "history": [
+    {
+      "version": "1.0.0",
+      "publishedAt": 1769558682192,
+      "commit": "https://github.com/clawdbot/skills/commit/01754ae85ff51be072b0d9030b495b64a5ef09fa"
+    }
+  ]
 }

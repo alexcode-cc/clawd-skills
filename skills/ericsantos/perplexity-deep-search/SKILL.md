@@ -58,10 +58,14 @@ AI-powered web search with three modes for different depth levels.
 
 ## API Key
 
-Set `PERPLEXITY_API_KEY` env var:
+Set `PERPLEXITY_API_KEY` env var, or store it in a file:
 ```bash
-export PERPLEXITY_API_KEY="pplx-..."
+mkdir -p ~/.config/perplexity
+echo "your_key_here" > ~/.config/perplexity/api_key
+chmod 600 ~/.config/perplexity/api_key
 ```
+
+The script checks the env var first, then falls back to the file.
 
 ## Pricing Reference
 
