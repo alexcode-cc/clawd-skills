@@ -1,10 +1,15 @@
 ---
 name: Cloud Storage
 slug: cloud-storage
-version: 1.0.0
-description: Manage files across cloud providers with proper authentication, cost awareness, and multi-provider operations.
+version: 1.0.1
+description: Manage files across cloud providers with authentication, cost awareness, and multi-provider operations.
+changelog: Added When to Use section for consistency
 metadata: {"clawdbot":{"emoji":"☁️","requires":{"bins":[]},"os":["linux","darwin","win32"]}}
 ---
+
+## When to Use
+
+User needs to upload, download, sync, or manage files across cloud storage providers. Agent handles multi-provider operations with cost awareness.
 
 ## Quick Reference
 
