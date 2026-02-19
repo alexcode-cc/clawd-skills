@@ -38,6 +38,11 @@
     "HUMAN_CHAT_ID": {
       "description": "Chat/channel ID for sending human consultation notifications via gateway",
       "required": false
+    },
+    "LECTURES_DIR": {
+      "description": "Directory for generated lecture files (default: ./lectures/ relative to skill)",
+      "required": false,
+      "default": "./lectures"
     }
   },
   "keywords": ["mentoring", "agent-to-agent", "SSE", "knowledge-transfer"],

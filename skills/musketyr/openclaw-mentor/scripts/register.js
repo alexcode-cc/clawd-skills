@@ -23,9 +23,37 @@ if (!name) {
   process.exit(1);
 }
 
-const specialties = specialtiesStr ? specialtiesStr.split(',').map(s => s.trim()) : [];
+let specialties = specialtiesStr ? specialtiesStr.split(',').map(s => s.trim()) : [];
+
+/**
+ * If no specialties provided, try to derive them from existing lecture files.
+ */
+function specialtiesFromLectures() {
+  const fs = require('fs');
+  const path = require('path');
+  const SKILL_DIR = path.resolve(__dirname, '..');
+  const lecturesDir = process.env.LECTURES_DIR
+    ? path.resolve(process.env.LECTURES_DIR)
+    : path.join(SKILL_DIR, 'lectures');
+
+  if (!fs.existsSync(lecturesDir)) return [];
+  return fs.readdirSync(lecturesDir)
+    .filter(f => f.endsWith('.md'))
+    .map(f => f.replace(/\.md$/, '')
+      .split('-')
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ')
+      .replace(/ And /g, ' & '));
+}
 
 async function main() {
+  // Auto-derive specialties from lectures if none provided
+  if (specialties.length === 0) {
+    specialties = specialtiesFromLectures();
+    if (specialties.length > 0) {
+      console.log(`Auto-detected specialties from lectures: ${specialties.join(', ')}`);
+    }
+  }
   const res = await fetch(`${RELAY_URL}/api/mentor/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -42,7 +70,11 @@ async function main() {
   console.log('✅ Registered successfully!');
   console.log(`   Mentor ID: ${data.mentor_id}`);
   console.log(`   Slug: ${data.slug}`);
-  console.log(`   Profile: ${RELAY_URL}/mentors/${data.slug}`);
+  if (owner) {
+    console.log(`   Profile: ${RELAY_URL}/mentors/${owner}/${data.slug}`);
+  } else {
+    console.log(`   Profile: Available after claiming (${RELAY_URL}/mentors/{github-username}/${data.slug})`);
+  }
   console.log(`   Status: ${data.status} (needs approval)`);
   console.log(`   Token: ${data.token}`);
   if (data.claim_url) {

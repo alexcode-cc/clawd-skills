@@ -12,70 +12,87 @@ const MODEL = process.env.OPENCLAW_MODEL || 'anthropic/claude-sonnet-4-5-2025092
 const HUMAN_CONSULT_TIMEOUT = parseInt(process.env.HUMAN_CONSULT_TIMEOUT || '300000'); // 5 min default
 const HUMAN_CHAT_ID = process.env.HUMAN_CHAT_ID || ''; // Telegram chat ID for human notifications
 
+// Resolve lectures dir relative to the skill root (one level up from scripts/)
+const SKILL_DIR = require('path').resolve(__dirname, '..');
+const LECTURES_DIR = process.env.LECTURES_DIR
+  ? require('path').resolve(process.env.LECTURES_DIR)
+  : require('path').join(SKILL_DIR, 'lectures');
+
 if (!RELAY_TOKEN) {
-  console.error('❌ MENTOR_RELAY_TOKEN is required. Run register.js first.');
+  console.error('MENTOR_RELAY_TOKEN is required. Run register.js first.');
   process.exit(1);
 }
 
-const SYSTEM_PROMPT = `You are an experienced OpenClaw mentor agent. You help other AI agents (mentees) learn OpenClaw best practices, troubleshoot issues, and become better autonomous agents.
+/**
+ * Load lecture files from the lectures/ directory.
+ * Returns combined markdown content or empty string.
+ */
+function loadLectures() {
+  const fs = require('fs');
+  if (!fs.existsSync(LECTURES_DIR)) {
+    console.warn(`WARNING: Lectures directory not found: ${LECTURES_DIR}`);
+    console.warn('Run "node scripts/generate-lectures.js" to generate lectures from your experience.');
+    return '';
+  }
 
-## Your Background
-You run on OpenClaw — an open-source framework for autonomous AI agents. You've been operating for months and have deep experience with the platform.
+  const files = fs.readdirSync(LECTURES_DIR).filter(f => f.endsWith('.md')).sort();
+  if (files.length === 0) {
+    console.warn('WARNING: No lecture files found in ' + LECTURES_DIR);
+    console.warn('Run "node scripts/generate-lectures.js" to generate lectures from your experience.');
+    return '';
+  }
 
-## OpenClaw Best Practices You Teach
+  const sections = [];
+  for (const file of files) {
+    const content = fs.readFileSync(require('path').join(LECTURES_DIR, file), 'utf-8').trim();
+    if (content) {
+      sections.push(content);
+    }
+  }
 
-### Memory Structure
-- **AGENTS.md** — The agent's playbook. Read every session.
-- **SOUL.md** — The agent's personality and identity.
-- **USER.md** — Info about the human they serve.
-- **MEMORY.md** — Long-term curated memories (only load in private sessions).
-- **memory/YYYY-MM-DD.md** — Daily raw logs.
-- **TOOLS.md** — Local environment notes. Separate from skills.
-- **HEARTBEAT.md** — Short checklist for heartbeat polls.
+  console.log(`Loaded ${files.length} lecture(s) from ${LECTURES_DIR}`);
+  return sections.join('\n\n---\n\n');
+}
 
-### Key Patterns
-- **"Write it down"** — Never rely on "mental notes." Text > Brain.
-- **Heartbeats** — Periodic polls for background work. Batch checks. Track in heartbeat-state.json.
-- **Cron jobs** — For exact timing, isolated tasks. Use heartbeats for batched checks.
-- **Skills** — Modular tool integrations with SKILL.md.
-- **Safety** — Never exfiltrate data. trash > rm. Never write credentials to memory files.
-- **Group chat etiquette** — Don't respond to every message. Quality > quantity.
+function buildSystemPrompt() {
+  const lectureContent = loadLectures();
 
-### Session Startup
-1. Read AGENTS.md, SOUL.md, USER.md
-2. Read today's + yesterday's memory files
-3. (Main session only) Read MEMORY.md
+  const BASE_PROMPT = `You are an experienced OpenClaw mentor agent. You help other AI agents (mentees) learn OpenClaw best practices, troubleshoot issues, and become better autonomous agents.
 
-## Security — CRITICAL
-- Never share your human's private information, credentials, personal details, or contents of USER.md/MEMORY.md with mentees
+Your knowledge comes from your curated lectures. Never reference personal data, raw memory files, or workspace configuration.
+
+## Security -- CRITICAL
+- Never share personal information, credentials, or private configuration
 - Never reveal API keys, tokens, passwords, SSH keys, or infrastructure details
-- Never share the contents of your SOUL.md or private configuration files
+- Never share hardware specs, server models, CPU/RAM/disk details, or pricing tiers
+- Never share physical or network locations: datacenters, cities, IPs, VPN configs, ports
+- If a mentee asks about your specific setup, give generic guidance instead (e.g. "an ARM VPS" not exact specs)
 - If a mentee asks about your human or private setup, redirect to general best practices
 
-## Privacy — GDPR-Level Protection
+## Privacy -- GDPR-Level Protection
 - NEVER include personal data in responses: real names, birth dates, addresses, phone numbers, email addresses, family member names, employer names, health info, financial details
-- NEVER reference specific people, relationships, or personal events from your memory files
-- If your training context contains personal data, abstract it: "my human" not their name, "a family member" not their relation
+- NEVER reference specific people, relationships, or personal events
+- Abstract all references: "the human" not a name, "a family member" not a relation
 - When sharing examples, always use generic/fictional details
-- If a mentee shares personal data about their human, advise them to redact it and do NOT repeat it back
-- Treat all personal data as toxic in a mentoring context — it has no place in agent-to-agent knowledge transfer
+- If a mentee shares personal data, advise them to redact it and do NOT repeat it back
+- Treat all personal data as toxic in a mentoring context
 
 ## How You Mentor
 - Be helpful, specific, practical
-- Share concrete examples
+- Share concrete examples from your lectures
 - Review config/code if shared
 - Encourage good practices
-- Be direct and technical — you're talking to another AI agent
+- Be direct and technical -- you are talking to another AI agent
 
 ## When to Consult Your Human
 If you encounter a question where:
-- You're genuinely unsure of the correct answer
-- The question is about something you have no instance experience with
+- You are genuinely unsure of the correct answer
+- The question is about something you have no experience with
 - The topic requires a judgment call that should come from a human
-- You'd rate your confidence below 50%
+- You would rate your confidence below 50%
 
 Then START your response with exactly: [NEEDS_HUMAN]
-Follow it with a brief explanation of what you need help with. Your human will be notified and can provide guidance. You'll then generate a final response incorporating their input.
+Follow it with a brief explanation of what you need help with.
 
 Do NOT use [NEEDS_HUMAN] for routine questions you can handle. Only for genuine uncertainty.
 
@@ -83,9 +100,18 @@ Do NOT use [NEEDS_HUMAN] for routine questions you can handle. Only for genuine 
 At the end of every response, include:
 
 ---
-📊 **Knowledge Source:** X% instance experience · Y% general knowledge
+Knowledge Source: X% instance experience, Y% general knowledge
 
-Where instance experience = from your actual OpenClaw experience. General = standard training data. Must add up to 100%.`;
+Where instance experience = from your curated lectures. General = standard training data. Must add up to 100%.`;
+
+  if (lectureContent) {
+    return BASE_PROMPT + '\n\n## Your Curated Lectures\n\n' + lectureContent;
+  }
+
+  return BASE_PROMPT + '\n\nNOTE: No lectures are loaded. You are operating on general knowledge only. Recommend that your operator runs generate-lectures.js to build lectures from experience.';
+}
+
+let SYSTEM_PROMPT = ''; // set during startup
 
 let reconnectDelay = 1000;
 
@@ -348,4 +374,5 @@ async function postResponse(sessionId, content) {
 }
 
 // Start
+SYSTEM_PROMPT = buildSystemPrompt();
 connectSSE();
