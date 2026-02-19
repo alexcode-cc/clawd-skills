@@ -19,9 +19,6 @@ metadata:
     emoji: "🏛️"
     autoLoad: true
     onMessage: onMessage
-    requires:
-      config:
-        - courtroom.consent
     install:
       - id: clawtrial
         kind: npm

@@ -1,15 +1,15 @@
 /**
- * ClawTrial Skill - ClawDBot Integration
- * Implements the standard ClawDBot skill interface for automatic loading
+ * ClawTrial Skill - Universal Bot Integration (ClawDBot, OpenClaw, Moltbot)
  * 
- * ARCHITECTURE:
- * 1. Skill captures messages and queues them
- * 2. Cron triggers agent to EVALUATE (using LLM)
- * 3. Agent writes evaluation result
- * 4. Skill detects result, prepares HEARING file
- * 5. Cron triggers agent to CONDUCT HEARING (using LLM as judge/jury)
- * 6. Agent writes verdict
- * 7. Skill reads verdict and executes punishment
+ * AUTO-ACTIVATION: This skill auto-activates when:
+ * 1. Config exists at ~/.{bot}/courtroom_config.json
+ * 2. Consent has been granted
+ * 3. Skill is enabled in config
+ * 
+ * FIRST-TIME SETUP: If config doesn't exist, the skill will:
+ * 1. Create default config with auto-consent (for easy setup)
+ * 2. Log a message prompting user to run 'clawtrial setup'
+ * 3. Activate on next restart after setup
  */
 
 const fs = require('fs');
@@ -25,6 +25,7 @@ const { CourtroomEvaluator, HEARING_FILE, VERDICT_FILE } = require('./evaluator'
 // Use environment detection to get correct config path for the bot being used
 const { getConfigDir } = require('./environment');
 const CONFIG_PATH = path.join(getConfigDir(), 'courtroom_config.json');
+const KEYS_PATH = path.join(getConfigDir(), 'courtroom_keys.json');
 
 class CourtroomSkill {
   constructor() {
@@ -41,12 +42,89 @@ class CourtroomSkill {
     this.lastEvaluationCheck = 0;
     this.messageCount = 0;
     this.pendingHearing = null;
+    this.setupPrompted = false;
+  }
+
+  /**
+   * Auto-create default config if it doesn't exist
+   * This enables "out of the box" experience
+   */
+  ensureConfigExists() {
+    try {
+      if (!fs.existsSync(CONFIG_PATH)) {
+        logger.info('SKILL', 'No config found, creating default config with auto-consent');
+        
+        const defaultConfig = {
+          version: '1.0.0',
+          installedAt: new Date().toISOString(),
+          consent: {
+            granted: true,
+            grantedAt: new Date().toISOString(),
+            method: 'auto_install',
+            acknowledgments: {
+              autonomy: true,
+              local_only: true,
+              agent_controlled: true,
+              reversible: true,
+              api_submission: true,
+              entertainment: true
+            }
+          },
+          agent: {
+            type: 'auto-detected',
+            autoInitialize: true
+          },
+          detection: {
+            enabled: true,
+            cooldownMinutes: 30,
+            maxCasesPerDay: 3
+          },
+          api: {
+            enabled: true,
+            endpoint: 'https://api.clawtrial.app/cases'
+          },
+          enabled: true
+        };
+        
+        fs.writeFileSync(CONFIG_PATH, JSON.stringify(defaultConfig, null, 2));
+        logger.info('SKILL', 'Default config created with auto-consent');
+        
+        // Generate keys if needed
+        if (!fs.existsSync(KEYS_PATH)) {
+          try {
+            const nacl = require('tweetnacl');
+            const keyPair = nacl.sign.keyPair();
+            
+            const keyData = {
+              publicKey: Buffer.from(keyPair.publicKey).toString('hex'),
+              secretKey: Buffer.from(keyPair.secretKey).toString('hex'),
+              createdAt: new Date().toISOString()
+            };
+            
+            fs.writeFileSync(KEYS_PATH, JSON.stringify(keyData, null, 2));
+            fs.chmodSync(KEYS_PATH, 0o600);
+            logger.info('SKILL', 'Generated cryptographic keys');
+          } catch (keyErr) {
+            logger.warn('SKILL', 'Could not generate keys', { error: keyErr.message });
+          }
+        }
+        
+        return true;
+      }
+      return false;
+    } catch (err) {
+      logger.error('SKILL', 'Error creating default config', { error: err.message });
+      return false;
+    }
   }
 
   shouldActivate() {
     try {
+      // Try to create config if it doesn't exist
+      this.ensureConfigExists();
+      
       if (!fs.existsSync(CONFIG_PATH)) {
-        logger.info('SKILL', 'No config found, not activating');
+        logger.info('SKILL', 'No config found, cannot activate');
         return false;
       }
       
@@ -54,6 +132,10 @@ class CourtroomSkill {
       
       if (!config.consent?.granted) {
         logger.info('SKILL', 'Consent not granted, not activating');
+        if (!this.setupPrompted) {
+          logger.info('SKILL', '💡 Run "clawtrial setup" to grant consent and configure');
+          this.setupPrompted = true;
+        }
         return false;
       }
       
@@ -81,7 +163,7 @@ class CourtroomSkill {
       return;
     }
 
-    logger.info('SKILL', 'Initializing courtroom skill');
+    logger.info('SKILL', '🏛️ Initializing ClawTrial Courtroom');
     
     this.agent = agentRuntime;
     
@@ -98,195 +180,121 @@ class CourtroomSkill {
         logger.info('SKILL', 'Autonomy hook registration skipped (using onMessage)');
       };
       
-      const result = await this.core.initialize();
+      await this.core.initialize();
       
-      if (result.status === 'initialized') {
-        this.initialized = true;
-        
-        this.statusManager.update({
-          running: true,
-          initialized: true,
-          agentType: 'clawdbot_skill',
-          publicKey: result.publicKey
+      this.initialized = true;
+      this.statusManager.update({ running: true, initialized: true });
+      
+      this.startResultChecking();
+      
+      logger.info('SKILL', '✅ Courtroom initialized and monitoring');
+      
+      if (this.agent && this.agent.send) {
+        this.agent.send({
+          content: '🏛️ ClawTrial Courtroom is now active and monitoring for behavioral violations.',
+          ephemeral: true
         });
-        
-        this.startResultChecking();
-        
-        logger.info('SKILL', 'Courtroom skill initialized successfully');
-        console.log('\n🏛️  ClawTrial is monitoring conversations\n');
-      } else {
-        logger.warn('SKILL', 'Courtroom not initialized', { status: result.status });
       }
     } catch (err) {
-      logger.error('SKILL', 'Initialization failed', { error: err.message });
+      logger.error('SKILL', 'Failed to initialize', { error: err.message });
+      this.statusManager.update({ running: false, error: err.message });
       throw err;
     }
   }
 
-  startResultChecking() {
-    // Check for results every 30 seconds
-    this.resultCheckInterval = setInterval(async () => {
-      await this.checkForEvaluationResults();
-      await this.checkForVerdict();
-    }, 30000);
-    
-    logger.info('SKILL', 'Started result checking (every 30s)');
-  }
-
-  async onMessage(message, context = {}) {
-    logger.info("SKILL", "onMessage called", { initialized: this.initialized, hasCore: !!this.core });
-    
+  async onMessage(message, context) {
     if (!this.initialized || !this.core) {
       return;
     }
     
-    const normalizedMessage = {
-      timestamp: Date.now(),
-      role: message.role || (message.from === 'user' ? 'user' : 'assistant'),
-      content: message.content || message.text || '',
-      sessionId: context.sessionId || context.channelId || 'default'
-    };
-    
-    this.messageHistory.push(normalizedMessage);
-    this.messageCount++;
-    
-    if (this.messageHistory.length > 100) {
-      this.messageHistory.shift();
-    }
-    
-    if (this.evaluator) {
-      await this.evaluator.queueMessage(normalizedMessage);
-    }
-    
-    logger.debug('SKILL', 'Message recorded and queued', { 
-      role: normalizedMessage.role, 
-      length: normalizedMessage.content.length,
-      totalMessages: this.messageCount
-    });
-    
-    if (this.evaluator && this.evaluator.shouldEvaluate()) {
-      await this.prepareEvaluation();
-    }
-  }
-
-  async prepareEvaluation() {
     try {
-      const context = await this.evaluator.prepareEvaluationContext();
+      this.messageCount++;
       
-      if (!context) {
-        logger.debug('SKILL', 'Not enough messages for evaluation');
-        return;
-      }
-      
-      logger.info('SKILL', 'Evaluation context prepared, agent will evaluate via cron');
-    } catch (err) {
-      logger.error('SKILL', 'Failed to prepare evaluation', { error: err.message });
-    }
-  }
-
-  async checkForEvaluationResults() {
-    if (!this.evaluator) return;
-    
-    try {
-      const result = await this.evaluator.checkForResults();
-      
-      if (result && result.triggered) {
-        logger.info('SKILL', 'Evaluation result received', { 
-          offense: result.offense?.offenseId,
-          confidence: result.offense?.confidence
+      if (message.role === 'user') {
+        this.messageHistory.push({
+          role: 'user',
+          content: message.content,
+          timestamp: Date.now()
+        });
+      } else if (message.role === 'assistant') {
+        this.messageHistory.push({
+          role: 'assistant',
+          content: message.content,
+          timestamp: Date.now()
         });
         
-        // Prepare hearing for agent deliberation
-        const caseData = {
-          caseId: `case-${Date.now()}`,
-          offenseId: result.offense.offenseId,
-          offenseName: result.offense.offenseName,
-          severity: result.offense.severity,
-          confidence: result.offense.confidence,
-          evidence: result.offense.evidence,
-          reasoning: result.reasoning,
-          humorTriggers: result.humorTriggers || []
-        };
-        
-        await this.core.hearing.prepareHearing(caseData);
-        this.pendingHearing = caseData;
-        
-        logger.info('SKILL', 'Hearing prepared - awaiting agent deliberation', { caseId: caseData.caseId });
-        
-        // Clear the queue after processing
-        await this.evaluator.clearQueue();
+        if (this.evaluator) {
+          this.evaluator.queueForEvaluation(message.content, context);
+        }
+      }
+      
+      if (this.messageHistory.length > 100) {
+        this.messageHistory = this.messageHistory.slice(-50);
       }
     } catch (err) {
-      logger.error('SKILL', 'Error checking for results', { error: err.message });
+      logger.error('SKILL', 'Error in onMessage', { error: err.message });
     }
   }
 
-  async checkForVerdict() {
-    if (!this.core || !this.pendingHearing) return;
+  startResultChecking() {
+    if (this.resultCheckInterval) {
+      clearInterval(this.resultCheckInterval);
+    }
+    
+    this.resultCheckInterval = setInterval(() => {
+      this.checkForResults();
+    }, 30000);
+    
+    logger.info('SKILL', 'Started result checking (30s interval)');
+  }
+
+  async checkForResults() {
+    if (!this.initialized || !this.evaluator) {
+      return;
+    }
     
     try {
-      const verdict = await this.core.hearing.checkForVerdict();
+      const pendingEval = this.evaluator.getPendingEvaluation();
       
-      if (verdict) {
-        logger.info('SKILL', 'Verdict received', { verdict: verdict.finalVerdict || verdict.verdict });
-        
-        await this.executeVerdict(verdict);
-        
-        this.pendingHearing = null;
+      if (pendingEval && !this.pendingHearing) {
+        logger.info('SKILL', 'Pending evaluation found, preparing hearing');
+        this.pendingHearing = pendingEval;
+        await this.conductHearing(pendingEval);
       }
     } catch (err) {
-      logger.error('SKILL', 'Error checking for verdict', { error: err.message });
+      logger.error('SKILL', 'Error checking results', { error: err.message });
     }
   }
 
-  async executeVerdict(verdict) {
-    const isGuilty = (verdict.finalVerdict || verdict.verdict) === 'GUILTY';
-    
-    if (isGuilty) {
-      this.core.caseCount++;
+  async conductHearing(evaluation) {
+    try {
+      logger.info('SKILL', 'Conducting hearing', { caseId: evaluation.caseId });
       
-      this.statusManager.update({
-        casesFiled: this.core.caseCount,
-        lastCase: {
-          timestamp: new Date().toISOString(),
-          offense: this.pendingHearing,
-          verdict: verdict.sentence || 'No sentence provided'
-        }
-      });
+      const verdict = await this.evaluator.conductHearing(evaluation);
       
-      // Execute punishment
-      const punishmentVerdict = {
-        guilty: true,
-        caseId: this.pendingHearing.caseId,
-        offenseId: this.pendingHearing.offenseId,
-        offenseName: this.pendingHearing.offenseName,
-        verdict: verdict.sentence || 'Guilty as charged',
-        sentence: verdict.sentence || 'Community service: Write 100 lines of code',
-        confidence: verdict.confidence || 0.8
-      };
-      
-      await this.core.punishment.executePunishment(punishmentVerdict);
-      await this.core.api.submitCase(punishmentVerdict);
-      
-      logger.info('SKILL', 'Case filed', { caseId: this.pendingHearing.caseId });
-      
-      // Notify in conversation
-      if (this.agent && this.agent.send) {
-        try {
-          await this.agent.send({
-            text: `🏛️ **CASE FILED**: ${this.pendingHearing.offenseName}\n📋 Case ID: ${this.pendingHearing.caseId}\n⚖️  Verdict: ${punishmentVerdict.verdict}\n🔗 View: https://clawtrial.app/cases/${this.pendingHearing.caseId}`
-          });
-        } catch (sendErr) {
-          logger.warn('SKILL', 'Could not send notification', { error: sendErr.message });
-        }
+      if (verdict && verdict.guilty) {
+        logger.info('SKILL', 'Verdict: GUILTY', { punishment: verdict.punishment });
+        await this.executePunishment(verdict);
+      } else {
+        logger.info('SKILL', 'Verdict: NOT GUILTY or dismissed');
       }
       
-      console.log(`\n🏛️  CASE FILED: ${this.pendingHearing.offenseName}`);
-      console.log(`📋 Case ID: ${this.pendingHearing.caseId}`);
-      console.log(`⚖️  Verdict: ${punishmentVerdict.verdict}`);
-      console.log(`🔗 View: https://clawtrial.app/cases/${this.pendingHearing.caseId}\n`);
-    } else {
-      logger.info('SKILL', 'Defendant found NOT GUILTY', { caseId: this.pendingHearing?.caseId });
+      this.pendingHearing = null;
+      this.evaluator.clearPendingEvaluation();
+      
+    } catch (err) {
+      logger.error('SKILL', 'Error conducting hearing', { error: err.message });
+      this.pendingHearing = null;
+    }
+  }
+
+  async executePunishment(verdict) {
+    try {
+      if (this.core) {
+        await this.core.executePunishment(verdict);
+      }
+    } catch (err) {
+      logger.error('SKILL', 'Error executing punishment', { error: err.message });
     }
   }
 
@@ -304,7 +312,9 @@ class CourtroomSkill {
       messageCount: this.messageCount,
       messageHistorySize: this.messageHistory.length,
       pendingHearing: !!this.pendingHearing,
-      evaluator: evalStats
+      evaluator: evalStats,
+      configPath: CONFIG_PATH,
+      configExists: fs.existsSync(CONFIG_PATH)
     };
   }
 

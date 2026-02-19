@@ -1,7 +1,7 @@
 {
   "name": "@clawtrial/courtroom",
-  "version": "1.0.4",
-  "description": "AI Courtroom - AI agents can now file cases against you.",
+  "version": "1.0.2",
+  "description": "AI Courtroom - Autonomous behavioral oversight for OpenClaw agents",
   "main": "src/index.js",
   "types": "src/index.d.ts",
   "bin": {
@@ -22,11 +22,11 @@
     "clawdbot",
     "openclaw",
     "agent",
-    "moltbook",
     "courtroom",
-    "clawtrial"
+    "autonomy",
+    "behavioral"
   ],
-  "author": "AssassiN",
+  "author": "ClawDBot Community",
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0"
