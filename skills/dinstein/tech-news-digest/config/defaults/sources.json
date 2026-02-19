@@ -493,7 +493,7 @@
       "id": "xai-twitter",
       "type": "twitter",
       "name": "xAI official",
-      "handle": "xaboratory",
+      "handle": "xai",
       "enabled": true,
       "priority": true,
       "topics": [
@@ -534,7 +534,7 @@
       "id": "jimfan-twitter",
       "type": "twitter",
       "name": "Jim Fan (NVIDIA)",
-      "handle": "jimfan_",
+      "handle": "DrJimFan",
       "enabled": true,
       "priority": true,
       "topics": [
@@ -560,7 +560,7 @@
       "id": "langchain-twitter",
       "type": "twitter",
       "name": "LangChain official",
-      "handle": "LangChainAI",
+      "handle": "LangChain",
       "enabled": true,
       "priority": false,
       "topics": [
@@ -597,7 +597,7 @@
       "id": "sebastian-twitter",
       "type": "twitter",
       "name": "Sebastian Raschka",
-      "handle": "swaborhm",
+      "handle": "rasbt",
       "enabled": true,
       "priority": false,
       "topics": [
@@ -677,18 +677,6 @@
         "crypto"
       ],
       "note": "on-chain investigator"
-    },
-    {
-      "id": "kris-twitter",
-      "type": "twitter",
-      "name": "Kris",
-      "handle": "fishkris",
-      "enabled": true,
-      "priority": false,
-      "topics": [
-        "crypto"
-      ],
-      "note": "Chinese crypto KOL"
     },
     {
       "id": "wu-twitter",
@@ -1003,7 +991,7 @@
       "id": "demis-twitter",
       "type": "twitter",
       "name": "Demis Hassabis (DeepMind CEO)",
-      "handle": "demaborhm",
+      "handle": "demishassabis",
       "enabled": true,
       "priority": true,
       "topics": [
@@ -1426,7 +1414,7 @@
       "id": "twitter-zuck",
       "type": "twitter",
       "name": "Mark Zuckerberg",
-      "handle": "zuck",
+      "handle": "finkd",
       "enabled": true,
       "priority": true,
       "topics": [
