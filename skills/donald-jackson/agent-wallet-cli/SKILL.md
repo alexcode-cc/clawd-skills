@@ -1,7 +1,7 @@
 ---
 name: agent-wallet
-description: Manage crypto wallets (Ethereum, Solana, Polygon, Arbitrum, Base) via agent-wallet-cli. Use for checking balances, sending tokens (ETH/SOL/ERC-20/SPL), signing messages, managing approvals, viewing transaction history, and wallet lifecycle (init, unlock, lock, export). Supports HD wallets (BIP-39), session tokens for time-limited access, and JSON output for automation. Open source — https://github.com/donald-jackson/agent-wallet-cli
-metadata: {"openclaw":{"requires":{"bins":["agent-wallet-cli"],"env":["WALLET_PASSWORD (sensitive, optional): Wallet encryption password — piped via stdin to unlock. Only needed for unlock/init/import.","WALLET_SESSION_TOKEN (sensitive, optional): Time-limited session token (wlt_...) from unlock. Used for all operations."]},"install":[{"id":"agent-wallet-cli","kind":"node","package":"agent-wallet-cli","bins":["agent-wallet-cli"],"label":"Install agent-wallet-cli (npm)"}],"source":{"repository":"https://github.com/donald-jackson/agent-wallet-cli","license":"MIT"}}}
+description: Manage crypto wallets (Ethereum, Solana, Polygon, Arbitrum, Base) via agent-wallet-cli. Use for checking balances, sending tokens (ETH/SOL/ERC-20/SPL), signing messages, managing approvals, viewing transaction history, x402 payments, and wallet lifecycle (init, unlock, lock, export). Supports HD wallets (BIP-39), session tokens for time-limited access, and JSON output for automation. Open source — https://github.com/donald-jackson/agent-wallet-cli
+metadata: {"openclaw":{"requires":{"bins":["agent-wallet-cli"],"env":["WALLET_PASSWORD (sensitive, optional): Wallet encryption password — passed via --password or piped via stdin. Only needed for init/import/unlock/export.","WALLET_SESSION_TOKEN (sensitive, optional): Time-limited session token (wlt_...) from unlock. Used for all operations via --token."]},"install":[{"id":"agent-wallet-cli","kind":"node","package":"agent-wallet-cli","bins":["agent-wallet-cli"],"label":"Install agent-wallet-cli (npm)"}],"source":{"repository":"https://github.com/donald-jackson/agent-wallet-cli","license":"MIT"}}}
 ---
 
 # Agent Wallet
@@ -21,9 +21,7 @@ Self-custodial crypto wallet CLI for AI agents. Your keys, your coins — the ag
 3. **The agent** uses only the session token — it expires automatically (default 1hr, max 24hr)
 4. **No telemetry, no analytics, no server calls** — only public blockchain RPCs for queries and transactions
 
-**Important: If you give the agent your WALLET_PASSWORD**, it can perform any password-level operation (init, import, unlock, and export). For maximum security, **unlock the wallet yourself** and only give the agent the session token (WALLET_SESSION_TOKEN). Session tokens cannot export mnemonics or change passwords — they can only sign transactions and read balances.
-
-Passwords are piped via stdin, never passed as CLI flags.
+**Important: If you give the agent your WALLET_PASSWORD**, it can perform any password-level operation (init, import, unlock, and export). For maximum security, **unlock the wallet yourself** and only give the agent the session token. Session tokens cannot export mnemonics or change passwords — they can only sign transactions and read balances.
 
 **Before trusting this skill with real funds:**
 - Audit the source: [github.com/donald-jackson/agent-wallet-cli](https://github.com/donald-jackson/agent-wallet-cli)
@@ -42,19 +40,15 @@ Verify installation: `agent-wallet-cli --version`
 
 ## Workflow
 
-**Never pass `--password` as a CLI flag** — it leaks into shell history and process listings. Pipe via stdin:
-
-```bash
-echo "$WALLET_PASSWORD" | agent-wallet-cli unlock --duration 3600
-```
-
-1. **Init** (first time): `echo "$WALLET_PASSWORD" | agent-wallet-cli init`
+1. **Init** (first time): `agent-wallet-cli init --password "$WALLET_PASSWORD"`
    - Displays mnemonic ONCE — save it securely
-2. **Import** (existing wallet): `echo "$WALLET_PASSWORD" | agent-wallet-cli import --mnemonic "word1 word2 ..."`
-3. **Unlock**: `echo "$WALLET_PASSWORD" | agent-wallet-cli unlock --duration 3600`
+2. **Import** (existing wallet): `agent-wallet-cli import --password "$WALLET_PASSWORD" --mnemonic "word1 word2 ..."`
+3. **Unlock**: `agent-wallet-cli unlock --password "$WALLET_PASSWORD" --duration 3600`
    - Returns session token (`wlt_...`) valid for specified duration
 4. **Use**: Pass `--token wlt_...` to all commands (no password needed)
 5. **Lock**: `agent-wallet-cli lock` when done
+
+**Note:** `--password` and `--mnemonic` can be omitted to be prompted securely via stdin (recommended for interactive use). When using in automation, `--password` is accepted but will show a warning about shell history visibility.
 
 ## Global Options
 
@@ -68,47 +62,65 @@ All commands accept:
 
 ### Wallet Management
 ```bash
-echo "$WALLET_PASSWORD" | agent-wallet-cli init [--word-count 12|24] [--name <name>]
-echo "$WALLET_PASSWORD" | agent-wallet-cli import --mnemonic "<phrase>" [--name <name>]
-echo "$WALLET_PASSWORD" | agent-wallet-cli unlock [--duration <secs>] [--name <name>]
+agent-wallet-cli init [--password <pw>] [--word-count 12|24] [--name <name>]
+agent-wallet-cli import [--password <pw>] [--mnemonic "<phrase>"] [--name <name>]
+agent-wallet-cli unlock [--password <pw>] [--duration <secs>] [--name <name>]
 agent-wallet-cli lock [--name <name>]
-echo "$WALLET_PASSWORD" | agent-wallet-cli export --confirm [--name <name>]
+agent-wallet-cli export [--password <pw>] --confirm [--name <name>]
 ```
 
 ### Addresses & Balances
 ```bash
-agent-wallet-cli address --token wlt_... [--chain ethereum|solana] [--account-index 0]
-agent-wallet-cli balance --token wlt_... --chain <chain> [--network mainnet] [--token-address usdc]
+agent-wallet-cli address --token <wlt_...> [--chain ethereum|solana] [--account-index 0]
+agent-wallet-cli balance --token <wlt_...> --chain <chain> [--network mainnet] [--token-address usdc]
 ```
+
+**Important:** `--token` is the session token (wlt_...), `--token-address` is the coin/token contract or alias.
 
 ### Transfers
 ```bash
 # Native (ETH/SOL)
-agent-wallet-cli send --token wlt_... --chain <chain> --to <addr> --amount <amt> --yes [--dry-run]
+agent-wallet-cli send --token <wlt_...> --chain <chain> --to <addr> --amount <amt> --yes [--dry-run] [--no-relay]
 # ERC-20/SPL token
-agent-wallet-cli send --token wlt_... --chain <chain> --to <addr> --amount <amt> --token-address <addr|alias> --yes
+agent-wallet-cli send --token <wlt_...> --chain <chain> --to <addr> --amount <amt> --token-address <addr|alias> --yes [--no-relay]
 ```
 
-**Always pass `--yes`** to skip interactive confirmation (required for non-TTY/agent use).
+- **`--yes`**: Skip confirmation prompt (required for non-TTY/agent use)
+- **`--dry-run`**: Simulate transaction without sending
+- **`--no-relay`**: Disable gasless relay fallback
+- **`--network <network>`**: Target network (default: mainnet)
+
+### x402 Payments
+```bash
+agent-wallet-cli x402 <url> --token <wlt_...> [--method GET] [--header "Key:Value"] [--body <data|@file>] [--max-amount <amt>] [--dry-run] [--yes]
+```
+
+Make HTTP requests with automatic x402 payment. The CLI detects 402 Payment Required responses, pays the requested amount in stablecoins, and retries.
+
+- **`--max-amount <amount>`**: Maximum willing to pay (human-readable, e.g. "0.10")
+- **`--dry-run`**: Show payment requirements without paying
+- **`--yes`**: Skip payment confirmation
+- **`--header`**: Repeatable for multiple headers
+- **`--body`**: Request body, or `@filepath` to read from file
 
 ### Approvals (ERC-20/SPL)
 ```bash
-agent-wallet-cli approve --token wlt_... --chain <chain> --token-address <addr> --spender <addr> --amount <amt|unlimited> --yes
-agent-wallet-cli allowance --chain <chain> --token-address <addr> --owner <addr> --spender <addr>
-agent-wallet-cli transfer-from --token wlt_... --chain <chain> --token-address <addr> --from <addr> --to <addr> --amount <amt>
-agent-wallet-cli approvals --token wlt_... [--chain ethereum] [--limit 20]
+agent-wallet-cli approve --token <wlt_...> --chain <chain> --token-address <addr> --spender <addr> --amount <amt|unlimited> --yes [--network <net>]
+agent-wallet-cli allowance --chain <chain> --token-address <addr> --owner <addr> --spender <addr> [--network <net>]
+agent-wallet-cli transfer-from --token <wlt_...> --chain <chain> --token-address <addr> --from <addr> --to <addr> --amount <amt> --yes [--network <net>]
+agent-wallet-cli approvals --token <wlt_...> [--chain ethereum] [--network mainnet] [--limit 20]
 ```
 
 ### Signing
 ```bash
-agent-wallet-cli sign --token wlt_... --chain <chain> --message "text"
-agent-wallet-cli sign --token wlt_... --chain <chain> --typed-data '<json|@file>'
-agent-wallet-cli sign --token wlt_... --chain <chain> --data <hex>
+agent-wallet-cli sign --token <wlt_...> --chain <chain> --message "text"
+agent-wallet-cli sign --token <wlt_...> --chain <chain> --typed-data '<json|@file>'
+agent-wallet-cli sign --token <wlt_...> --chain <chain> --data <hex>
 ```
 
 ### Transaction History
 ```bash
-agent-wallet-cli history --token wlt_... --chain <chain> [--network mainnet] [--limit 10]
+agent-wallet-cli history --token <wlt_...> --chain <chain> [--network mainnet] [--limit 10]
 ```
 
 ### Network Configuration
