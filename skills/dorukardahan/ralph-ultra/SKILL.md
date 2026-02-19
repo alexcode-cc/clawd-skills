@@ -8,8 +8,10 @@ metadata: { "openclaw": { "emoji": "⚔️" }, "author": "dorukardahan", "versio
 
 Deep-dive security audit with thorough coverage across all attack vectors.
 
-For severity/triage guidance: `{baseDir}/references/severity-guide.md`
-For expert persona descriptions: `{baseDir}/references/personas.md`
+## References
+
+- [Severity and triage guidance](references/severity-guide.md)
+- [Expert persona descriptions](references/personas.md)
 
 ## Instructions
 
@@ -69,7 +71,7 @@ YOU MUST follow this loop for EVERY iteration:
 | 6 | Dependency Hunter |
 | 8 | All Minds |
 
-Full persona descriptions in `{baseDir}/references/personas.md`.
+Full persona descriptions in [references/personas.md](references/personas.md).
 
 ### Phase Structure (1,000 Iterations)
 
