@@ -1,0 +1,11 @@
+{
+  "owner": "guifav",
+  "slug": "deploy-pilot",
+  "displayName": "Deploy Pilot",
+  "latest": {
+    "version": "0.1.1",
+    "publishedAt": 1771446438974,
+    "commit": null
+  },
+  "history": []
+}
