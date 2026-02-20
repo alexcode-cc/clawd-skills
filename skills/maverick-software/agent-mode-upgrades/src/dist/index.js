@@ -1,5 +1,5 @@
 /**
- * Enhanced Agentic Loop for Clawdbot
+ * Enhanced Agentic Loop for OpenClaw
  *
  * A comprehensive upgrade to the agent loop with:
  * - Persistent plan state across conversation turns
@@ -9,7 +9,7 @@
  * - Context summarization when history grows long
  * - Checkpoint/restore for long-running tasks
  *
- * @module @clawdbot/enhanced-loop
+ * @module @openclaw/enhanced-loop
  */
 // ============================================================================
 // Main Orchestrator (recommended entry point)

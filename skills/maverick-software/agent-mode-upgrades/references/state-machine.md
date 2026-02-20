@@ -399,7 +399,7 @@ async function persistState(
   context: StateContext
 ): Promise<void> {
   await writeFile(
-    `~/.clawdbot/sessions/${sessionKey}/state.json`,
+    `~/.openclaw/sessions/${sessionKey}/state.json`,
     JSON.stringify(context, null, 2)
   );
 }
@@ -407,7 +407,7 @@ async function persistState(
 async function resumeFromState(
   sessionKey: string
 ): Promise<AgentStateMachine | null> {
-  const statePath = `~/.clawdbot/sessions/${sessionKey}/state.json`;
+  const statePath = `~/.openclaw/sessions/${sessionKey}/state.json`;
   if (!await exists(statePath)) return null;
   
   const persisted = JSON.parse(await readFile(statePath));
@@ -418,7 +418,7 @@ async function resumeFromState(
 }
 ```
 
-## Clawdbot Integration
+## OpenClaw Integration
 
 ### Wrap Existing Loop
 

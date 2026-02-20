@@ -429,7 +429,7 @@ export function getStateManager(config?: Partial<StateManagerConfig>): PlanState
   if (!defaultManager) {
     const home = process.env.HOME || process.env.USERPROFILE || "/tmp";
     defaultManager = new PlanStateManager({
-      stateDir: path.join(home, ".clawdbot", "agent-state"),
+      stateDir: path.join(home, ".openclaw", "agent-state"),
       ...config,
     });
   }

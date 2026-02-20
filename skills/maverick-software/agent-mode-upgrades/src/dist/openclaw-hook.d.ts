@@ -1,5 +1,5 @@
 /**
- * Clawdbot Hook for Enhanced Agentic Loop
+ * OpenClaw Hook for Enhanced Agentic Loop
  *
  * This file should be copied to:
  *   src/agents/enhanced-loop-hook.ts
@@ -52,7 +52,7 @@ export declare function loadEnhancedLoopConfig(): Promise<EnhancedLoopConfig>;
 /**
  * Check if enhanced loop is enabled (sync, uses cache)
  */
-export declare function isEnhancedLoopEnabled(clawdbotConfig?: {
+export declare function isEnhancedLoopEnabled(openclawConfig?: {
     agents?: {
         enhancedLoop?: {
             enabled?: boolean;
@@ -71,11 +71,11 @@ export interface EnhancedLoopWrapper {
  * Try to load and initialize the enhanced loop
  * Returns null if not enabled or loading fails
  */
-export declare function tryLoadEnhancedLoop(clawdbotConfig?: {
+export declare function tryLoadEnhancedLoop(openclawConfig?: {
     agents?: {
         enhancedLoop?: {
             enabled?: boolean;
         };
     };
 }): Promise<EnhancedLoopWrapper | null>;
-//# sourceMappingURL=clawdbot-hook.d.ts.map
+//# sourceMappingURL=openclaw-hook.d.ts.map

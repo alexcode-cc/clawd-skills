@@ -347,7 +347,7 @@ const AUTONOMY_PRESETS: Record<string, AutonomyConfig> = {
 };
 ```
 
-## Clawdbot Integration
+## OpenClaw Integration
 
 ### Config Extension
 

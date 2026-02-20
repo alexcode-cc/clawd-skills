@@ -1,6 +1,6 @@
 # Enhanced Agentic Loop - Integration Instructions
 
-This document provides instructions for integrating the Enhanced Agentic Loop into Clawdbot.
+This document provides instructions for integrating the Enhanced Agentic Loop into OpenClaw.
 
 ## For Users
 
@@ -8,17 +8,17 @@ This document provides instructions for integrating the Enhanced Agentic Loop in
 
 1. **Install the skill**:
    ```bash
-   clawdbot skill install agentic-loop-upgrade
+   openclaw skill install agentic-loop-upgrade
    ```
-   Or manually clone to `~/.clawdbot/skills/agentic-loop-upgrade`
+   Or manually clone to `~/.openclaw/skills/agentic-loop-upgrade`
 
-2. **Restart Clawdbot** to load the skill:
+2. **Restart OpenClaw** to load the skill:
    ```bash
-   clawdbot gateway restart
+   openclaw gateway restart
    ```
 
 3. **Enable Enhanced Loop**:
-   - Open Clawdbot Dashboard (http://localhost:18789)
+   - Open OpenClaw Dashboard (http://localhost:18789)
    - Navigate to **Agent** → **Mode** in the sidebar
    - Click the **Enhanced Loop** card
    - Click **Save Configuration**
@@ -30,7 +30,7 @@ The Mode page provides a visual interface for configuring the enhanced loop:
 **Sections:**
 
 1. **Active Mode** - Toggle between Core Loop and Enhanced Loop
-2. **Orchestrator Model** - Select any model from the Clawdbot model catalog for planning/reflection calls (smaller models reduce cost)
+2. **Orchestrator Model** - Select any model from the OpenClaw model catalog for planning/reflection calls (smaller models reduce cost)
 3. **Planning & Reflection** - Configure goal decomposition and progress tracking
 4. **Execution** - Parallel tools and confidence gates
 5. **Context Management** - Proactive summarization settings
@@ -130,13 +130,13 @@ Long-running tasks are automatically checkpointed. If a session is interrupted, 
 
 ### Enhanced Loop Config File
 
-Location: `~/.clawdbot/agents/main/agent/enhanced-loop-config.json`
+Location: `~/.openclaw/agents/main/agent/enhanced-loop-config.json`
 
 ```json
 {
   "enabled": true,
   "orchestratorProvider": "anthropic",
-  "orchestratorModel": "<selected from Clawdbot model catalog>",
+  "orchestratorModel": "<selected from OpenClaw model catalog>",
   "planning": {
     "enabled": true,
     "reflectionAfterTools": true,
@@ -162,6 +162,13 @@ Location: `~/.clawdbot/agents/main/agent/enhanced-loop-config.json`
     "enabled": true,
     "logging": true,
     "metrics": false
+  },
+  "memory": {
+    "autoInject": true,
+    "maxFacts": 8,
+    "maxEpisodes": 3,
+    "episodeConfidenceThreshold": 0.9,
+    "includeRelations": true
   }
 }
 ```
@@ -171,7 +178,7 @@ Location: `~/.clawdbot/agents/main/agent/enhanced-loop-config.json`
 To disable the enhanced loop:
 
 1. **Via Dashboard**: Mode → Click Core Loop → Save
-2. **Via File**: Delete `~/.clawdbot/agents/main/agent/enhanced-loop-config.json`
+2. **Via File**: Delete `~/.openclaw/agents/main/agent/enhanced-loop-config.json`
 3. **Via Config**: Set `"enabled": false` in the config file
 
 ---
@@ -183,7 +190,7 @@ To disable the enhanced loop:
 - Check that the task is complex enough to trigger planning
 
 ### Too many tokens?
-- Select a smaller/cheaper orchestrator model via the Mode dashboard (the dropdown lists all models from the Clawdbot catalog)
+- Select a smaller/cheaper orchestrator model via the Mode dashboard (the dropdown lists all models from the OpenClaw catalog)
 - Reduce maxPlanSteps
 - Disable reflectionAfterTools for simpler tasks
 
@@ -195,4 +202,4 @@ To disable the enhanced loop:
 
 ## Version
 
-v1.0.0 - Full agentic loop with Mode dashboard
+v2.1.0 - Enhanced agentic loop with memory auto-injection and channel-aware plan rendering

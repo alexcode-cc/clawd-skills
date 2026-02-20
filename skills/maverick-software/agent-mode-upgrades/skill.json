@@ -1,8 +1,14 @@
 {
   "name": "agentic-loop-upgrade",
-  "version": "1.0.0",
+  "version": "2.2.1",
   "description": "Enhanced agentic loop with planning, parallel execution, confidence gates, semantic error recovery, and observable state machine. Includes Mode dashboard UI for easy configuration.",
-  "author": "Clawdbot",
+  "author": "OpenClaw",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/openclaw/skill-agentic-loop-upgrade"
+  },
+  "homepage": "https://clawhub.com/skills/agentic-loop-upgrade",
   "keywords": [
     "agentic",
     "planning",
@@ -14,43 +20,92 @@
     "dashboard",
     "mode"
   ],
-  "clawdbot": {
+  "openclaw": {
     "emoji": "🚀",
     "category": "agent",
+    "installType": "package",
+    "installSpec": {
+      "method": "openclaw-skill-installer",
+      "command": "openclaw skill install agentic-loop-upgrade",
+      "manualSteps": [
+        "git clone https://github.com/openclaw/skill-agentic-loop-upgrade ~/.openclaw/skills/agentic-loop-upgrade",
+        "cd ~/.openclaw/skills/agentic-loop-upgrade/src && npm install && npm run build",
+        "openclaw gateway restart"
+      ],
+      "verifyScript": "scripts/verify.sh",
+      "uninstall": "openclaw skill remove agentic-loop-upgrade"
+    },
     "requires": {
-      "clawdbot": ">=2026.1.0"
+      "openclaw": ">=2026.2.0"
     },
     "integration": "core",
+    "enabledByDefault": false,
+    "alwaysEnabled": false,
+    "requiresExplicitEnable": true,
     "features": [
       "planning",
       "parallel-execution",
       "confidence-gates",
       "error-recovery",
       "state-machine",
-      "mode-dashboard"
+      "mode-dashboard",
+      "memory-auto-inject",
+      "discord-plan-rendering"
     ],
     "credentials": {
-      "note": "Reuses the host Clawdbot agent's existing auth profiles via resolveApiKeyForProvider. No additional API keys required beyond what the agent already has configured. The orchestrator model is dynamically selected from the Clawdbot model catalog (models.list) -- any provider/model the agent can access is available.",
+      "note": "Reuses the host OpenClaw agent's existing auth profiles via resolveApiKeyForProvider. No additional API keys required beyond what the agent already has configured. The orchestrator model is dynamically selected from the OpenClaw model catalog (models.list) — any provider/model the agent can access is available.",
       "providers": ["inherited"],
-      "mode": "inherit"
+      "mode": "inherit",
+      "optional": {
+        "surrealdb": {
+          "note": "Used for knowledge-graph memory auto-injection (memory.autoInject feature). If SurrealDB is not configured, memory auto-injection is silently disabled. No credentials need to be supplied to this skill — it reads the SurrealDB connection from the host agent's existing mcporter/MCP configuration.",
+          "required": false,
+          "featureFlag": "memory.autoInject"
+        }
+      },
+      "effectivePrivilege": "Operates with the same credentials already configured on the host agent. No privilege escalation. Does not request, store, or transmit credentials."
+    },
+    "network": {
+      "note": "This skill makes no outbound network calls of its own. All network activity is limited to the LLM provider API calls made by the host OpenClaw agent (e.g. api.anthropic.com). No telemetry, no phone-home, no third-party endpoints.",
+      "allowedEndpoints": ["configured-llm-provider-only"],
+      "telemetry": false,
+      "externalDownloads": false,
+      "phoneHome": false
     },
     "persistence": {
-      "note": "Writes plan state, checkpoints, and configuration to the Clawdbot agent directory.",
+      "note": "Writes plan state, checkpoints, and configuration to the OpenClaw agent directory only. No cloud storage. All paths are local and user-owned.",
       "paths": [
-        "~/.clawdbot/agents/main/agent/enhanced-loop-config.json",
-        "~/.clawdbot/agent-state/{sessionId}.json",
-        "~/.clawdbot/checkpoints/{sessionId}/ckpt_*.json"
-      ]
+        "~/.openclaw/agents/main/agent/enhanced-loop-config.json",
+        "~/.openclaw/agent-state/{sessionId}.json",
+        "~/.openclaw/checkpoints/{sessionId}/ckpt_*.json"
+      ],
+      "scope": "local-only",
+      "cloudStorage": false
     },
     "capabilities": {
-      "system-prompt-injection": {
-        "note": "Injects plan context and step progress into the agent system prompt so the agent can display plan status and track multi-step goals. Does NOT override or replace existing system prompt policies.",
-        "scope": "additive"
+      "context-injection": {
+        "formerly": "system-prompt-injection",
+        "note": "Appends plan context and step progress to the agent's extraSystemPrompt field each turn. This is strictly additive — it does not replace, remove, modify, or override the core system prompt, safety policies, or any existing agent instructions. The injection is read-only from the plan state file and contains only goal/step status text.",
+        "scope": "additive-only",
+        "modifiesCorePrompt": false,
+        "canExpandPrivilege": false,
+        "injectedContent": "plan-status-only"
       },
-      "agent-runner-wrap": {
-        "note": "Wraps the core agent runner function to intercept goal processing, inject plan context, and track tool execution results. The original runner is always called; this wrapper adds orchestration around it.",
-        "scope": "wrapper"
+      "runner-wrap": {
+        "formerly": "agent-runner-wrap",
+        "note": "Wraps the core agent runner function to add orchestration (planning, context injection, step tracking) around the original call. The original runner is ALWAYS invoked — this wrapper never bypasses, replaces, or short-circuits the core runner. Wrapping is transparent and logs all interceptions.",
+        "scope": "wrapper-transparent",
+        "bypassesOriginal": false,
+        "alwaysCallsOriginal": true
       }
+    },
+    "safety": {
+      "approvalGatesDefault": true,
+      "approvalGatesFor": ["high", "critical"],
+      "leastPrivilegeRecommended": true,
+      "sandboxTestingRecommended": true,
+      "riskLevel": "medium",
+      "riskRationale": "Wraps the agent runner and appends to system prompt. Both operations are bounded and transparent, but users should review before enabling on production agents."
     },
     "ui": {
       "tabs": [
@@ -68,6 +123,7 @@
   "files": [
     "SKILL.md",
     "INSTRUCTIONS.md",
+    "SECURITY.md",
     "README.md",
     "src/",
     "ui/",

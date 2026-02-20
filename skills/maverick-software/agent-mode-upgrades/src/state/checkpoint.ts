@@ -95,7 +95,7 @@ export class CheckpointManager {
     const home = process.env.HOME || process.env.USERPROFILE || "/tmp";
     this.config = { 
       ...DEFAULT_CONFIG, 
-      checkpointDir: path.join(home, ".clawdbot", "checkpoints"),
+      checkpointDir: path.join(home, ".openclaw", "checkpoints"),
       ...config,
     };
   }

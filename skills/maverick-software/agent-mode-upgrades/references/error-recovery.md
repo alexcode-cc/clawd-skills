@@ -337,7 +337,7 @@ async function findPreviousRecovery(
 }
 ```
 
-## Clawdbot Integration
+## OpenClaw Integration
 
 ### Error Handler Hook
 

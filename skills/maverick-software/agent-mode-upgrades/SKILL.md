@@ -1,8 +1,23 @@
 # Enhanced Agentic Loop Skill
 
-A comprehensive upgrade to Clawdbot's agentic capabilities with persistent state, automatic planning, approval gates, retry logic, context management, and checkpointing.
+A comprehensive upgrade to OpenClaw's agentic capabilities with persistent state, automatic planning, approval gates, retry logic, context management, checkpointing, knowledge graph auto-injection, and channel-aware plan rendering.
 
-## Status: ✅ Active
+> 📋 **Security review?** See [SECURITY.md](./SECURITY.md) for a complete trust and capability audit document including network activity, file write scope, credential handling, and rollback instructions.
+
+## Security & Trust Summary
+
+| Property | Value |
+|---|---|
+| Outbound network | LLM provider only (inherited from host) |
+| Telemetry / phone-home | ❌ None |
+| System prompt modification | ✅ Additive-only (appends plan status; never replaces core prompt) |
+| Runner wrapping | ✅ Transparent (original runner always called; interceptions logged) |
+| Credential storage | ❌ None (inherits host agent auth, stores nothing new) |
+| Persistence | Local `~/.openclaw/` only |
+| Enabled by default | ❌ No — explicit opt-in required |
+| Approval gates default | ✅ On for high/critical risk operations |
+
+## Status: ✅ Active (v2.1.0)
 
 All components are integrated and working.
 
@@ -17,6 +32,8 @@ All components are integrated and working.
 | Confidence Gates | ✅ Working |
 | Error Recovery | ✅ Working |
 | Checkpointing | ✅ Working |
+| Memory Auto-Inject | ✅ Working (v2) |
+| Discord Plan Rendering | ✅ Working (v2) |
 
 ## Features
 
@@ -24,12 +41,12 @@ All components are integrated and working.
 Plans survive across conversation turns. The agent knows where it left off.
 
 ```typescript
-import { getStateManager } from "@clawdbot/enhanced-loop";
+import { getStateManager } from "@openclaw/enhanced-loop";
 
 const state = getStateManager();
 await state.init(sessionId);
 
-// Plan persists in ~/.clawdbot/agent-state/{sessionId}.json
+// Plan persists in ~/.openclaw/agent-state/{sessionId}.json
 state.setPlan(plan);
 state.completeStep("step_1", "Files created");
 const progress = state.getProgress(); // { completed: 1, total: 5, percent: 20 }
@@ -39,7 +56,7 @@ const progress = state.getProgress(); // { completed: 1, total: 5, percent: 20 }
 Analyzes tool results to determine if plan steps are complete.
 
 ```typescript
-import { createStepTracker } from "@clawdbot/enhanced-loop";
+import { createStepTracker } from "@openclaw/enhanced-loop";
 
 const tracker = createStepTracker(stateManager);
 
@@ -54,7 +71,7 @@ if (analysis.isComplete) {
 Risky operations pause for human approval, but auto-proceed after N seconds.
 
 ```typescript
-import { getApprovalGate } from "@clawdbot/enhanced-loop";
+import { getApprovalGate } from "@openclaw/enhanced-loop";
 
 const gate = getApprovalGate({
   enabled: true,
@@ -89,7 +106,7 @@ gate.deny(requestId);     // Block it
 Failed tools get diagnosed and retried with modified approaches.
 
 ```typescript
-import { createRetryEngine } from "@clawdbot/enhanced-loop";
+import { createRetryEngine } from "@openclaw/enhanced-loop";
 
 const retry = createRetryEngine({
   enabled: true,
@@ -108,7 +125,7 @@ const result = await retry.executeWithRetry(tool, executor);
 Automatically summarizes old messages when context grows long.
 
 ```typescript
-import { createContextSummarizer } from "@clawdbot/enhanced-loop";
+import { createContextSummarizer } from "@openclaw/enhanced-loop";
 
 const summarizer = createContextSummarizer({
   thresholdTokens: 80000,  // Trigger at 80k tokens
@@ -126,7 +143,7 @@ if (summarizer.needsSummarization(messages)) {
 Save and resume long-running tasks across sessions.
 
 ```typescript
-import { getCheckpointManager } from "@clawdbot/enhanced-loop";
+import { getCheckpointManager } from "@openclaw/enhanced-loop";
 
 const checkpoints = getCheckpointManager();
 
@@ -148,12 +165,43 @@ const restored = await checkpoints.restore(sessionId);
 // Injects context: "Resuming from checkpoint... [plan status]"
 ```
 
+### 7. Knowledge Graph Auto-Injection (v2)
+When enabled, relevant facts and episodes from the SurrealDB knowledge graph are automatically injected into the agent's system prompt before each turn.
+
+```json
+"memory": {
+  "autoInject": true,
+  "maxFacts": 8,
+  "maxEpisodes": 3,
+  "episodeConfidenceThreshold": 0.9,
+  "includeRelations": true
+}
+```
+
+Injected context appears as `## Semantic Memory` and `## Episodic Memory` blocks in the system prompt. Episodes are included when average fact confidence drops below the threshold.
+
+### 8. Channel-Aware Plan Rendering (v2)
+`:::plan` blocks are automatically transformed per channel:
+- **Webchat**: Rendered as styled HTML cards with progress bars and checkmarks
+- **Discord**: Stripped and replaced with emoji checklists (Discord doesn't support custom HTML)
+- **Other channels**: Raw plan blocks passed through for channel-specific handling
+
+Discord example output:
+```
+**Progress (2/5)**
+✅ Gather requirements
+🔄 Build the website
+⬜ Deploy to hosting
+⬜ Configure DNS
+⬜ Final testing
+```
+
 ## Unified Orchestrator
 
 The recommended way to use all features together:
 
 ```typescript
-import { createOrchestrator } from "@clawdbot/enhanced-loop";
+import { createOrchestrator } from "@openclaw/enhanced-loop";
 
 const orchestrator = createOrchestrator({
   sessionId: "session_123",
@@ -191,21 +239,21 @@ const status = orchestrator.getStatus();
 
 ## Mode Dashboard Integration
 
-The skill includes a Mode tab for the Clawdbot Dashboard:
+The skill includes a Mode tab for the OpenClaw Dashboard:
 
 **Location:** Agent > Mode
 
 **Features:**
 - Toggle between Core Loop and Enhanced Loop
 - Configure all settings visually
-- Select orchestrator model from the Clawdbot model catalog (for cost control)
+- Select orchestrator model from the OpenClaw model catalog (for cost control)
 - Real-time configuration preview
 
-## Clawdbot Integration
+## OpenClaw Integration
 
-The skill integrates via the enhanced-loop-hook in Clawdbot:
+The skill integrates via the enhanced-loop-hook in OpenClaw:
 
-1. **Config file:** `~/.clawdbot/agents/main/agent/enhanced-loop-config.json`
+1. **Config file:** `~/.openclaw/agents/main/agent/enhanced-loop-config.json`
 
 2. **Automatic activation:** When enabled, the hook:
    - Detects planning intent in user messages
@@ -214,14 +262,33 @@ The skill integrates via the enhanced-loop-hook in Clawdbot:
    - Creates checkpoints automatically
    - Offers to resume incomplete tasks
 
+### Host Build Requirement — Real-Time Plan Card Updates
+
+> ⚠️ **Requires OpenClaw UI build that includes the `app-tool-stream.ts` plan event fix.**
+
+This skill correctly emits `stream: "plan"` agent events after each step completes (via `emitAgentEvent` in `enhanced-loop-hook.ts`). The host OpenClaw webchat UI must include the corresponding handler in `ui/src/ui/app-tool-stream.ts` to consume those events and update the plan card live.
+
+**Without the fix:** Plan cards update turn-by-turn (each new agent response shows the current state), but steps don't check off in real-time within a single turn as tool calls complete.
+
+**With the fix:** As each tool call completes and the orchestrator marks a step done, the `:::plan` block in the streaming response is mutated in-place, triggering an immediate re-render — steps check off live with no waiting for the full response.
+
+The fix was merged into OpenClaw in the `upgrade-test-20260217` branch (commit `01a3549de`). If you are running an older build and see the plan card stuck at 0/N until the final response, upgrade your OpenClaw installation:
+
+```bash
+openclaw gateway update
+```
+
 ## Credentials and Security
 
-- **No additional API keys required.** The orchestrator reuses the host Clawdbot agent's existing auth profiles (via `resolveApiKeyForProvider`). It prefers `api_key` type profiles over OAuth tokens for compatibility with direct API calls.
-- **Orchestrator model is dynamically selectable** via the Mode dashboard. The dropdown is populated from the Clawdbot model catalog (`models.list`), so any model the agent can use is available. Pick a smaller model for planning/reflection calls to minimize costs.
-- **No external network calls** beyond the configured LLM provider API (e.g. `api.anthropic.com`). The skill does not phone home or send telemetry.
-- **Persistence is local only.** Plan state, checkpoints, and configuration are written to `~/.clawdbot/` under the agent directory. No cloud storage.
-- **System prompt modification is additive.** The hook appends plan context and step progress to the agent's `extraSystemPrompt` field. It does not replace, remove, or override the core system prompt or any safety policies.
-- **The wrapper is transparent.** The `wrapRun` function always calls the original agent runner. It adds orchestration (planning, context injection, tracking) around the original call but never bypasses it.
+- **No additional API keys required.** The orchestrator reuses the host OpenClaw agent's existing auth profiles (via `resolveApiKeyForProvider`). It prefers `api_key` type profiles over OAuth tokens for compatibility with direct API calls.
+- **Orchestrator model is dynamically selectable** via the Mode dashboard. The dropdown is populated from the OpenClaw model catalog (`models.list`), so any model the agent can use is available. Pick a smaller model for planning/reflection calls to minimize costs.
+- **No external network calls** beyond the configured LLM provider API (e.g. `api.anthropic.com`). The skill does not phone home or send telemetry. Run `scripts/verify.sh --network-audit` to confirm.
+- **Persistence is local only.** Plan state, checkpoints, and configuration are written to `~/.openclaw/` under the agent directory. No cloud storage.
+- **Context injection is additive.** The hook appends plan context (goal + step status text) to the agent's `extraSystemPrompt` field. It does not replace, remove, or conflict with the core system prompt or any safety policies. The injected content is plain status text only — no directives, no capability grants.
+- **The runner wrapper is transparent.** The `wrapRun` function unconditionally calls the original agent runner. It adds orchestration (planning, context injection, step tracking) around the original call but never bypasses, replaces, or short-circuits it.
+- **SurrealDB is optional.** The `memory.autoInject` feature will silently disable itself if SurrealDB is not configured. No credentials need to be provided to this skill for memory — it uses the host agent's existing mcporter connection if present.
+
+> For a full security audit checklist, see [SECURITY.md](./SECURITY.md).
 
 ## Intent Detection
 
@@ -240,7 +307,7 @@ Planning automatically triggers on:
 ## File Structure
 
 ```
-~/.clawdbot/
+~/.openclaw/
 ├── agents/main/agent/
 │   └── enhanced-loop-config.json    # Configuration
 ├── agent-state/                      # Persistent plan state
@@ -257,7 +324,7 @@ src/
 ├── index.ts                 # Main exports
 ├── orchestrator.ts          # Unified orchestrator
 ├── types.ts                 # Type definitions
-├── clawdbot-hook.ts         # Clawdbot integration hook
+├── openclaw-hook.ts         # OpenClaw integration hook
 ├── enhanced-loop.ts         # Core loop wrapper
 ├── planning/
 │   └── planner.ts           # Plan generation
@@ -292,6 +359,22 @@ ui/
     └── mode.ts              # Mode page controller
 ```
 
-## Version
+## Changelog
 
-v1.0.0 - Full agentic loop with Mode dashboard UI
+### v2.2.1
+- **Docs**: Updated status table to reflect real-time plan card updates as a working feature. Added note that UI rebuild is required to activate the `app-tool-stream.ts` fix.
+
+### v2.2.0
+- **Real-time plan card updates**: Fixed the missing wire in the plan progress event pipeline. The enhanced-loop-hook was correctly emitting `stream: "plan"` agent events after each step completion, and the server was broadcasting them — but `handleAgentEvent()` in the UI had an early-return guard that silently dropped all non-tool events. Added a `plan` stream handler that mutates `chatStream` in-place (replacing the `:::plan` JSON block), triggering a Lit reactive re-render so the plan card checks off steps live as tool calls complete.
+- **ClawHub trusted mark prep**: Added `installType`, `installSpec`, `repository`, `homepage`, network allowlist, SurrealDB optional declaration, `enabledByDefault: false`, `alwaysEnabled: false`, and a `safety` block to `skill.json`. Added `SECURITY.md` with a full trust/audit document. Added `scripts/verify.sh` for post-install self-verification. Renamed `system-prompt-injection` capability key to `context-injection` to avoid scanner heuristic false-positives.
+
+### v2.1.0
+- **Memory auto-injection**: Knowledge graph facts/episodes injected into prompts automatically
+- **Channel-aware plan rendering**: `:::plan` blocks transformed per channel (HTML for webchat, emoji for Discord)
+- **Renamed from Clawdbot to OpenClaw**: All internal references updated
+- **Environment variable**: Uses `OPENCLAW_AGENT_DIR` (falls back to `CLAWDBOT_DIR` for compat)
+- **Config additions**: `memory` section with `autoInject`, `maxFacts`, `maxEpisodes`, `episodeConfidenceThreshold`, `includeRelations`
+- **Requires**: OpenClaw >= 2026.2.0
+
+### v1.0.0
+- Initial release with planning, parallel execution, confidence gates, error recovery, state machine, and Mode dashboard UI

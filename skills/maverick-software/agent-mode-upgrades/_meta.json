@@ -3,11 +3,16 @@
   "slug": "agent-mode-upgrades",
   "displayName": "Agentic Mode Upgrades",
   "latest": {
-    "version": "1.0.2",
-    "publishedAt": 1771316765099,
-    "commit": "https://github.com/openclaw/skills/commit/232ab322fb2ee4bcf1bf12194ff1e9b34eec503f"
+    "version": "2.0.2",
+    "publishedAt": 1771569041271,
+    "commit": null
   },
   "history": [
+    {
+      "version": "1.0.2",
+      "publishedAt": 1771316765099,
+      "commit": "https://github.com/openclaw/skills/commit/232ab322fb2ee4bcf1bf12194ff1e9b34eec503f"
+    },
     {
       "version": "1.0.1",
       "publishedAt": 1771313273073,

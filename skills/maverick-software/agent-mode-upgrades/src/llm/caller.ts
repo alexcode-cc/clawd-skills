@@ -50,11 +50,11 @@ function resolveApiKey(config?: LLMCallerConfig): string | null {
   // 2. Environment variable
   if (process.env.ANTHROPIC_API_KEY) return process.env.ANTHROPIC_API_KEY;
   
-  // 3. Try to read from Clawdbot auth storage
+  // 3. Try to read from OpenClaw auth storage
   const home = process.env.HOME || process.env.USERPROFILE || "";
   const authPaths = [
-    path.join(home, ".clawdbot", "auth-profiles.json"),
-    path.join(home, ".config", "clawdbot", "auth-profiles.json"),
+    path.join(home, ".openclaw", "auth-profiles.json"),
+    path.join(home, ".config", "openclaw", "auth-profiles.json"),
   ];
   
   for (const authPath of authPaths) {
@@ -216,7 +216,7 @@ export function createOrchestratorLLMCaller(config?: LLMCallerConfig): (options:
     return async () => {
       throw new Error(
         "LLM caller not configured. Set ANTHROPIC_API_KEY environment variable " +
-        "or configure an Anthropic auth profile in Clawdbot."
+        "or configure an Anthropic auth profile in OpenClaw."
       );
     };
   }

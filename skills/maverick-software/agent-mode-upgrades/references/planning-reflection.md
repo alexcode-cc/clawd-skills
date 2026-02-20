@@ -126,7 +126,7 @@ Trigger replanning when:
 - User provides new information
 - 3+ consecutive failures on same step
 
-## Integration with Clawdbot
+## Integration with OpenClaw
 
 ### Injection Point
 

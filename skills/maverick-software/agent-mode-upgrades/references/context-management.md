@@ -252,7 +252,7 @@ Summary:
 4. **Knowledge graph archival**: For long-term recall
 5. **Relevance retrieval**: For complex multi-part tasks
 
-## Clawdbot Integration Points
+## OpenClaw Integration Points
 
 | File | Change |
 |------|--------|

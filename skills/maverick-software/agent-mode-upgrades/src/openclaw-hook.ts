@@ -1,5 +1,5 @@
 /**
- * Clawdbot Hook for Enhanced Agentic Loop
+ * OpenClaw Hook for Enhanced Agentic Loop
  * 
  * This file should be copied to:
  *   src/agents/enhanced-loop-hook.ts
@@ -19,7 +19,7 @@
 
 import fs from "node:fs/promises";
 import path from "node:path";
-import { resolveClawdbotAgentDir } from "./agent-paths.js";
+import { resolveOpenClawAgentDir } from "./agent-paths.js";
 
 // ============================================================================
 // Configuration
@@ -90,7 +90,7 @@ const DEFAULT_CONFIG: EnhancedLoopConfig = {
 // ============================================================================
 
 function getConfigPath(): string {
-  const agentDir = resolveClawdbotAgentDir();
+  const agentDir = resolveOpenClawAgentDir();
   return path.join(agentDir, "enhanced-loop-config.json");
 }
 
@@ -131,9 +131,9 @@ export async function loadEnhancedLoopConfig(): Promise<EnhancedLoopConfig> {
 /**
  * Check if enhanced loop is enabled (sync, uses cache)
  */
-export function isEnhancedLoopEnabled(clawdbotConfig?: { agents?: { enhancedLoop?: { enabled?: boolean } } }): boolean {
+export function isEnhancedLoopEnabled(openclawConfig?: { agents?: { enhancedLoop?: { enabled?: boolean } } }): boolean {
   // Check main config first
-  if (clawdbotConfig?.agents?.enhancedLoop?.enabled === true) {
+  if (openclawConfig?.agents?.enhancedLoop?.enabled === true) {
     return true;
   }
   
@@ -167,12 +167,12 @@ export interface EnhancedLoopWrapper {
  * Returns null if not enabled or loading fails
  */
 export async function tryLoadEnhancedLoop(
-  clawdbotConfig?: { agents?: { enhancedLoop?: { enabled?: boolean } } }
+  openclawConfig?: { agents?: { enhancedLoop?: { enabled?: boolean } } }
 ): Promise<EnhancedLoopWrapper | null> {
   try {
     const config = await loadEnhancedLoopConfig();
     
-    if (!config.enabled && !clawdbotConfig?.agents?.enhancedLoop?.enabled) {
+    if (!config.enabled && !openclawConfig?.agents?.enhancedLoop?.enabled) {
       return null;
     }
     

@@ -136,7 +136,7 @@ export function renderMode(props: ModeProps) {
       <div class="row" style="margin-top: 16px; gap: 16px;">
         ${renderModeCard({
           title: "Core Loop",
-          description: "Original Clawdbot agent loop. Reactive, sequential tool execution with retry-based error handling.",
+          description: "Original OpenClaw agent loop. Reactive, sequential tool execution with retry-based error handling.",
           icon: "🔧",
           active: !isEnhanced,
           features: [

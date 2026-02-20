@@ -1,6 +1,10 @@
 # 🚀 Agentic Loop Upgrade
 
-An enhanced agentic loop for [Clawdbot](https://github.com/clawdbot/clawdbot) with planning, parallel execution, confidence gates, and semantic error recovery.
+[![Source](https://img.shields.io/badge/source-github.com%2Fopenclaw%2Fskill--agentic--loop--upgrade-blue)](https://github.com/openclaw/skill-agentic-loop-upgrade)
+[![ClawHub](https://img.shields.io/badge/clawhub-agentic--loop--upgrade-green)](https://clawhub.com/skills/agentic-loop-upgrade)
+[![License](https://img.shields.io/badge/license-MIT-lightgrey)](./LICENSE)
+
+An enhanced agentic loop for [OpenClaw](https://github.com/openclaw/openclaw) with planning, parallel execution, confidence gates, and semantic error recovery.
 
 ![Mode Dashboard](assets/mode-dashboard.png)
 
@@ -34,16 +38,16 @@ Explicit state tracking enables debugging, dashboards, and checkpointing for res
 
 ## 📦 Installation
 
-### From ClawdHub
+### From ClawHub
 ```bash
-clawdbot skill install agentic-loop-upgrade
+openclaw skill install agentic-loop-upgrade
 ```
 
 ### Manual Installation
 1. Clone/download to your skills directory:
    ```bash
-   cd ~/.clawdbot/skills
-   git clone https://github.com/clawdbot/skill-agentic-loop-upgrade agentic-loop-upgrade
+   cd ~/.openclaw/skills
+   git clone https://github.com/openclaw/skill-agentic-loop-upgrade agentic-loop-upgrade
    ```
 
 2. Build the TypeScript:
@@ -53,16 +57,16 @@ clawdbot skill install agentic-loop-upgrade
    npm run build
    ```
 
-3. Restart Clawdbot:
+3. Restart OpenClaw:
    ```bash
-   clawdbot gateway restart
+   openclaw gateway restart
    ```
 
 ## 🚀 Quick Start
 
 ### Enable via Dashboard
 
-1. Open Clawdbot Dashboard → **Agent** → **Mode**
+1. Open OpenClaw Dashboard → **Agent** → **Mode**
 2. Click **Enhanced Loop** card
 3. Configure settings (or use defaults)
 4. Click **Save Configuration**
@@ -70,7 +74,7 @@ clawdbot skill install agentic-loop-upgrade
 ### Disable
 
 - Mode tab → Click **Core Loop** → Save
-- Or delete: `~/.clawdbot/agents/main/agent/enhanced-loop-config.json`
+- Or delete: `~/.openclaw/agents/main/agent/enhanced-loop-config.json`
 
 ## ⚙️ Configuration
 
@@ -108,7 +112,7 @@ Select a cost-effective model for planning/reflection calls (e.g., Claude Sonnet
 ## 📁 File Structure
 
 ```
-~/.clawdbot/
+~/.openclaw/
 ├── agents/main/agent/
 │   └── enhanced-loop-config.json    # Configuration
 ├── agent-state/                      # Persistent plan state
@@ -123,7 +127,7 @@ Select a cost-effective model for planning/reflection calls (e.g., Claude Sonnet
 ### Programmatic Usage
 
 ```typescript
-import { createOrchestrator } from "@clawdbot/enhanced-loop";
+import { createOrchestrator } from "@openclaw/enhanced-loop";
 
 const orchestrator = createOrchestrator({
   sessionId: "session_123",
@@ -144,6 +148,27 @@ await orchestrator.init();
 
 See [SKILL.md](./SKILL.md) for full technical documentation.
 
+## 🔒 Security & Trust
+
+This skill wraps the agent runner and appends plan context to the agent's prompt. Both operations are bounded, transparent, and auditable:
+
+| Property | Value |
+|---|---|
+| Outbound network | LLM provider only (inherited from host) |
+| Telemetry / phone-home | ❌ None |
+| Prompt modification | ✅ Additive-only (appends status text; never replaces core prompt) |
+| Runner bypass | ❌ Never — original runner always called |
+| Credential storage | ❌ None |
+| Persistence | Local `~/.openclaw/` only |
+| Enabled by default | ❌ No — requires explicit opt-in |
+
+**Post-install verification:**
+```bash
+~/.openclaw/skills/agentic-loop-upgrade/scripts/verify.sh
+```
+
+See [SECURITY.md](./SECURITY.md) for the full audit document.
+
 ## ⚠️ Notes
 
 - **Token overhead**: Planning and reflection use additional tokens (configurable via orchestrator model selection)
@@ -153,14 +178,16 @@ See [SKILL.md](./SKILL.md) for full technical documentation.
 ## 📚 Documentation
 
 - [SKILL.md](./SKILL.md) - Full technical documentation
+- [SECURITY.md](./SECURITY.md) - Security & trust audit document
 - [INSTRUCTIONS.md](./INSTRUCTIONS.md) - Integration guide for agents
 - [references/](./references/) - Component documentation
 
 ## 🔗 Links
 
-- [Clawdbot](https://github.com/clawdbot/clawdbot)
-- [ClawdHub](https://clawdhub.com)
-- [Documentation](https://docs.clawd.bot)
+- [OpenClaw](https://github.com/openclaw/openclaw)
+- [Source Code](https://github.com/openclaw/skill-agentic-loop-upgrade)
+- [ClawHub](https://clawhub.com/skills/agentic-loop-upgrade)
+- [Documentation](https://docs.openclaw.ai)
 - [Discord](https://discord.com/invite/clawd)
 
 ## 📄 License

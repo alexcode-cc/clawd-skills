@@ -1,7 +1,7 @@
 {
-  "name": "@clawdbot/enhanced-loop",
+  "name": "@openclaw/enhanced-loop",
   "version": "0.1.0",
-  "description": "Enhanced agentic loop infrastructure for Clawdbot",
+  "description": "Enhanced agentic loop infrastructure for OpenClaw",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

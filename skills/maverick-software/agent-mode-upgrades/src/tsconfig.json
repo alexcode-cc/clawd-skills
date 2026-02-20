@@ -15,7 +15,7 @@
     "sourceMap": true,
     "resolveJsonModule": true,
     "typeRoots": [
-      "/home/charl/clawdbot/node_modules/@types"
+      "/home/charl/openclaw/node_modules/@types"
     ],
     "types": ["node"]
   },

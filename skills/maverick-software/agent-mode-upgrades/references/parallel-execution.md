@@ -263,7 +263,7 @@ async function executeWithErrorIsolation(
 }
 ```
 
-## Clawdbot Integration
+## OpenClaw Integration
 
 ### In `pi-embedded-subscribe.ts`
 

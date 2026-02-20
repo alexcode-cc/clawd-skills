@@ -273,7 +273,7 @@ export interface EnhancedLoopCallbacks {
 }
 
 // ============================================================================
-// Integration Types (matches Clawdbot's existing types)
+// Integration Types (matches OpenClaw's existing types)
 // ============================================================================
 
 export interface AgentMessage {

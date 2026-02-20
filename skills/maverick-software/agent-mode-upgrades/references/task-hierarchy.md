@@ -265,12 +265,12 @@ ${pending.join('\n') || '(none)'}
 }
 ```
 
-## Integration with Clawdbot
+## Integration with OpenClaw
 
 ### Storage Location
 
 ```
-~/.clawdbot/sessions/
+~/.openclaw/sessions/
   {sessionKey}/
     transcript.json    # Message history
     task-stack.json    # Task hierarchy
