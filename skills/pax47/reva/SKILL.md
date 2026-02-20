@@ -1,5 +1,5 @@
 ---
-name: payid
+name: reva
 description: Complete Reva wallet management - passwordless authentication, PayID name claiming, multi-chain crypto transfers to PayIDs or wallet addresses, balance tracking across networks, account details information, and deposit management
 ---
 
@@ -116,38 +116,125 @@ Your current balance:
 
 **Process:**
 
-**CRITICAL: You must act as a message forwarder. Take the user's message EXACTLY as they say it and forward it to the Reva AI endpoint. Do NOT parse or interpret the message yourself. Let the Reva AI handle all the logic.**
+**CRITICAL: You must parse the user's message and extract all required information to construct a proper transfer payload. Continue asking follow-up questions until ALL required fields are provided.**
 
 1. Check if user is authenticated by calling: `{baseDir}/scripts/check-auth.sh`
 2. If not authenticated, prompt user to login first
-3. Forward the user's EXACT message to: `{baseDir}/scripts/send-message.sh "<user_message>"`
-4. Display the response from Reva AI to the user
-5. If Reva AI asks for more information (network, token, amount), continue forwarding user responses using the same script
-6. The script automatically manages the `roomId` to maintain conversation context
-7. When transaction is complete, display the transaction link and share link if provided
+3. Extract the following information from user's message:
+   - **Token Symbol**: USDT, USDC, ETH, BNB, POL, or USD_STABLECOIN (these are the ONLY supported tokens)
+   - **Chain Symbol**: ETH, POL, OP, BNB, or BASE (null for USD_STABLECOIN)
+   - **Recipient**: PayID name, Twitter username (starts with @), or wallet address
+   - **Amount**: Numeric value
+4. If ANY field is missing, ask the user a follow-up question to get the missing information
+5. Once ALL fields are collected, call: `{baseDir}/scripts/send-funds.sh <tokenSymbol> <chainSymbol> <recipient> <amount>`
+6. Display the success message or error to the user
 
-**Message Forwarding Examples:**
+**Recipient Type Detection:**
 
-- User: "send 0.01 usdt on bnb to aldo"
-  → Forward: `send-message.sh "send 0.01 usdt on bnb to aldo"`
+- **Twitter Username**: If recipient starts with `@`, remove the @ and use as `recipientTwitterUsername`
+  - Example: `@aminedd4` → `recipientTwitterUsername: "aminedd4"`
+- **Wallet Address**: If recipient starts with `0x`, use as `recipientWalletAddress`
+  - Example: `0x1234...` → `recipientWalletAddress: "0x1234..."`
+- **PayID Name**: Otherwise, use as `recipientPayid`
+  - Example: `aldo` → `recipientPayid: "aldo"`
 
-- User: "can you send some funds to aldo?"
-  → Forward: `send-message.sh "can you send some funds to aldo?"`
-  → Reva AI Response: "got it - to aldo. which network? (eth, pol, op, bnb, or base)"
-  → User: "lets do bnb"
-  → Forward: `send-message.sh "lets do bnb"` (uses same roomId automatically)
-  → Continue until complete
+**USD/Dollar Handling (IMPORTANT):**
+
+When user mentions 'USD', 'dollar', 'dollars', or '$':
+
+- Set `tokenSymbol` to `USD_STABLECOIN` (this is a special marker)
+- Set `chainSymbol` to `null` - the system automatically selects the network with the highest USD stablecoin balance
+- **DO NOT** ask for network when USD/dollar is mentioned - the system handles this automatically
+
+**Supported Tokens (EXACT ENUMS):**
+
+- `USDT` - Tether
+- `USDC` - USD Coin
+- `ETH` - Ethereum
+- `BNB` - Binance Coin
+- `POL` - Polygon
+- `USD_STABLECOIN` - For USD/dollar requests (chainSymbol must be null)
+
+**Supported Chains (EXACT ENUMS):**
+
+- `ETH` - Ethereum
+- `POL` - Polygon
+- `OP` - Optimism
+- `BNB` - BNB Chain
+- `BASE` - Base
+- `null` - Only when tokenSymbol is USD_STABLECOIN
+
+**Parsing Examples:**
+
+Example 1: "send 5 usdt on base to aldo"
+
+```
+tokenSymbol: USDT
+chainSymbol: BASE
+recipientPayid: aldo
+recipientTwitterUsername: null
+recipientWalletAddress: null
+amount: 5
+```
+
+Example 2: "transfer 0.3 BNB on bnb to @aminedd4"
+
+```
+tokenSymbol: BNB
+chainSymbol: BNB
+recipientPayid: null
+recipientTwitterUsername: aminedd4
+recipientWalletAddress: null
+amount: 0.3
+```
+
+Example 3: "send $10 to chris"
+
+```
+tokenSymbol: USD_STABLECOIN
+chainSymbol: null
+recipientPayid: chris
+recipientTwitterUsername: null
+recipientWalletAddress: null
+amount: 10
+```
+
+Example 4: "send 1 eth on ethereum to 0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
+
+```
+tokenSymbol: ETH
+chainSymbol: ETH
+recipientPayid: null
+recipientTwitterUsername: null
+recipientWalletAddress: 0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb
+amount: 1
+```
+
+**Follow-up Question Examples:**
+
+- User: "send some usdt to aldo"
+  → Missing: amount, chain
+  → Ask: "How much USDT would you like to send, and on which network? (ETH, POL, OP, BNB, or BASE)"
+
+- User: "send 5 usdt to aldo"
+  → Missing: chain
+  → Ask: "Which network would you like to use? (ETH, POL, OP, BNB, or BASE)"
+
+- User: "send 5 usdt on base"
+  → Missing: recipient
+  → Ask: "Who would you like to send it to? (PayID name, Twitter handle, or wallet address)"
+
+- User: "send $20 to aldo"
+  → Nothing missing (USD doesn't need chain)
+  → Execute transfer immediately
 
 **Important Notes:**
 
-- The `roomId` is automatically managed across the conversation session
-- Each follow-up message reuses the same `roomId` to maintain context
-- Only forward messages that are about sending funds/money/crypto
-- Do NOT forward general questions or other commands
-- If the conversation is finished or user changes topic, the room state persists until a new send transaction starts
-
-**To Clear Room State (optional):**
-If you need to start a fresh conversation context, call: `{baseDir}/scripts/clear-room.sh`
+- Only supported tokens are: USDT, USDC, ETH, BNB, POL, USD_STABLECOIN
+- Token symbols and chain symbols must match the EXACT enums (case-sensitive)
+- USD_STABLECOIN is ONLY used for USD/dollar requests
+- Continue asking questions until all required fields are provided
+- Do NOT make assumptions - always ask the user for missing information
 
 ## Error Handling
 
@@ -183,8 +270,7 @@ All scripts are located in `{baseDir}/scripts/`:
 - `claim-payid.sh <payid>` - Claim a PayID name
 - `get-balance.sh` - Get wallet balance with all tokens across chains
 - `get-user-info.sh` - Get current logged user information
-- `send-message.sh "<message>"` - Forward message to Reva AI for sending funds
-- `clear-room.sh` - Clear room state for fresh conversation
+- `send-funds.sh <tokenSymbol> <chainSymbol> <recipient> <amount>` - Transfer funds to a recipient
 - `check-auth.sh` - Check if user is authenticated
 
 ## Common Workflows
@@ -283,23 +369,37 @@ All scripts are located in `{baseDir}/scripts/`:
 - **Header**: `openclaw-token: <token>`
 - **Response**: `{"user": {"id": "...", "email": "...", "payId": "...", "walletAddress": "...", "referralCode": "...", "cashbackPoints": ..., "twitter": "...", ...}}`
 
-### Send Message (Forward to Reva AI)
+### Transfer Funds
 
 - **Method**: POST
-- **Path**: `/api/message/create-message`
+- **Path**: `/api/message/transfer-funds`
 - **Header**: `openclaw-token: <token>`
-- **Body**: `{"message": "user message text", "roomId": "optional-room-id or null"}`
-- **Response**: `{"success": true, "data": {"roomCreated": {"roomId": "..."}, "messages": [{...}]}}`
+- **Body**:
+
+```json
+{
+  "tokenSymbol": "USDT" | "USDC" | "ETH" | "BNB" | "POL" | "USD_STABLECOIN",
+  "chainSymbol": "ETH" | "POL" | "OP" | "BNB" | "BASE" | null,
+  "recipientPayid": string | null,
+  "recipientTwitterUsername": string | null,
+  "recipientWalletAddress": string | null,
+  "amount": number
+}
+```
+
+- **Success Response (200)**: `{"success": true, "data": {"message": "...", "recipientPayId": "...", "usdAmountToSend": ...}, "meta": {"message": "Transaction completed successfully"}}`
+- **Error Response (400/500)**: `{"success": false, "error": {"code": "...", "message": "...", "details": [...]}}`
 
 ## Tips
 
 - Always check authentication before performing protected operations
 - Display all token balances with their respective chains for clarity
 - For deposits, simply provide the user's wallet address from `/api/users/me`
-- **CRITICAL for sending funds**: Act as a pure message forwarder - send user's exact message to Reva AI without parsing
-- The `roomId` is automatically managed for multi-step send fund conversations
+- **CRITICAL for sending funds**: Parse user's message to extract token, chain, recipient, and amount - ask follow-up questions for missing information
+- USD/dollar requests use `USD_STABLECOIN` token with `null` chain - do NOT ask for network
+- Only supported tokens are: USDT, USDC, ETH, BNB, POL, USD_STABLECOIN (case-sensitive)
 - When user asks about account details (PayID, wallet, referral code, etc.), fetch from `/api/users/me`
 - Provide clear error messages based on API responses
 - Guide users through the authentication flow step-by-step
 - Suggest alternative PayIDs if the desired one is taken
-- Display transaction links when funds are sent successfully
+- Display transaction success messages from API responses

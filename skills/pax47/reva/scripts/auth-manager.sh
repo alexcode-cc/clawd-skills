@@ -8,7 +8,7 @@ chmod 700 "$AUTH_DIR"
 
 get_token() {
     if [ -f "$AUTH_FILE" ]; then
-        cat "$AUTH_FILE" | grep -o '"token":"[^"]*"' | cut -d'"' -f4
+        jq -r '.token // empty' "$AUTH_FILE"
     fi
 }
 
