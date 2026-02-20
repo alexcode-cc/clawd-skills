@@ -1,8 +1,8 @@
 # 🧠 Mengram Memory — OpenClaw Skill
 
-**Give your OpenClaw agent human-like long-term memory with 3 types.**
+**Give your OpenClaw agent human-like long-term memory with 3 types + self-improving workflows.**
 
-Your agent remembers facts, events, and learned workflows across all sessions and channels. What it learns on WhatsApp is available on Discord.
+Your agent remembers facts, events, and learned workflows across all sessions and channels. Procedures evolve automatically when they fail. What it learns on WhatsApp is available on Discord.
 
 ## Why This Exists
 
@@ -17,8 +17,9 @@ OpenClaw's built-in memory is a flat text buffer. New session = mostly blank sla
 ## Memory Types
 
 - **Semantic** — facts: "Ali is a developer", "prefers oat milk lattes", "allergic to peanuts"
-- **Episodic** — events: "deployed v2.6 on Feb 18, had 2 bugs", "meeting with Sarah went well"
-- **Procedural** — workflows: "deploy process: test → build → push → update DNS" (with success/failure tracking)
+- **Episodic** — events: "deployed v2.7 on Feb 19, had 2 bugs", "meeting with Sarah went well"
+- **Procedural** — workflows: "deploy process: test → build → migrate → push → update DNS" (with success/failure tracking)
+- **Experience-Driven** — procedures self-improve: failure triggers AI analysis → new version with fixed steps
 
 ## Install
 
@@ -75,18 +76,22 @@ You don't need to do anything special. Just talk naturally.
 | `mengram-add.sh` | Save text to memory (auto-extracts facts/events/procedures) |
 | `mengram-profile.sh` | Get full Cognitive Profile |
 | `mengram-workflow.sh` | Save completed workflow as reusable procedure |
+| `mengram-feedback.sh` | **Record success/failure (triggers evolution on failure)** |
+| `mengram-procedures.sh` | **List procedures with version history** |
 | `mengram-setup.sh` | Verify connection and API key |
 
-## Killer Feature: Procedural Learning
+## Killer Feature: Experience-Driven Procedures
 
-Your agent completes a task → Mengram saves the steps as a procedure → Next time a similar task comes up → agent finds the proven workflow with success/failure stats.
+Your agent completes a task → Mengram saves the steps as a procedure → Next time a similar task comes up → agent finds the proven workflow with success/failure stats. **When a procedure fails, it automatically evolves.**
 
 ```
 Day 1: You ask to deploy. Agent figures it out step by step.
-Day 2: You ask to deploy. Agent already knows: test → build → push → update DNS (3 successes, 0 failures)
+Day 2: You ask to deploy. Agent knows: test → build → push → update DNS (v1)
+Day 3: Deploy fails — forgot migrations. Agent reports failure.
+Day 4: Procedure auto-evolved to v2: test → build → migrate → push → update DNS
 ```
 
-No other memory system does this.
+Procedures learn from experience. No other memory system does this.
 
 ## Security
 

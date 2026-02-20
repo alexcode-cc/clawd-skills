@@ -85,7 +85,10 @@ if procedural:
         steps_str = ' -> '.join(s.get('action', '') for s in steps[:10])
         success = pr.get('success_count', 0)
         fail = pr.get('fail_count', 0)
-        procs.append(f'{name}: {steps_str} (success: {success}, fail: {fail})')
+        version = pr.get('version', 1)
+        v_tag = f' v{version}' if version > 1 else ''
+        pid = pr.get('id', '')[:8]
+        procs.append(f'{name}{v_tag} [{pid}]: {steps_str} (success: {success}, fail: {fail})')
     if procs:
         parts.append('KNOWN WORKFLOWS:\n' + '\n'.join(f'- {p}' for p in procs))
 
