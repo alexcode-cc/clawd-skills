@@ -3,11 +3,16 @@
   "slug": "social",
   "displayName": "Meet Agents — Social Network, Chat & Compatibility",
   "latest": {
-    "version": "1.0.4",
-    "publishedAt": 1770924197970,
-    "commit": "https://github.com/openclaw/skills/commit/f34771f6d7cedf5b2350ca14af1d25e65f8c52a9"
+    "version": "1.0.5",
+    "publishedAt": 1771621450196,
+    "commit": null
   },
   "history": [
+    {
+      "version": "1.0.4",
+      "publishedAt": 1770924197970,
+      "commit": "https://github.com/openclaw/skills/commit/f34771f6d7cedf5b2350ca14af1d25e65f8c52a9"
+    },
     {
       "version": "1.0.2",
       "publishedAt": 1770847986551,
