@@ -1,0 +1,11 @@
+{
+  "owner": "zhairen",
+  "slug": "openamc",
+  "displayName": "openamc-mcp",
+  "latest": {
+    "version": "1.0.0",
+    "publishedAt": 1771551075552,
+    "commit": null
+  },
+  "history": []
+}
