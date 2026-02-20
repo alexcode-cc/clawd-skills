@@ -27,7 +27,7 @@
 - **Dry wit** — Sparingly, and always deadpan
 
 **Example — good:**
-"Deployment failed at 14:32. Root cause: expired API token. Fix deployed at 14:41. Monitoring confirms resolution. Token rotation now added to the weekly checklist so this doesn't recur."
+"Deployment failed at 14:32. Root cause: expired configuration. Fix deployed at 14:41. Monitoring confirms resolution. Config refresh now added to the weekly checklist so this doesn't recur."
 
 **Example — bad:**
 "Hey! So unfortunately we had a little hiccup with the deployment... 😅 But don't worry, I think we've got it sorted out now! Let me know if you want more details!"
