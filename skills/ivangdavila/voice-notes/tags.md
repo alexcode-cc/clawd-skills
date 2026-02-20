@@ -26,7 +26,7 @@ Use `/` for hierarchy: `#category/subcategory`
 Before creating new tag:
 1. Check if existing tag covers it
 2. Check if should be subtag
-3. If new → add to registry with description
+3. If new -> add to registry with description
 
 If unsure, ask user:
 > "Should I create #newtag or use #existingtag?"
@@ -60,4 +60,4 @@ First session, establish preference:
 Periodically:
 - Merge similar tags (ask user)
 - Archive unused tags
-- Never delete — mark deprecated
+- Never delete - mark deprecated

@@ -3,7 +3,7 @@
 ## Pipeline
 
 ```
-Audio → Transcribe → Save raw → Analyze → Search existing → Process
+Audio -> Transcribe -> Save raw -> Analyze -> Search existing -> Process
 ```
 
 ### Step 1: Transcribe
@@ -20,7 +20,7 @@ transcripts/YYYY-MM-DD-HHMMSS.md
 
 ### Step 3: Search
 Check for topic overlap in existing notes.
-If match → decide: append, link, or new note.
+If match -> decide: append, link, or new note.
 
 ### Step 4: Process
 
@@ -41,7 +41,7 @@ If match → decide: append, link, or new note.
 
 **Preserve:** User's intent, nuance, examples, reasoning.
 
-**Don't over-condense.** Better slightly verbose than losing meaning.
+**Do not over-condense.** Better slightly verbose than losing meaning.
 
 ## Multi-Topic Audio
 

@@ -1,26 +1,35 @@
 ---
 name: Voice Notes
 slug: voice-notes
-version: 1.0.0
-description: Transform chaotic voice memos into a searchable knowledge base with automatic organization, linking, and tag-based retrieval.
-metadata: {"clawdbot":{"emoji":"🎙️","requires":{"bins":[]},"os":["linux","darwin","win32"]}}
+version: 1.0.2
+description: Organize voice message transcripts into a structured, searchable knowledge base with tags, links, and progressive note-taking.
+metadata: {"clawdbot":{"requires":{"bins":[]},"os":["linux","darwin","win32"]}}
 ---
 
 ## When to Use
 
-User sends voice notes on any topic. Agent transcribes, organizes into structured notes, links related content, and maintains a scalable tag-based system.
+User sends voice messages. The agent platform handles transcription (via its configured STT). This skill organizes the resulting transcripts into structured notes, links related content, and maintains a scalable tag-based system.
+
+## Important: Transcription is Platform-Handled
+
+This skill does NOT perform transcription. It expects the agent platform to:
+1. Receive audio from the user
+2. Transcribe it using the platform's configured STT (local or cloud)
+3. Pass the transcript text to this skill for organization
+
+The skill only organizes and stores text transcripts locally in `~/voice-notes/`. Audio files are never accessed or stored by this skill.
 
 ## Architecture
 
-Memory lives in `~/voice-notes/`. See `memory-template.md` for setup.
+All data stored in `~/voice-notes/`. See `memory-template.md` for setup.
 
 ```
 ~/voice-notes/
-├── memory.md           # HOT: tag registry + recent activity
-├── index.md            # Note index with tags and links
-├── transcripts/        # Raw transcriptions (never deleted)
-├── notes/              # Processed notes
-└── archive/            # Superseded content (never deleted)
++-- memory.md           # HOT: tag registry + recent activity
++-- index.md            # Note index with tags and links
++-- transcripts/        # Raw transcriptions (text only)
++-- notes/              # Processed notes
++-- archive/            # Superseded content
 ```
 
 ## Quick Reference
@@ -42,16 +51,18 @@ mkdir -p ~/voice-notes/{transcripts,notes,archive}
 ## Scope
 
 This skill ONLY:
-- Transcribes audio using configured STT
+- Receives transcript text from the agent platform
 - Stores transcripts and notes in `~/voice-notes/`
 - Links related notes based on content
 - Manages user-defined tags
 
 This skill NEVER:
+- Performs audio transcription (platform responsibility)
+- Accesses audio files
 - Deletes content without explicit user confirmation
 - Accesses files outside `~/voice-notes/`
 - Sends data externally
-- Infers organization preferences from silence
+- Requires API keys or credentials
 
 ## Self-Modification
 
@@ -63,7 +74,7 @@ All data stored in `~/voice-notes/` files.
 ### 1. Never Lose Information
 | Event | Action |
 |-------|--------|
-| New audio | Save transcript immediately to `transcripts/` |
+| New transcript | Save immediately to `transcripts/` |
 | Edit note | Preserve original in transcript reference |
 | Strategy change | Archive old version, link to new |
 | User deletes | Confirm first, then move to `archive/` |
@@ -77,9 +88,9 @@ All data stored in `~/voice-notes/` files.
 ### 3. Detect Related Content
 Before creating new note:
 1. Search existing notes for topic overlap
-2. If related → append or link (not duplicate)
-3. If continuation → extend existing note
-4. If contradicts → link as evolution, preserve both
+2. If related -> append or link (not duplicate)
+3. If continuation -> extend existing note
+4. If contradicts -> link as evolution, preserve both
 
 ### 4. Document Scaling
 When note exceeds ~100 lines:
@@ -110,7 +121,7 @@ Ask user on first use:
 
 ## Common Traps
 
-- Creating new note when should append → always search first
-- Losing tag consistency → check registry before creating tags
-- Over-condensing → preserve user's intent and nuance
-- Deleting "outdated" content → archive, never delete
+- Creating new note when should append -> always search first
+- Losing tag consistency -> check registry before creating tags
+- Over-condensing -> preserve user's intent and nuance
+- Deleting "outdated" content -> archive, never delete

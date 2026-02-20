@@ -32,14 +32,14 @@ touch ~/voice-notes/{memory.md,index.md}
 
 ## By Tag
 ### #ideas
-- [[slug]] — desc
+- [[slug]] - desc
 
 ## By Date
 ### YYYY-MM
 - DD: [[slug]]
 
 ## Link Map
-[[a]] ↔ [[b]] — relation
+[[a]] <-> [[b]] - relation
 ```
 
 ## Note (notes/{slug}.md)

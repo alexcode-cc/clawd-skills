@@ -24,9 +24,9 @@ Use wiki-style: `[[note-slug]]`
 In `index.md`, maintain link map:
 ```markdown
 ## Link Map
-[[note-a]] ↔ [[note-b]] — peers
-[[note-c]] → [[note-d]] — c supersedes d
-[[note-e]] ⊃ [[note-f]] — e contains f
+[[note-a]] <-> [[note-b]] - peers
+[[note-c]] -> [[note-d]] - c supersedes d
+[[note-e]] contains [[note-f]] - e contains f
 ```
 
 ## Breaking Up Large Notes
@@ -59,6 +59,6 @@ When processing new note:
 ## Orphan Check
 
 Periodically verify:
-- Notes with no links → missed connections?
-- Dead links → archived/renamed?
-- Isolated clusters → could connect?
+- Notes with no links -> missed connections?
+- Dead links -> archived/renamed?
+- Isolated clusters -> could connect?
