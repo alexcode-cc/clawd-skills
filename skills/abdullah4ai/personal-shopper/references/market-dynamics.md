@@ -1,66 +1,119 @@
-# Market Dynamics — Saudi Market
+# Market Dynamics — Saudi Arabia (Riyadh Focus)
 
 ## Price Inversion
 
-Price Inversion: when a product costs more locally than its international price + shipping + customs. Common in the Saudi market due to distribution layers.
+When a product costs more locally than international price + shipping + customs. Common in Saudi due to distribution layers.
 
-Not every price gap counts as Price Inversion. The gap must exceed 30% to be noteworthy, because local purchasing has inherent advantages: local warranty, easy returns, fast delivery.
+**Threshold:** Gap must exceed 30% to flag. Below that, local advantages (warranty, returns, fast delivery) justify the premium.
 
 ## 4 Pricing Patterns
 
 | Pattern | Description | Price Impact | Example |
 |---------|-------------|--------------|---------|
-| Direct Distribution | Company sells directly via its own store | Close to international price | Apple Store SA, Samsung SA |
-| Reseller/Importer | Third party imports and sells on Amazon/noon | 20-60% above international | Most small brands on Amazon.sa |
-| Official Distributor | Authorized distributor with official contract | 10-25% above with local warranty | Jarir as distributor for many brands |
-| Exclusive Product | Product designed specifically for the local market | No international comparison available | Some STC devices |
+| Direct Distribution | Company sells via own store | Close to international | Apple Store SA, Samsung SA |
+| Reseller/Importer | Third party imports, sells on Amazon/noon | 20-60% above international | Most small brands on Amazon.sa |
+| Official Distributor | Authorized with contract | 10-25% above, local warranty | Jarir for many brands |
+| Exclusive Product | Designed for local market | No international comparison | Some STC devices |
 
 ## Saudi Platform Guide
 
 ### Amazon.sa
-- **Strength:** Wide selection, fast shipping with Prime
+- **Strength:** Wide selection, fast Prime shipping (1-2 days Riyadh)
 - **Weakness:** Many third-party sellers with inflated prices
-- **Verify:** "Ships from" and "Sold by" — if not "Amazon.sa", investigate the seller
-- **Returns:** 15-30 days depending on the product
+- **Verify:** "Ships from" and "Sold by" — if not "Amazon.sa", investigate seller
+- **Returns:** 15-30 days depending on product
+- **Installments:** Tamara and Tabby available at checkout
 
 ### noon.com
-- **Strength:** Frequent coupons and promotions, fast noon Express
+- **Strength:** Frequent coupons, fast noon Express, competitive pricing
 - **Weakness:** Some unreliable third-party sellers
-- **Verify:** "noon Express" badge means the product is in noon's warehouse
+- **Verify:** "noon Express" badge = product in noon's warehouse
 - **Returns:** 15 days
+- **Installments:** Tamara, Tabby, and noon installment plans
 
-### jarir.com (Jarir)
-- **Strength:** Authorized distributor for many brands, reliable local warranty
-- **Weakness:** Limited selection, sometimes higher prices
-- **Verify:** In-store vs. online availability and pricing may differ
+### jarir.com (Jarir Bookstore)
+- **Strength:** Authorized distributor for many brands, reliable local warranty, physical stores
+- **Weakness:** Limited selection, sometimes premium pricing
+- **Verify:** Online vs. in-store pricing may differ
 - **Returns:** 7 days only
+- **Installments:** Store installments available
 
-### extra.com (Extra)
-- **Strength:** Many physical stores, multiple installment options
-- **Weakness:** Limited electronics selection compared to Amazon
-- **Verify:** In-store vs. online prices may differ
+### extra.com (Extra/eXtra)
+- **Strength:** Many physical stores, multiple installment options, appliances
+- **Weakness:** Limited electronics selection vs. Amazon
+- **Verify:** Online vs. in-store prices may differ
 - **Returns:** 7 days
+- **Installments:** Various bank installment plans
+
+### Other Notable Platforms
+- **apple.com/sa** — Official Apple store. Gold standard for Apple products.
+- **samsung.com/sa** — Official Samsung. Trade-in programs.
+- **stc.com.sa** — Phones with STC plans.
+- **lulu.com** — Electronics + general. Occasional deals.
+
+## Payment & Installment Options
+
+### Interest-Free Installments
+| Provider | Split | Available At |
+|----------|-------|-------------|
+| Tamara | 3 or 4 payments | Amazon.sa, noon, jarir, extra, most online stores |
+| Tabby | 4 payments | Amazon.sa, noon, many online stores |
+| Store Plans | Varies | Jarir (6-12mo), Extra (6-24mo) |
+
+### Cashback Opportunities
+| Source | Typical Cashback |
+|--------|-----------------|
+| Al Rajhi Bank cards | 1-5% on select categories |
+| Al Ahli (SNB) cards | 1-3% general, higher on promotions |
+| STC Pay | Occasional cashback campaigns |
+| Riyad Bank | Category-specific offers |
+| noon wallet | Coins earned on purchases |
+
+### Bank-Specific Promotions
+Check before buying — banks frequently run limited-time deals:
+- "10% cashback on electronics at Extra this weekend"
+- "5% back on Amazon.sa with Al Rajhi Visa"
+- These change weekly. Search: "{bank} عروض" or check bank app.
 
 ## Warning Signs
 
 | Sign | Description | Action |
 |------|-------------|--------|
-| Seller with no ratings | New seller on the platform | Avoid unless the price is normal and the product ships from the platform's warehouse |
-| Price far below market | Possible counterfeit or used-sold-as-new | Verify the seller's source and warranty claim |
-| "Ships from abroad" | Long delivery + possible customs | Calculate the full cost including shipping and customs |
-| "Limited quantity" | Psychological pressure to buy fast | Ignore and research calmly |
-| No local warranty | If it breaks, nobody helps you | Factor in the cost of full replacement |
-| Fluctuating price | Price changes daily | Monitor for a week or use a price tracker |
+| Seller with no ratings | New seller | Avoid unless normal price + ships from warehouse |
+| Price far below market | Possible counterfeit/used-as-new | Verify seller's source and warranty |
+| "Ships from abroad" | Long delivery + customs | Calculate full cost including shipping/customs |
+| "Limited quantity" | Psychological pressure | Ignore, research calmly |
+| No local warranty | No support if broken | Factor in full replacement cost |
+| Fluctuating price | Daily changes | Monitor for a week or use price tracker |
+| URL shortener link | Possible scam/redirect | Resolve full URL, verify destination |
+| Unknown domain | Not a known retailer | WHOIS check, SSL verification, trust signals |
 
 ## Price Verification Checklist
 
-Before recommending a product from any platform, verify:
+Before recommending any product:
 
-- [ ] **Seller type:** Official, authorized distributor, or third party
-- [ ] **Shipping:** Free or paid, and how much
-- [ ] **Tax:** Is the price inclusive of 15% VAT?
-- [ ] **Additional fees:** Installation, special delivery, insurance
-- [ ] **Fulfillment:** From the platform's warehouse or directly from the seller
-- [ ] **Availability:** In stock, limited stock, or pre-order
-- [ ] **Price stability:** Has the price been consistent or fluctuating? (Check price history if available)
-- [ ] **International comparison:** Compare with Amazon.com + shipping + customs (~15%)
+- [ ] Seller type: official / authorized / third party
+- [ ] Shipping: free or paid, how much
+- [ ] Tax: price inclusive of 15% VAT?
+- [ ] Additional fees: installation, delivery surcharge, insurance
+- [ ] Fulfillment: platform warehouse or seller-direct
+- [ ] Availability: in stock / limited / pre-order
+- [ ] Price stability: consistent or fluctuating?
+- [ ] International comparison: Amazon.com + shipping + customs (~15%)
+- [ ] Active coupons or promo codes
+- [ ] Bank cashback opportunities
+- [ ] Installment availability (Tamara/Tabby)
+
+## Delivery Reality (Riyadh)
+
+| Source | Typical Delivery | Badge |
+|--------|-----------------|-------|
+| Amazon Prime SA (warehouse) | 1-2 days | 🟢 |
+| noon Express (warehouse) | 1-2 days | 🟢 |
+| Jarir (in-store pickup) | Same day | 🟢 |
+| Local seller (not warehouse) | 3-7 days | 🟡 |
+| Ships from UAE | 5-10 days | 🟡 |
+| Ships from international | 2-4 weeks | 🔴 |
+| Pre-order | Varies | 🔴 |
+
+**Rule:** Never recommend a product with 🔴 delivery without clearly flagging it. The user should know what they're signing up for.
