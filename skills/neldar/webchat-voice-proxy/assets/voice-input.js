@@ -22,7 +22,70 @@
 
   const TRANSCRIBE_URL = location.port === '8443' ? '/transcribe' : 'http://127.0.0.1:18790/transcribe';
   const STORAGE_KEY = 'oc-voice-beep';
+  const MODE_KEY = 'oc-voice-mode';
+  const LANG_KEY = 'oc-voice-lang';
   let beepEnabled = localStorage.getItem(STORAGE_KEY) !== 'false'; // default: on
+  let pttMode = localStorage.getItem(MODE_KEY) !== 'toggle'; // default: PTT
+
+  // --- i18n ---
+  const I18N = {
+    en: {
+      tooltip_ptt: "Hold to talk",
+      tooltip_toggle: "Click to start/stop",
+      tooltip_next_toggle: "Toggle mode",
+      tooltip_next_ptt: "Push-to-Talk",
+      tooltip_beep_off: "Disable beep",
+      tooltip_beep_on: "Enable beep",
+      tooltip_dblclick: "Double-click",
+      tooltip_rightclick: "Right-click",
+      toast_ptt: "Push-to-Talk",
+      toast_toggle: "Toggle mode",
+      toast_beep_on: "Beep enabled",
+      toast_beep_off: "Beep disabled",
+      placeholder_suffix: " \u2014 Voice: (Ctrl+Space Push-To-Talk, Ctrl+Shift+M start/stop continuous recording)"
+    },
+    de: {
+      tooltip_ptt: "Gedr\u00fcckt halten zum Sprechen",
+      tooltip_toggle: "Klick zum Starten/Stoppen",
+      tooltip_next_toggle: "Klick-Modus",
+      tooltip_next_ptt: "Push-to-Talk",
+      tooltip_beep_off: "Beep ausschalten",
+      tooltip_beep_on: "Beep anschalten",
+      tooltip_dblclick: "Doppelklick",
+      tooltip_rightclick: "Rechtsklick",
+      toast_ptt: "Push-to-Talk",
+      toast_toggle: "Klick-Modus",
+      toast_beep_on: "Beep aktiviert",
+      toast_beep_off: "Beep deaktiviert",
+      placeholder_suffix: " \u2014 Sprache: (Strg+Leertaste Push-To-Talk, Strg+Umschalt+M Start/Stop Daueraufnahme)"
+    },
+    zh: {
+      tooltip_ptt: "\u6309\u4f4f\u8bf4\u8bdd",
+      tooltip_toggle: "\u70b9\u51fb\u5f00\u59cb/\u505c\u6b62",
+      tooltip_next_toggle: "\u70b9\u51fb\u6a21\u5f0f",
+      tooltip_next_ptt: "\u6309\u4f4f\u8bf4\u8bdd\u6a21\u5f0f",
+      tooltip_beep_off: "\u5173\u95ed\u63d0\u793a\u97f3",
+      tooltip_beep_on: "\u5f00\u542f\u63d0\u793a\u97f3",
+      tooltip_dblclick: "\u53cc\u51fb",
+      tooltip_rightclick: "\u53f3\u952e",
+      toast_ptt: "\u6309\u4f4f\u8bf4\u8bdd\u6a21\u5f0f",
+      toast_toggle: "\u70b9\u51fb\u6a21\u5f0f",
+      toast_beep_on: "\u63d0\u793a\u97f3\u5df2\u5f00\u542f",
+      toast_beep_off: "\u63d0\u793a\u97f3\u5df2\u5173\u95ed",
+      placeholder_suffix: " \u2014 \u8bed\u97f3\uff1a(Ctrl+\u7a7a\u683c \u6309\u4f4f\u8bf4\u8bdd\uff0cCtrl+Shift+M \u5f00\u59cb/\u505c\u6b62\u8fde\u7eed\u5f55\u97f3)"
+    }
+  };
+
+  function getLang() {
+    const override = localStorage.getItem(LANG_KEY);
+    if (override && I18N[override]) return override;
+    const nav = (navigator.language || 'en').slice(0, 2);
+    return I18N[nav] ? nav : 'en';
+  }
+
+  function t(key) {
+    return (I18N[getLang()] || I18N.en)[key] || I18N.en[key] || key;
+  }
   const MIN_TEXT_CHARS = 2;
   const MIN_CONFIDENCE = 0.15;
   const MAX_NO_SPEECH = 0.95;
@@ -181,22 +244,72 @@
   }
 
   let ignoreNextClick = false;
+  let pttDown = false;
+  let aborted = false;
+
+  function updateButtonTitle() {
+    if (!btn) return;
+    const mode = pttMode ? t('tooltip_ptt') : t('tooltip_toggle');
+    const nextMode = pttMode ? t('tooltip_next_toggle') : t('tooltip_next_ptt');
+    const beep = beepEnabled ? t('tooltip_beep_off') : t('tooltip_beep_on');
+    btn.title = `🎤 ${mode}\n${t('tooltip_dblclick')}: ${nextMode}\n${t('tooltip_rightclick')}: ${beep}`;
+  }
+
+  function switchMode() {
+    pttMode = !pttMode;
+    localStorage.setItem(MODE_KEY, pttMode ? 'ptt' : 'toggle');
+    showToast(pttMode ? t('toast_ptt') : t('toast_toggle'));
+    updateButtonTitle();
+  }
 
   function bindButton(el) {
     if (!el || el.dataset.ocVoiceBound === '1') return;
     el.dataset.ocVoiceBound = '1';
+
     el.addEventListener('pointerdown', (e) => {
       if (e.button !== 0) return;
       e.preventDefault();
       e.stopPropagation();
-      if (!recording && !processing) {
-        ignoreNextClick = true;
-        setTimeout(() => { ignoreNextClick = false; }, 500);
-        starting = true;
-        setRecordingStyle();
-        startRecording();
+      if (processing) return;
+
+      if (pttMode) {
+        // PTT: hold to record, immediate start
+        if (!recording) {
+          pttDown = true;
+          ignoreNextClick = true;
+          starting = true;
+          setRecordingStyle();
+          startRecording();
+        }
+      } else {
+        // Toggle: pointerdown starts
+        if (!recording) {
+          ignoreNextClick = true;
+          setTimeout(() => { ignoreNextClick = false; }, 500);
+          starting = true;
+          setRecordingStyle();
+          startRecording();
+        }
       }
     });
+
+    el.addEventListener('pointerup', (e) => {
+      if (e.button !== 0) return;
+      if (pttMode && pttDown) {
+        pttDown = false;
+        ignoreNextClick = true;
+        setTimeout(() => { ignoreNextClick = false; }, 300);
+        if (recording) stopRecording();
+      }
+    });
+
+    el.addEventListener('pointerleave', () => {
+      if (pttMode && pttDown) {
+        pttDown = false;
+        if (recording) stopRecording();
+      }
+    });
+
     el.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -204,26 +317,40 @@
         ignoreNextClick = false;
         return;
       }
-      if (recording) stopRecording();
+      // Toggle mode: click to stop
+      if (!pttMode && recording) stopRecording();
     });
+
+    el.addEventListener('dblclick', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      pttDown = false;
+      // Abort any running recording — flag ensures stop-handler discards audio
+      if (recording) {
+        aborted = true;
+        if (mediaRecorder?.state === 'recording') {
+          try { mediaRecorder.stop(); } catch (_) {}
+        } else {
+          // Recorder already stopped, clean up manually
+          aborted = false;
+          recording = false;
+          mediaRecorder = null;
+          audioChunks = [];
+          stopVU();
+          if (stream) { stream.getTracks().forEach((t) => t.stop()); stream = null; }
+          setIdleStyle();
+        }
+      }
+      if (!processing) switchMode();
+    });
+
     el.addEventListener('contextmenu', (e) => {
       e.preventDefault();
       e.stopPropagation();
       beepEnabled = !beepEnabled;
       localStorage.setItem(STORAGE_KEY, beepEnabled ? 'true' : 'false');
-      const lang = (navigator.language || 'en').slice(0, 2);
-      const msgs = {
-        de: ['Beep aktiviert', 'Beep deaktiviert'],
-        en: ['Beep enabled', 'Beep disabled'],
-        fr: ['Bip activé', 'Bip désactivé'],
-        es: ['Beep activado', 'Beep desactivado'],
-        it: ['Beep attivato', 'Beep disattivato'],
-        pt: ['Beep ativado', 'Beep desativado'],
-        nl: ['Beep ingeschakeld', 'Beep uitgeschakeld'],
-      };
-      const m = msgs[lang] || msgs.en;
-      const text = beepEnabled ? m[0] : m[1];
-      showToast(text);
+      showToast(beepEnabled ? t('toast_beep_on') : t('toast_beep_off'));
+      updateButtonTitle();
     });
   }
 
@@ -236,7 +363,7 @@
       btn = document.createElement('button');
       btn.id = 'oc-voice-btn';
       btn.type = 'button';
-      btn.title = 'Spracheingabe';
+      btn.title = '';
       bindButton(btn);
     }
 
@@ -255,6 +382,7 @@
     if (recording) setRecordingStyle();
     else if (processing) setProcessingStyle();
     else setIdleStyle();
+    updateButtonTitle();
   }
 
   async function sendToTranscribe(blob) {
@@ -315,6 +443,15 @@
         }
         recording = false;
         recordingStartedAt = 0;
+
+        // If aborted (e.g. dblclick mode switch), discard everything
+        if (aborted) {
+          aborted = false;
+          audioChunks = [];
+          mediaRecorder = null;
+          setIdleStyle();
+          return;
+        }
 
         const total = audioChunks.reduce((s, c) => s + c.size, 0);
         if (!audioChunks.length || total < 20) {
@@ -400,8 +537,55 @@
     else startRecording();
   }
 
+  // --- Keyboard shortcuts ---
+  let spaceDown = false;
+
+  function isTextInput(el) {
+    if (!el) return false;
+    const tag = el.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return true;
+    if (el.isContentEditable) return true;
+    return false;
+  }
+
+  document.addEventListener('keydown', (e) => {
+    // Ctrl+Shift+M → toggle recording
+    if (e.ctrlKey && e.shiftKey && e.key === 'M') {
+      e.preventDefault();
+      toggle();
+      return;
+    }
+    // Ctrl+Space PTT (hold to talk) — works even when text field is focused
+    if (e.ctrlKey && !e.shiftKey && e.code === 'Space' && !e.repeat) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!recording && !processing) {
+        spaceDown = true;
+        startRecording();
+      }
+    }
+  });
+
+  document.addEventListener('keyup', (e) => {
+    if (e.code === 'Space' && spaceDown) {
+      e.preventDefault();
+      spaceDown = false;
+      if (recording) stopRecording();
+    }
+  });
+
+  function patchPlaceholder() {
+    const ta = document.querySelector('textarea');
+    if (!ta) return;
+    const orig = ta.placeholder || '';
+    if (orig && !orig.includes('Ctrl+Space') && !orig.includes('Ctrl+')) {
+      ta.placeholder = orig + t('placeholder_suffix');
+    }
+  }
+
   function boot() {
     renderButton();
+    patchPlaceholder();
     let queued = false;
     observer = new MutationObserver(() => {
       if (recording || processing || starting) return;
@@ -410,6 +594,7 @@
       requestAnimationFrame(() => {
         queued = false;
         renderButton();
+        patchPlaceholder();
       });
     });
     observer.observe(document.body, { childList: true, subtree: true });

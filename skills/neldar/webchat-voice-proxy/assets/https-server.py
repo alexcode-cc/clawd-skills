@@ -11,11 +11,29 @@ from pathlib import Path
 from aiohttp import web, WSMsgType, ClientSession, WSCloseCode
 
 PORT = int(os.environ.get("VOICE_HTTPS_PORT", "8443"))
-CERT = "/home/openclaw/.openclaw/workspace/voice-input/certs/voice-cert.pem"
-KEY = "/home/openclaw/.openclaw/workspace/voice-input/certs/voice-key.pem"
-CONTROL_UI = "/home/openclaw/.npm-global/lib/node_modules/openclaw/dist/control-ui"
-TRANSCRIBE = "http://127.0.0.1:18790/transcribe"
-GATEWAY_WS = "ws://127.0.0.1:18789"
+WORKSPACE = os.environ.get("WORKSPACE", os.path.join(Path.home(), ".openclaw", "workspace"))
+CERT = os.environ.get("VOICE_CERT", os.path.join(WORKSPACE, "voice-input", "certs", "voice-cert.pem"))
+KEY = os.environ.get("VOICE_KEY", os.path.join(WORKSPACE, "voice-input", "certs", "voice-key.pem"))
+
+def _detect_control_ui():
+    """Find Control UI directory dynamically."""
+    explicit = os.environ.get("OPENCLAW_UI_DIR")
+    if explicit and os.path.isdir(explicit):
+        return explicit
+    try:
+        npm_root = subprocess.check_output(["npm", "-g", "root"], text=True, stderr=subprocess.DEVNULL).strip()
+        candidate = os.path.join(npm_root, "openclaw", "dist", "control-ui")
+        if os.path.isdir(candidate):
+            return candidate
+    except Exception:
+        pass
+    # Fallback: common default
+    fallback = os.path.join(Path.home(), ".npm-global", "lib", "node_modules", "openclaw", "dist", "control-ui")
+    return fallback
+
+CONTROL_UI = _detect_control_ui()
+TRANSCRIBE = os.environ.get("VOICE_TRANSCRIBE_URL", "http://127.0.0.1:18790/transcribe")
+GATEWAY_WS = os.environ.get("VOICE_GATEWAY_WS", "ws://127.0.0.1:18789")
 ALLOWED_ORIGIN = os.environ.get("VOICE_ALLOWED_ORIGIN", f"https://localhost:{PORT}")
 
 

@@ -6,8 +6,12 @@ description: >
   via faster-whisper, and injects text into the conversation. Includes HTTPS/WSS
   reverse proxy, TLS cert management, and gateway hook for update safety. Fully
   local speech-to-text, no API costs. Real-time VU meter shows voice activity.
+  Push-to-Talk (hold to speak) and Toggle mode (click start/stop), switchable
+  via double-click. Keyboard shortcuts: Ctrl+Space PTT, Ctrl+Shift+M continuous
+  recording. Localized UI (English, German, Chinese built-in, extensible).
   Keywords: voice input, microphone, WebChat, Control UI, speech to text, STT,
-  local transcription, MediaRecorder, HTTPS proxy, voice button, mic button.
+  local transcription, MediaRecorder, HTTPS proxy, voice button, mic button,
+  push-to-talk, PTT, keyboard shortcut, i18n, localization.
 requires:
   config_paths:
     - ~/.openclaw/openclaw.json (appends allowedOrigins entry)
@@ -22,6 +26,7 @@ requires:
     - VOICE_HTTPS_PORT (optional, default: 8443)
     - VOICE_HOST (optional, auto-detected from hostname -I)
     - VOICE_ALLOWED_ORIGIN (optional, default: https://<VOICE_HOST>:<VOICE_HTTPS_PORT>)
+    - VOICE_LANG (optional, default: auto — prompts interactively if not set)
   persistence:
     - "User systemd service: openclaw-voice-https.service (HTTPS/WSS proxy)"
     - "Gateway startup hook: voice-input-inject (re-injects JS after updates)"
@@ -40,6 +45,10 @@ Set up a reboot-safe voice stack for OpenClaw WebChat (including the current pol
 - WebSocket passthrough to gateway (`ws://127.0.0.1:18789`)
 - Voice button script injection into Control UI
 - Real-time VU meter: button shadow/scale reacts to voice level
+- **Push-to-Talk**: hold mic button to record, release to send (default mode)
+- **Toggle mode**: click to start, click to stop (switch via double-click on mic button)
+- **Keyboard shortcuts**: `Ctrl+Space` Push-to-Talk, `Ctrl+Shift+M` start/stop continuous recording
+- **Localized UI**: auto-detects browser language (English, German, Chinese built-in), customizable
 
 ## Prerequisites (required)
 
@@ -75,10 +84,12 @@ Run (auto-detect host IP):
 bash scripts/deploy.sh
 ```
 
-Or set host/port explicitly:
+Or set host/port/language explicitly:
 ```bash
-VOICE_HOST=10.0.0.42 VOICE_HTTPS_PORT=8443 bash scripts/deploy.sh
+VOICE_HOST=10.0.0.42 VOICE_HTTPS_PORT=8443 VOICE_LANG=de bash scripts/deploy.sh
 ```
+
+When run interactively without `VOICE_LANG`, the script will ask you to choose a UI language (`auto`, `en`, `de`, `zh`). Set `VOICE_LANG=auto` to skip the prompt.
 
 This script is idempotent.
 
@@ -120,6 +131,66 @@ Before installing, be aware of all system changes `deploy.sh` makes:
 | TLS certs | `~/.openclaw/workspace/voice-input/certs/` | Auto-generated self-signed cert on first run |
 
 The injected JS (`voice-input.js`) runs inside the Control UI and interacts with the chat input. Review the source before deploying.
+
+## Mic Button Controls
+
+| Action | Effect |
+|---|---|
+| **Hold** (PTT mode) | Record while held, transcribe on release |
+| **Click** (Toggle mode) | Start recording / stop and transcribe |
+| **Double-click** | Switch between PTT and Toggle mode |
+| **Right-click** | Toggle beep sound on/off |
+| **Ctrl+Space** (hold) | Push-to-Talk via keyboard (works even with text field focused) |
+| **Ctrl+Shift+M** | Start/stop continuous recording |
+
+The current mode and available actions are shown in the button tooltip on hover.
+
+## Language / i18n
+
+The UI automatically detects the browser language and shows tooltips, toasts, and placeholder text in the matching language.
+
+**Built-in languages:** English (`en`), German (`de`), Chinese (`zh`)
+
+### Override language
+
+Set a language override in the browser console:
+
+```js
+localStorage.setItem('oc-voice-lang', 'de');  // force German
+localStorage.setItem('oc-voice-lang', 'zh');  // force Chinese
+localStorage.removeItem('oc-voice-lang');      // back to auto-detect
+```
+
+Then reload the page.
+
+### Add a custom language
+
+Edit `voice-input.js` and add a new entry to the `I18N` object. Use `assets/i18n.json` as a template — it contains all translation keys with the built-in translations.
+
+Example for adding French:
+
+```js
+const I18N = {
+  // ... existing entries ...
+  fr: {
+    tooltip_ptt: "Maintenir pour parler",
+    tooltip_toggle: "Cliquer pour démarrer/arrêter",
+    tooltip_next_toggle: "Mode clic",
+    tooltip_next_ptt: "Push-to-Talk",
+    tooltip_beep_off: "Désactiver le bip",
+    tooltip_beep_on: "Activer le bip",
+    tooltip_dblclick: "Double-clic",
+    tooltip_rightclick: "Clic droit",
+    toast_ptt: "Push-to-Talk",
+    toast_toggle: "Mode clic",
+    toast_beep_on: "Bip activé",
+    toast_beep_off: "Bip désactivé",
+    placeholder_suffix: " — Voix : (Ctrl+Espace Push-To-Talk, Ctrl+Shift+M enregistrement continu)"
+  }
+};
+```
+
+After editing, redeploy with `bash scripts/deploy.sh` to copy the updated JS to the Control UI.
 
 ## CORS Policy
 
