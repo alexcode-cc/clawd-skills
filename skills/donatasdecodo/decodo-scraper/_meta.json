@@ -3,9 +3,15 @@
   "slug": "decodo-scraper",
   "displayName": "Decodo Scraper",
   "latest": {
-    "version": "0.1.0",
-    "publishedAt": 1770994986688,
-    "commit": "https://github.com/openclaw/skills/commit/a37826b700ded42bdfc6f504af6314f11bc9976c"
+    "version": "1.1.0",
+    "publishedAt": 1771534138338,
+    "commit": null
   },
-  "history": []
+  "history": [
+    {
+      "version": "0.1.0",
+      "publishedAt": 1770994986688,
+      "commit": "https://github.com/openclaw/skills/commit/a37826b700ded42bdfc6f504af6314f11bc9976c"
+    }
+  ]
 }
