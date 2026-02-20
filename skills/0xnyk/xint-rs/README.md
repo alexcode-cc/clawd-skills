@@ -99,6 +99,27 @@ X_CLIENT_ID=your_client_id
 xint auth setup
 ```
 
+## Deployment Modes
+
+### Self-hosted (OSS default)
+
+- Run this binary against your own local setup.
+- Package API features stay local unless cloud env vars are configured.
+- Best for development and private operator workflows.
+
+### Hosted cloud control plane (`xint-cloud`)
+
+- Point package API features to your hosted control plane:
+  - `XINT_PACKAGE_API_BASE_URL=http://localhost:8787/v1` (or your deployed URL)
+  - `XINT_PACKAGE_API_KEY=<workspace_api_key>`
+  - `XINT_WORKSPACE_ID=<workspace_id>`
+- Optional billing upgrade URL for quota/plan errors:
+  - `XINT_BILLING_UPGRADE_URL=https://your-app/pricing`
+
+Notes:
+- If `XINT_PACKAGE_API_BASE_URL` is unset, package API MCP tools return a setup error.
+- Keep `xint-cloud` private; `xint` and `xint-rs` remain public OSS clients.
+
 ## Agent-Native Capabilities Manifest
 
 `xint-rs` ships a machine-readable manifest for agent allowlists and runtime tool selection:
@@ -148,6 +169,11 @@ xint watch "solana" -i 5m
 xint watch "@user" -i 1m
 xint watch "news" -i 30s --webhook https://example.com/webhook
 ```
+
+Webhook safety:
+- Remote webhooks must use `https://`
+- `http://` is accepted only for localhost/loopback targets
+- Optional host allowlist: `XINT_WEBHOOK_ALLOWED_HOSTS=hooks.example.com,*.internal.example`
 
 Press `Ctrl+C` — shows session stats.
 
@@ -233,6 +259,9 @@ xint media 1900100012345678901 --name-template "{username}-{created_at}-{index}"
 xint report "AI agents" --save
 xint analyze "What's trending in crypto?"
 xint article "https://..." --ai "Summarize"
+
+# From X tweet (auto-extract linked article URL)
+xint article "https://x.com/user/status/123" --ai "Summarize"
 ```
 
 ## xAI Features
@@ -288,6 +317,7 @@ xint costs budget 2  # Set $2/day limit
 |----------|----------|-------------|
 | `X_BEARER_TOKEN` | Yes | X API v2 bearer |
 | `XAI_API_KEY` | No | xAI for analyze/report |
+| `XINT_ARTICLE_TIMEOUT_SEC` | No | Article fetch timeout seconds (default 30, range 5-120) |
 | `X_CLIENT_ID` | No | OAuth for write ops |
 
 ## Structure
