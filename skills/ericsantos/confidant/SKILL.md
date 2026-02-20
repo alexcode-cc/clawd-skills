@@ -7,6 +7,23 @@ description: Secure secret handoff and credential setup wizard for AI agents. Us
 
 Receive secrets from humans securely — no chat exposure, no copy-paste, no history leaks.
 
+## 🚨 CRITICAL FLOW — Read This First
+
+This is a **human-in-the-loop** process. You CANNOT retrieve the secret yourself.
+
+1. **Run the script** → you get a secure URL
+2. **SEND the URL to the user in chat** ← THIS IS MANDATORY
+3. **WAIT** for the user to open the URL in their browser and submit the secret
+4. The script handles the rest (receives, saves to disk, confirms)
+
+```
+❌ DO NOT curl/fetch the secret URL yourself — it's a web form for humans
+❌ DO NOT skip sharing the URL — the user MUST receive it in chat
+❌ DO NOT poll the API to check if the secret arrived — the script does this
+❌ DO NOT proceed without confirming the secret was received
+✅ Share URL → Wait → Confirm success → Use the secret silently
+```
+
 ## ⚡ Quick Start
 
 You need an API key from the user? One command:
@@ -93,9 +110,28 @@ Reports server status, port, PID, and tunnel state (ngrok or localtunnel).
 3. **NEVER `curl` the Confidant API directly** — use the scripts
 4. **NEVER kill an existing server** to start a new one
 5. **NEVER try to expose the port directly** (public IP, firewall rules, etc.) — use `--tunnel` instead
-6. Use `--tunnel` when the user is remote (not on the same machine/network)
-7. Prefer `--service` for API keys — cleanest convention
-8. After receiving: confirm success, use the secret silently
+6. **ALWAYS share the URL with the user in chat** — this is the entire point of the tool
+7. **ALWAYS wait for the user to submit** — do not poll, do not retry, do not try to retrieve the secret yourself
+8. Use `--tunnel` when the user is remote (not on the same machine/network)
+9. Prefer `--service` for API keys — cleanest convention
+10. After receiving: confirm success, use the secret silently
+
+## Example Agent Conversation
+
+This is what the interaction should look like:
+
+```
+User: Can you set up my OpenAI key?
+Agent: I'll create a secure link for you to submit your API key safely.
+       [runs: request-secret.sh --label "OpenAI API Key" --service openai --tunnel]
+Agent: Here's your secure link — open it in your browser and paste your key:
+       🔐 https://gentle-pig-42.loca.lt/requests/abc123
+       The link expires after you submit or after 24h.
+User: Done, I submitted it.
+Agent: ✅ Received and saved to ~/.config/openai/api_key. You're all set!
+```
+
+⚠️ Notice: the agent SENDS the URL and WAITS. It does NOT try to access the URL itself.
 
 ## How It Works
 
