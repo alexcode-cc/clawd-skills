@@ -26,7 +26,7 @@ bash setup.sh
 |----------|---------|
 | Genesis Key NFT (0xRabbitNeo) | `0x0d7BB250fc06f0073F0882E3Bf56728A948C5a88` |
 | 0xRabbit.agent Key NFT | `0x3f0CAbd6AB0a318f67aAA7af5F774750ec2461f2` |
-| MasterNFT Registry | `0xb7f14622ea97b26524BE743Ab6D9FA519Afbe756` |
+| MasterNFT Registry | `0xf299F428Efe1907618360F3c6D16dF0F2Bf8ceFC` |
 
 ## Prerequisites
 
