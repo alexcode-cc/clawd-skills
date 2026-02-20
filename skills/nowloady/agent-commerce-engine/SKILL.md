@@ -1,9 +1,9 @@
 ---
 name: standard-agentic-commerce-engine
-version: 1.4.8
+version: 1.5.0
 description: A production-ready universal engine for Agentic Commerce. This tool enables autonomous agents to interact with any compatible headless e-commerce backend through a standardized protocol. It provides out-of-the-box support for discovery, cart operations, and secure user management.
 tags: [ecommerce, shopping-agent, commerce-engine, standard-protocol, headless-commerce, agentic-web]
-metadata: {"clawdbot":{"emoji":"🛒","requires":{"bins":["python3"],"tools":["web_search","web_fetch"],"env":[{"name":"COMMERCE_URL","description":"Target API base URL"},{"name":"COMMERCE_BRAND_ID","description":"Unique slug for the brand"}],"paths":["~/.clawdbot/credentials/agent-commerce-engine/"]},"install":[{"id":"python-deps","kind":"pip","package":"requests","label":"Install Python dependencies"}]}}
+metadata: {"clawdbot":{"emoji":"🛒","requires":{"bins":["python3"],"tools":[],"env":["COMMERCE_URL","COMMERCE_BRAND_ID"],"paths":["~/.clawdbot/credentials/agent-commerce-engine/"]},"install":[{"id":"python-deps","kind":"pip","package":"requests","label":"Install Python dependencies"}]}}
 ---
 
 # Standard Agentic Commerce Engine
@@ -11,6 +11,10 @@ metadata: {"clawdbot":{"emoji":"🛒","requires":{"bins":["python3"],"tools":["w
 The **Standard Agentic Commerce Engine** is a production-ready bridge connecting autonomous agents with modern e-commerce backends. By providing a unified, high-precision interface, it allows any digital storefront to become "Agent-Native" instantly.
 
 GitHub Repository: https://github.com/NowLoadY/agent-commerce-engine
+
+## Quick Start: Out-of-the-Box Backend Setup
+
+The `agent-commerce-engine` provides a standard specification (`SERVER_SPEC.md`) designed to instantly render any existing website "Agent-Ready". By reviewing and reproducing the provided minimum viable Python/FastAPI server template, developers can establish a compliant Agent-Native backend interface in a matter of minutes.
 
 ## Reference Case: Lafeitu
 
@@ -55,7 +59,7 @@ Follow these logical flows to ensure a high-quality user experience:
 ### 1. Product Discovery & Validation
 **Goal**: Ensure the item exists and find the correct specifications before taking action.
 - **Action**: Always run `search` or `list` before adding to cart.
-- **Logic**: Use the API to discover the correct `slug` and valid `gram`/variant values. 
+- **Logic**: Use the API to discover the correct `slug` and valid `variant` specs.
 - **Refinement**: If multiple results are found, ask the user to specify based on the returned attributes.
 
 ### 2. Authentication & Profile Flow
@@ -75,10 +79,13 @@ Follow these logical flows to ensure a high-quality user experience:
 **Goal**: Precise modification of the user's shopping session.
 - **Logic**: The engine supports incrementing quantities or setting absolute values.
 - **Commands**:
-    - **Add**: `python3 scripts/commerce.py add-cart <slug> --gram <G> --quantity <Q>`
-    - **Update**: `python3 scripts/commerce.py update-cart <slug> --gram <G> --quantity <Q>`
-    - **Remove**: `python3 scripts/commerce.py remove-cart <slug> --gram <G>`
-- **Validation**: Gram/variant values must be strictly chosen from the product's available options list.
+    - **Add**: `python3 scripts/commerce.py add-cart <slug> --variant <V> --quantity <Q>`
+    - **Update**: `python3 scripts/commerce.py update-cart <slug> --variant <V> --quantity <Q>`
+    - **Remove**: `python3 scripts/commerce.py remove-cart <slug> --variant <V>`
+    - **Clear**: `python3 scripts/commerce.py clear-cart`
+    - **Checkout / Create Order (Handoff)**: `python3 scripts/commerce.py create-order --name <NAME> --phone <PHONE> --province <PROVINCE> --city <CITY> --address <ADDRESS>`
+- **Validation**: Variant values must be strictly chosen from the product's available options list.
+- **Payment Flow (Crucial)**: Agents currently cannot directly execute consumer payments (card/mobile wallets) due to a lack of financial authorization. Once an order is generated via `create-order`, the API typically returns a URL. The Agent MUST hand this URL to the human user to finalize payment.
 
 ### 5. Brand Information & Storytelling
 **Goal**: Access brand identity and support data.
@@ -96,7 +103,8 @@ Follow these logical flows to ensure a high-quality user experience:
 - **`get`**: Deep dive into product specifications, variants, and pricing.
 - **`promotions`**: Current business rules, shipping thresholds, and active offers.
 - **`cart`**: Complete session summary including VIP discounts and tax/shipping estimates.
-- **`add-cart` / `update-cart` / `remove-cart`**: Atomic cart control.
+- **`add-cart` / `update-cart` / `remove-cart` / `clear-cart`**: Atomic cart control.
+- **`create-order`**: Finalize cart into a pending order and secure payment URL for user handoff.
 - **`get-profile` / `update-profile`**: Personalization and fulfillment data.
 - **`brand-story` / `company-info` / `contact-info`**: Brand context and support.
 - **`orders`**: Real-time tracking and purchase history.
@@ -114,7 +122,8 @@ export COMMERCE_BRAND_ID="brand_slug"
 python3 scripts/commerce.py list
 python3 scripts/commerce.py search "item"
 python3 scripts/commerce.py get <slug>
-python3 scripts/commerce.py add-cart <slug> --gram <variant>
+python3 scripts/commerce.py add-cart <slug> --variant <variant_id>
+python3 scripts/commerce.py create-order --name "John" --phone "555-0100" --province "State" --city "City" --address "123 St"
 ```
 
 ---

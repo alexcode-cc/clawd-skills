@@ -187,19 +187,26 @@ class BaseCommerceClient:
     def get_cart(self):
         return self.request("GET", "/cart")
 
-    def modify_cart(self, action: str, product_slug: str, gram: int, quantity: int = 1):
+    def modify_cart(self, action: str, product_slug: str, variant: str, quantity: int = 1):
         method = "POST" if action == "add" else "PUT"
-        return self.request(method, "/cart", json={
+        payload = {
             "product_slug": product_slug,
-            "gram": gram,
             "quantity": quantity
-        })
+        }
+        # Backward compatibility for Lafeitu's gram-based system, but support general variants
+        if str(variant).isdigit():
+            payload["gram"] = int(variant)
+        payload["variant"] = variant
 
-    def remove_from_cart(self, product_slug: str, gram: int):
-        return self.request("DELETE", "/cart", json={
-            "product_slug": product_slug,
-            "gram": gram
-        })
+        return self.request(method, "/cart", json=payload)
+
+    def remove_from_cart(self, product_slug: str, variant: str):
+        payload = {"product_slug": product_slug}
+        if str(variant).isdigit():
+            payload["gram"] = int(variant)
+        payload["variant"] = variant
+        
+        return self.request("DELETE", "/cart", json=payload)
 
     def clear_cart(self):
         return self.request("DELETE", "/cart", json={"clear_all": True})
@@ -211,5 +218,12 @@ class BaseCommerceClient:
         return self.request("GET", "/brand", params={"category": category})
 
     def list_orders(self):
-        # Compatibility fix: Lafeitu currently orders at /api/orders
-        return self.request("GET", "/orders" if "/v1" not in self.base_url else "/../orders")
+        return self.request("GET", "/orders")
+
+    def create_order(self, shipping: Dict):
+        """
+        Creates an order from the current shopping cart.
+        Requires a shipping dictionary with necessary fields like name, phone, province, city, address.
+        """
+        payload = {"shipping": shipping}
+        return self.request("POST", "/orders", json=payload)

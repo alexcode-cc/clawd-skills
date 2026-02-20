@@ -69,17 +69,17 @@ def main():
 
     add_p = subparsers.add_parser("add-cart", help="Add item to cart")
     add_p.add_argument("slug")
-    add_p.add_argument("--gram", type=int, required=True, help="Variant specification (e.g. weight in grams)")
-    add_p.add_argument("--quantity", type=int, default=1)
+    add_p.add_argument("--variant", "-v", required=True, help="Variant specification (e.g., variant ID, SKU, or gram for legacy)")
+    add_p.add_argument("--quantity", "-q", type=int, default=1)
 
     up_p = subparsers.add_parser("update-cart", help="Update item quantity in cart")
     up_p.add_argument("slug")
-    up_p.add_argument("--gram", type=int, required=True)
-    up_p.add_argument("--quantity", type=int, required=True)
+    up_p.add_argument("--variant", "-v", required=True)
+    up_p.add_argument("--quantity", "-q", type=int, required=True)
 
     rem_p = subparsers.add_parser("remove-cart", help="Remove item from cart")
     rem_p.add_argument("slug")
-    rem_p.add_argument("--gram", type=int, required=True)
+    rem_p.add_argument("--variant", "-v", required=True)
 
     subparsers.add_parser("clear-cart", help="Clear the entire cart")
 
@@ -98,6 +98,14 @@ def main():
 
     subparsers.add_parser("promotions", help="View current promotions")
     subparsers.add_parser("orders", help="List recent orders")
+
+    order_p = subparsers.add_parser("create-order", help="Create an order from cart")
+    order_p.add_argument("--name", required=True, help="Recipient name")
+    order_p.add_argument("--phone", required=True, help="Recipient phone")
+    order_p.add_argument("--province", required=True, help="Province/State")
+    order_p.add_argument("--city", required=True, help="City")
+    order_p.add_argument("--address", required=True, help="Detailed address")
+
     subparsers.add_parser("brand-story", help="Get brand narrative/story")
     subparsers.add_parser("company-info", help="Get formal company information")
     subparsers.add_parser("contact-info", help="Get official contact details")
@@ -154,13 +162,13 @@ def main():
         format_output(client.get_cart())
 
     elif args.command == "add-cart":
-        format_output(client.modify_cart("add", args.slug, args.gram, args.quantity))
+        format_output(client.modify_cart("add", args.slug, args.variant, args.quantity))
 
     elif args.command == "update-cart":
-        format_output(client.modify_cart("update", args.slug, args.gram, args.quantity))
+        format_output(client.modify_cart("update", args.slug, args.variant, args.quantity))
 
     elif args.command == "remove-cart":
-        format_output(client.remove_from_cart(args.slug, args.gram))
+        format_output(client.remove_from_cart(args.slug, args.variant))
 
     elif args.command == "clear-cart":
         format_output(client.clear_cart())
@@ -170,6 +178,16 @@ def main():
 
     elif args.command == "orders":
         format_output(client.list_orders())
+
+    elif args.command == "create-order":
+        shipping_data = {
+            "name": args.name,
+            "phone": args.phone,
+            "province": args.province,
+            "city": args.city,
+            "address": args.address
+        }
+        format_output(client.create_order(shipping_data))
 
     elif args.command == "brand-story":
         format_output(client.get_brand_info("story"))

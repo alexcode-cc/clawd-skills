@@ -1,13 +1,18 @@
 {
   "owner": "nowloady",
   "slug": "agent-commerce-engine",
-  "displayName": "Standard Agentic Commerce Engine",
+  "displayName": "Agent Commerce Engine",
   "latest": {
-    "version": "1.4.8",
-    "publishedAt": 1771475830985,
-    "commit": "https://github.com/openclaw/skills/commit/26a12092c36d5271b9b7e6a03d8a46ae126fc08f"
+    "version": "1.5.0",
+    "publishedAt": 1771574241895,
+    "commit": null
   },
   "history": [
+    {
+      "version": "1.4.8",
+      "publishedAt": 1771475830985,
+      "commit": "https://github.com/openclaw/skills/commit/26a12092c36d5271b9b7e6a03d8a46ae126fc08f"
+    },
     {
       "version": "1.4.5",
       "publishedAt": 1771472705789,
