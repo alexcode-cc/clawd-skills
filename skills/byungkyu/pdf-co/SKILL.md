@@ -1,5 +1,5 @@
 ---
-name: pdfco
+name: pdf-co
 description: |
   PDF.co API integration with managed OAuth. Convert, merge, split, edit PDFs and extract data.
   Use this skill when users want to convert PDFs to/from other formats, merge or split PDFs, add watermarks or text, extract text/tables, or parse invoices.
