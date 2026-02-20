@@ -1,0 +1,11 @@
+{
+  "owner": "robert-janssen",
+  "slug": "microsoft365",
+  "displayName": "Microsoft 365",
+  "latest": {
+    "version": "1.0.2",
+    "publishedAt": 1771541867187,
+    "commit": null
+  },
+  "history": []
+}
