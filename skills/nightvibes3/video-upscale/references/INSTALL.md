@@ -37,7 +37,7 @@ Set these to point to your tool locations:
 # Add to ~/.bashrc or ~/.zshrc
 export VIDEO_UPSCALE_REALESRGAN="$HOME/video-tools/real-video-enhancer"
 export VIDEO_UPSCALE_WAIFU2X="$HOME/video-tools/waifu2x-ncnn-vulkan/waifu2x-ncnn-vulkan-20220728-ubuntu"
-export VIDEO_UPSCALE_CACHE="$HOME/.cache/video-upscale"
+export VIDEO_UPSCALE_CACHE="$HOME/.openclaw/cache/video-upscale"
 ```
 
 ## Directory Structure

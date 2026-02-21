@@ -1,18 +1,25 @@
 ---
-name: video_upscale
+name: ai-video-upscale
+version: 1.0.0
 description: "AI-powered video upscaling with Real-ESRGAN and Waifu2x. Use when user asks to enhance, upscale, improve video quality, make HD/4K. Supports anime and real footage with progress tracking."
-metadata: {"openclaw":{"emoji":"🎬","triggers":["upscale","enhance","make HD","make 4K","improve quality"]}}
+metadata: {"openclaw":{"emoji":"🎬","triggers":["upscale","enhance","make HD","make 4K","improve quality"],"requires":["ffmpeg","bc","md5sum"]}}
+author: NightVibes3
 ---
 
-# Video Upscale Skill
+# AI Video Upscale Skill
 
 AI-powered video upscaling with progress tracking and job isolation.
 
 ## Quick Usage
 
-Set environment variables (see INSTALL.md), then:
+After installation (see below), run:
 ```bash
-./upscale_video.sh "{{filepath}}" "{{output_path}}" "{{mode}}" "{{preset}}" "{{engine}}" "{{job_id}}"
+~/video-tools/real-video-enhancer/upscale_video.sh "{{filepath}}" "{{output_path}}" "{{mode}}" "{{preset}}" "{{engine}}" "{{job_id}}"
+```
+
+Or if you added the tool paths to your PATH:
+```bash
+upscale_video.sh "{{filepath}}" "{{output_path}}" "{{mode}}" "{{preset}}" "{{engine}}" "{{job_id}}"
 ```
 
 ## Parameters

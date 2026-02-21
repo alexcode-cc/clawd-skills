@@ -22,7 +22,7 @@ fi
 
 # Config
 MAX_DURATION_MINUTES=5
-CACHE_DIR="${HOME}/.openclaw/cache/video-upscale"
+CACHE_DIR="${VIDEO_UPSCALE_CACHE:-${HOME}/.openclaw/cache/video-upscale}"
 SAFE_UPSCALE_THRESHOLD_WIDTH=1920
 
 # Paths relative to script location
