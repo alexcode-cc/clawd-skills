@@ -1,55 +1,83 @@
 ---
 name: News
-description: Build a personalized news system that learns your interests, formats, and schedule.
+slug: news
+version: 1.0.1
+homepage: https://clawic.com/skills/news
+description: Personalized news briefings that learn your interests, formats, and timing preferences.
 metadata: {"clawdbot":{"emoji":"📰","os":["linux","darwin","win32"]}}
+changelog: Added structure with Core Rules and memory system
 ---
 
-## Building Your News Profile
+## When to Use
 
-- On first interaction, ask what topics matter most — don't assume generic categories like "tech" or "business"
-- Capture specific interests, not just broad areas: "AI startups" is better than "technology", "Rust ecosystem" is better than "programming"
-- Ask about proportions when multiple interests exist — "70% AI, 20% markets, 10% general" shapes every briefing
-- Record format preferences: some users want bullet summaries, others want narrative analysis, others want headlines only
-- Note timing preferences explicitly — morning briefing, evening recap, weekly digest, or on-demand only
+User wants personalized news briefings. Agent builds a news profile, delivers formatted briefings, learns interests over time, and handles multi-source coverage.
 
-## Proactive News Delivery
+## Architecture
 
-- When timing preferences are set, initiate briefings without being asked — a good news system anticipates
-- Start each briefing with the single most important development in the user's interest areas
-- Include a "why this matters to you" line for major stories — connect news to the user's specific context
-- End briefings with: "Anything you want me to go deeper on?" — invite engagement without forcing it
-- If a major story breaks in a tracked interest area, surface it proactively even outside scheduled times
+Memory lives in `~/news/`. See `memory-template.md` for setup.
 
-## Learning and Adapting
+```
+~/news/
+├── memory.md       # Profile: interests, format, timing
+├── history.md      # Past briefings and engagement
+└── sources.md      # Trusted sources and biases
+```
 
-- Track which stories the user engages with vs skips — patterns reveal true interests better than stated preferences
-- When the user asks follow-up questions, note the topic as higher-interest
-- Periodically ask "Should I adjust your news mix?" — preferences evolve, profiles should too
-- If the user consistently ignores a category, suggest removing it rather than continuing to include it
+## Quick Reference
 
-## Delivering Individual Stories
+| Topic | File |
+|-------|------|
+| Memory setup | `memory-template.md` |
 
-- Lead with "what happened" before "why it matters" — facts first, analysis second
-- Always include when the news broke — stale news presented as fresh destroys trust
-- Cite sources by name — attribution builds credibility and lets users verify
-- Never fabricate or assume news events — if uncertain whether something happened, say so explicitly
+## Core Rules
 
-## Multi-Source and Bias
+### 1. Build Profile Before Delivering
+On first interaction, ask about:
+- Specific interests (not generic categories)
+- Proportions if multiple interests ("70% AI, 30% markets")
+- Format preference (bullets, narrative, headlines-only)
+- Timing (morning, evening, weekly, on-demand)
 
-- Present at least 2 sources when covering contested topics — single-source reporting on controversy is reckless
-- Note when sources disagree — disagreement itself is information worth surfacing
-- State known editorial leanings when relevant — helps users calibrate what they're reading
-- If a story only appears in partisan outlets, say so explicitly — absence from mainstream coverage matters
+### 2. Check Memory First
+Before every briefing, read `~/news/memory.md` for user preferences. Tailor content to their stated interests and format.
 
-## Briefing Formats
+### 3. Facts First, Analysis Second
+Lead with what happened before why it matters. Always include when news broke. Cite sources by name.
 
-- **Morning briefing:** 5-7 items max, prioritized by user interests, <2 min read time
-- **Deep dive:** Single topic, multiple angles, sources compared, 5-10 min read
-- **Weekly digest:** What actually changed this week, not daily noise aggregated
-- **Breaking alert:** One story, why it matters, what's still unknown, <30 seconds
+### 4. Multi-Source on Contested Topics
+Present at least 2 sources when covering controversy. Note when sources disagree. State editorial leanings when relevant.
 
-## Scope Boundaries
+### 5. Never Fabricate
+If uncertain whether something happened, say so. Never assume or invent news events.
 
-- Creating articles or press releases requires journalism/content creation skills
-- Deep investigative fact-checking requires specialized verification skills
-- Sending scheduled messages requires integration with notification systems
+### 6. Update Memory from Engagement
+Track which stories user engages with vs skips. Periodically suggest profile adjustments based on patterns.
+
+## Common Traps
+
+- Presenting stale news as fresh → destroys trust
+- Single-source on controversy → reckless reporting
+- Generic categories ("tech") → ask for specifics ("AI startups")
+- Overwhelming with items → morning briefings max 5-7 items
+
+## Security & Privacy
+
+**Data that stays local:**
+- User preferences in `~/news/`
+- Engagement history in `~/news/history.md`
+
+**This skill does NOT:**
+- Send data to external services
+- Access files outside `~/news/`
+- Store news content permanently
+
+## Related Skills
+Install with `clawhub install <slug>` if user confirms:
+- `summarizer` — condense long articles
+- `scrape` — extract web content
+- `reading` — reading lists and tracking
+
+## Feedback
+
+- If useful: `clawhub star news`
+- Stay updated: `clawhub sync`
