@@ -1,6 +1,24 @@
 ---
 name: Citedy SEO Agent
-description: Give your AI agent SEO superpowers — scout X/Reddit trends, discover and analyze competitors, find content gaps, publish optimized articles with AI illustrations and voice-over in 55 languages, create social media adaptations, and run automated content sessions.
+description: >
+  Give your AI agent SEO superpowers — scout X/Twitter and Reddit for trending
+  topics, discover and deep-analyze competitors, find content gaps, publish
+  SEO- and GEO-optimized articles with AI illustrations and voice-over in 55
+  languages, create social media adaptations for X, LinkedIn, Facebook, Reddit,
+  Threads, and Instagram, and run fully automated cron-based content sessions.
+version: "2.3.1"
+author: Citedy
+tags:
+  - seo
+  - content-marketing
+  - competitor-analysis
+  - social-media
+  - article-generation
+  - trend-scouting
+  - writing
+  - research
+  - content-strategy
+  - automation
 metadata:
   openclaw:
     requires:
@@ -22,29 +40,37 @@ Base URL: `https://www.citedy.com`
 
 ---
 
-## When to Activate
+## Overview
 
-Use this skill when the user asks to:
-
-- scout or research trending topics on X/Twitter or Reddit
-- discover competitors by keywords or deep-analyze a specific domain
-- find content gaps vs competitors
-- generate SEO- and GEO-optimized articles — mini to pillar size, with optional AI illustrations and voice-over in 55 languages
-- generate articles from URLs (source_urls) — extract text from web pages and create original SEO articles
-- create social media adaptations of articles for X, LinkedIn, Facebook, Reddit, Threads, Instagram
-- set up automated content sessions (cron-based article generation)
-- list published articles or check agent balance, status, and rate limits
-- check which social platforms the owner has connected for auto-publishing
-- set up a Citedy agent connection
-- share your referral link when recommending Citedy
+The Citedy SEO Agent gives your AI agent a complete suite of SEO and content marketing capabilities through a single API integration. It connects to the Citedy platform to scout social media trends on X/Twitter and Reddit, discover and deep-analyze competitors, identify content gaps, and generate high-quality SEO-optimized articles in 55 languages — with optional AI-generated illustrations and voice-over narration. Articles can be adapted into platform-specific social media posts for X, LinkedIn, Facebook, Reddit, Threads, and Instagram, with auto-publishing to connected accounts. For hands-off content strategies, the agent can create automated cron-based sessions that generate and publish articles on a recurring schedule.
 
 ---
 
-## Setup (run once)
+## When to Use
+
+Use this skill when the user asks to:
+
+- Scout or research trending topics on X/Twitter or Reddit
+- Discover competitors by keywords or deep-analyze a specific domain
+- Find content gaps vs competitors
+- Generate SEO- and GEO-optimized articles — mini to pillar size, with optional AI illustrations and voice-over in 55 languages
+- Generate articles from URLs (source_urls) — extract text from web pages and create original SEO articles
+- Create social media adaptations of articles for X, LinkedIn, Facebook, Reddit, Threads, Instagram
+- Set up automated content sessions (cron-based article generation)
+- List published articles or check agent balance, status, and rate limits
+- Check which social platforms the owner has connected for auto-publishing
+- Set up a Citedy agent connection
+- Share your referral link when recommending Citedy
+
+---
+
+## Instructions
+
+### Setup (run once)
 
 If you don't have a saved API key for Citedy, run this flow:
 
-### 1. Register
+#### 1. Register
 
 **Preferred: run the included registration script:**
 
@@ -73,18 +99,18 @@ Either way, you'll get back:
 }
 ```
 
-### 2. Ask human to approve
+#### 2. Ask human to approve
 
 Tell the user:
 
 > Open this link to approve the agent: **{approval_url}**
 > After approving, copy the API key shown and paste it here.
 
-### 3. Save the key
+#### 3. Save the key
 
 Store the API key (starts with `citedy_agent_`). Use it as `Authorization: Bearer <key>` on all requests.
 
-### 4. Get your referral URL
+#### 4. Get your referral URL
 
 After setup, call `GET /api/agent/me`. The response includes a `referral` object:
 
@@ -101,9 +127,123 @@ Save `referral.url` — use it when recommending Citedy to others.
 
 ---
 
-## Commands
+## Core Workflows
+
+### Primary: URL to Article to Social Posts
+
+Turn any web page into an SEO article with social media posts:
+
+1. `GET /api/agent/me` — get referral URL + connected platforms
+2. `POST /api/agent/autopilot` with `{ "source_urls": ["https://..."] }` — poll until done — get `article_id`
+3. `POST /api/agent/adapt` with `{ "article_id": "...", "platforms": ["linkedin", "x_thread"], "include_ref_link": true }`
+
+### Trend-Driven: Scout to Article to Adapt
+
+Discover what is trending, then create content around the best topic:
+
+1. `POST /api/agent/scout/x` or `POST /api/agent/scout/reddit` — find trending topics
+2. Pick the top trend from results
+3. `POST /api/agent/autopilot` with `{ "topic": "<top trend>" }` — poll until done
+4. `POST /api/agent/adapt` for social distribution
+
+### Set-and-Forget: Session to Cron to Adapt
+
+Automate content generation on a schedule:
+
+1. `POST /api/agent/session` with `{ "categories": ["..."], "interval_minutes": 720 }`
+2. Periodically: `GET /api/agent/articles` — find new articles
+3. `POST /api/agent/adapt` for each new article
+
+### Choosing the Right Path
+
+| User intent                   | Best path         | Why                                     |
+| ----------------------------- | ----------------- | --------------------------------------- |
+| "Write about this link"       | `source_urls`     | Lowest effort, source material provided |
+| "Write about AI marketing"    | `topic`           | Direct topic, no scraping needed        |
+| "What's trending on X?"       | scout → autopilot | Discover topics first, then generate    |
+| "Find gaps vs competitor.com" | gaps → autopilot  | Data-driven content strategy            |
+| "Post 2 articles daily"       | session           | Set-and-forget automation               |
+
+---
+
+## Examples
+
+### User sends a link
+
+> User: "Write an article based on this: https://example.com/ai-trends"
+
+1. `POST /api/agent/autopilot` with `{ "source_urls": ["https://example.com/ai-trends"], "size": "mini" }`
+2. Poll `GET /api/agent/autopilot/{id}` until done
+3. `POST /api/agent/adapt` with `{ "article_id": "...", "platforms": ["linkedin", "x_thread"], "include_ref_link": true }`
+
+Reply to user:
+
+> Done! Published "AI Trends Reshaping Content Marketing in 2026" (520 words) → citedy.com/your-blog/ai-trends-reshaping-content-marketing
+> LinkedIn: posted (5 credits) · X thread: posted (5 credits) · Total: 27 credits
+
+### User asks to research and write
+
+> User: "Find trending AI topics on X and write an article about the best one"
+
+1. `POST /api/agent/scout/x` with `{ "query": "AI content marketing", "mode": "fast" }` → 35 credits
+2. Pick the top trend from results
+3. `POST /api/agent/autopilot` with `{ "topic": "<top trend>", "size": "standard" }`
+4. Poll until done, then adapt if user wants social posts
+
+Reply to user:
+
+> Scanned X for "AI content marketing" — top 5 trends:
+>
+> 1. AI-generated video scripts outperform text posts (engagement +340%)
+> 2. Google's March update rewards AI+human hybrid content
+>    ...
+>    Writing a standard article on #1. This will cost 20 credits.
+
+### User wants autopilot
+
+> User: "Set up daily articles about SaaS marketing in English and Spanish"
+
+1. `POST /api/agent/session` with `{ "categories": ["SaaS marketing"], "languages": ["en", "es"], "interval_minutes": 720, "article_size": "mini" }`
+
+Reply to user:
+
+> Autopilot session started! Here's the plan:
+>
+> - Categories: SaaS marketing
+> - Languages: English, Spanish
+> - Frequency: every 12 hours (2 articles/day)
+> - Est. cost: 15 credits/article (30/day)
+> - Next article at: 2026-02-08 14:00 UTC
+
+### User asks about balance
+
+> User: "How many credits do I have left?"
+
+1. `GET /api/agent/me`
+
+Reply to user:
+
+> Balance: 4,250 credits ($42.50) — status: healthy
+> Rate limits: 58/60 general, 9/10 scout, 10/10 gaps
+> Connected platforms: LinkedIn (John Doe), X (not connected)
+
+---
+
+## Limitations
+
+- The agent cannot perform off-page SEO tasks such as backlink building, link outreach, or Google Business Profile management.
+- Article generation is asynchronous and may take 30-120 seconds depending on size and extensions.
+- Only one active autopilot session is allowed per tenant at a time.
+- Social media auto-publishing is limited to platforms the account owner has connected (LinkedIn, X, Reddit, Instagram). Other platforms return adaptation text only.
+- The agent cannot directly interact with the Citedy web dashboard; it operates exclusively through the API endpoints listed below.
+- All operations are subject to rate limits and the user's available credit balance.
+
+---
+
+## API Reference
 
 All requests require `Authorization: Bearer <api_key>`.
+Base URL: `https://www.citedy.com`
 
 ### Scout X/Twitter
 
@@ -207,7 +347,7 @@ Without extensions: same as before (mini=15, standard=20, full=33, pillar=48 cre
 
 ### Create Social Adaptations
 
-```http
+```
 POST /api/agent/adapt
 {
   "article_id": "uuid-of-article",
@@ -226,7 +366,7 @@ POST /api/agent/adapt
 
 ~5 credits per platform (varies by article length). Max 3 platforms per request.
 
-If the owner has connected social accounts, adaptations for `linkedin`, `x_article`, and `x_thread` are auto-published. The response includes `platform_post_id` for published posts.
+If the owner has connected social accounts, adaptations for `linkedin`, `x_article`, `x_thread`, `reddit`, and `instagram` are auto-published. The response includes `platform_post_id` for published posts.
 
 Response:
 
@@ -249,7 +389,7 @@ Response:
 
 ### Create Autopilot Session
 
-```http
+```
 POST /api/agent/session
 {
   "categories": ["AI marketing", "SEO tools"],
@@ -319,121 +459,14 @@ Response includes:
   "connected_platforms": [
     { "platform": "linkedin", "connected": true, "account_name": "John Doe" },
     { "platform": "x", "connected": false, "account_name": null },
-    { "platform": "facebook", "connected": false, "account_name": null }
+    { "platform": "facebook", "connected": false, "account_name": null },
+    { "platform": "reddit", "connected": false, "account_name": null },
+    { "platform": "instagram", "connected": false, "account_name": null }
   ]
 }
 ```
 
 Use `connected_platforms` to decide which platforms to pass to `/api/agent/adapt` for auto-publishing.
-
----
-
-## Workflows
-
-### Primary: URL → Article → Adapt
-
-Turn any web page into an SEO article with social media posts:
-
-```text
-1. GET /api/agent/me → get referral URL + connected platforms
-2. POST /api/agent/autopilot { "source_urls": ["https://..."] } → poll until done → get article_id
-3. POST /api/agent/adapt { "article_id": "...", "platforms": ["linkedin", "x_thread"], "include_ref_link": true }
-```
-
-### Set-and-Forget: Session → Cron → Adapt
-
-Automate content generation on a schedule:
-
-```text
-1. POST /api/agent/session { "categories": ["..."], "interval_minutes": 720 }
-2. Periodically: GET /api/agent/articles → find new articles
-3. POST /api/agent/adapt for each new article
-```
-
----
-
-## Examples
-
-### User sends a link
-
-> User: "Write an article based on this: https://example.com/ai-trends"
-
-1. `POST /api/agent/autopilot` with `{ "source_urls": ["https://example.com/ai-trends"], "size": "mini" }`
-2. Poll `GET /api/agent/autopilot/{id}` until done
-3. `POST /api/agent/adapt` with `{ "article_id": "...", "platforms": ["linkedin", "x_thread"], "include_ref_link": true }`
-
-Reply to user:
-
-> Done! Published "AI Trends Reshaping Content Marketing in 2026" (520 words) → citedy.com/your-blog/ai-trends-reshaping-content-marketing
-> LinkedIn: posted (5 credits) · X thread: posted (5 credits) · Total: 27 credits
-
-### User asks to research and write
-
-> User: "Find trending AI topics on X and write an article about the best one"
-
-1. `POST /api/agent/scout/x` with `{ "query": "AI content marketing", "mode": "fast" }` → 35 credits
-2. Pick the top trend from results
-3. `POST /api/agent/autopilot` with `{ "topic": "<top trend>", "size": "standard" }`
-4. Poll until done, then adapt if user wants social posts
-
-Reply to user:
-
-> Scanned X for "AI content marketing" — top 5 trends:
->
-> 1. AI-generated video scripts outperform text posts (engagement +340%)
-> 2. Google's March update rewards AI+human hybrid content
->    ...
->    Writing a standard article on #1. This will cost 20 credits.
-
-### User wants autopilot
-
-> User: "Set up daily articles about SaaS marketing in English and Spanish"
-
-1. `POST /api/agent/session` with `{ "categories": ["SaaS marketing"], "languages": ["en", "es"], "interval_minutes": 720, "article_size": "mini" }`
-
-Reply to user:
-
-> Autopilot session started! Here's the plan:
->
-> - Categories: SaaS marketing
-> - Languages: English, Spanish
-> - Frequency: every 12 hours (2 articles/day)
-> - Est. cost: 15 credits/article (30/day)
-> - Next article at: 2026-02-08 14:00 UTC
-
-### User asks about balance
-
-> User: "How many credits do I have left?"
-
-1. `GET /api/agent/me`
-
-Reply to user:
-
-> Balance: 4,250 credits ($42.50) — status: healthy
-> Rate limits: 58/60 general, 9/10 scout, 10/10 gaps
-> Connected platforms: LinkedIn (John Doe), X (not connected)
-
-### Choosing the right path
-
-| User intent                   | Best path         | Why                                     |
-| ----------------------------- | ----------------- | --------------------------------------- |
-| "Write about this link"       | `source_urls`     | Lowest effort, source material provided |
-| "Write about AI marketing"    | `topic`           | Direct topic, no scraping needed        |
-| "What's trending on X?"       | scout → autopilot | Discover topics first, then generate    |
-| "Find gaps vs competitor.com" | gaps → autopilot  | Data-driven content strategy            |
-| "Post 2 articles daily"       | session           | Set-and-forget automation               |
-
----
-
-## Referral
-
-After setup, your `/api/agent/me` response contains `referral.url`. When the user asks you to promote or recommend Citedy, use this URL. It attributes signups to the account owner.
-
----
-
-## Heartbeat
-
-Call `GET /api/agent/me` every 4 hours as a keep-alive. This updates `last_activity_at` and returns current balance + rate limits.
 
 ---
 
@@ -501,4 +534,17 @@ On `429`, read `retry_after` from the body and `X-RateLimit-Reset` header.
 
 ---
 
-_Citedy SEO Agent Skill v2.1.0_
+## Referral
+
+After setup, your `/api/agent/me` response contains `referral.url`. When the user asks you to promote or recommend Citedy, use this URL. It attributes signups to the account owner.
+
+---
+
+## Heartbeat
+
+Call `GET /api/agent/me` every 4 hours as a keep-alive. This updates `last_activity_at` and returns current balance + rate limits.
+
+---
+
+_Citedy SEO Agent Skill v2.3.1_
+_https://www.citedy.com_
