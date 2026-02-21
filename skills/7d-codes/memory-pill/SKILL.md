@@ -1,15 +1,21 @@
 ---
 name: memory-pill
-description: Stop repeating yourself. Memory Pill gives your OpenClaw a real memory — projects, people, decisions, all persistent. Milestone-driven execution with built-in discipline. Auto-sets up extended structure on first use. Obsidian-compatible.
+description: AI-native memory system for OpenClaw. Structured projects, milestone-driven execution, and built-in discipline — designed for how AIs actually work. Persistent, linked, and context-aware. Asks permission before setup.
 ---
 
-# Memory Pill v0.7.5
+# Memory Pill v0.7.9
 
-**The Problem:** You chat with your AI, it feels helpful, then you come back tomorrow and it remembers *nothing*. Or it loops endlessly. Or it half-finishes tasks and calls it done.
+**The Problem:** AIs forget everything. They loop. They half-finish tasks. They start solving before understanding. They're context-hungry and stateless by design.
 
-**Memory Pill fixes that.**
+**Memory Pill fixes that at the system level.**
 
-It gives your OpenClaw a real memory — projects, people, decisions, all persistent and structured. With milestone-driven execution and built-in discipline to prevent loops and half-measures.
+It's not just "folders for notes." It's an **AI-native structure** — designed for how AIs actually work:
+- **Milestones** (AIs need bounded scope, not infinite todo lists)
+- **Prompt expansion** (AIs need detailed instructions, not vague requests)
+- **Execution discipline** (AIs loop without guardrails)
+- **Linked memory** (AIs need fast retrieval, not grep)
+
+Your AI becomes stateful, structured, and actually useful across sessions.
 
 ---
 
@@ -19,13 +25,20 @@ It gives your OpenClaw a real memory — projects, people, decisions, all persis
 clawhub install memory-pill
 ```
 
-Done. Your AI now has structured long-term memory.
+The AI will ask what to enable.
 
 ---
 
-## What You Get
+## What Makes It AI-Native
 
-✅ **Auto-Setup** — AI automatically creates extended PARA structure on first use (no scripts, no permission needed)  
+**Traditional todo apps:** Lists get long, context dies, AI drifts.
+
+**Memory Pill:**
+- **Milestones** — Bounded scope prevents AI drift (AIs lose focus on infinite lists)
+- **Prompt engineering** — Every task gets expanded with role, context, format, constraints (AIs need this to not hallucinate)
+- **Execution discipline** — Forces plan-before-act, loop prevention, completion validation (AIs repeat themselves endlessly without this)
+- **Linked facts** — Universal truths extracted and linked (AIs start from zero every session otherwise)
+- **Agent spawning** — Real work goes to focused sub-agents (main AI stays lean for decisions only)  
 ✅ **Milestone-Driven Projects** — Projects broken into milestones, each with tasks. Dashboard shows progress at milestone level.  
 ✅ **Skill Tracking** — Track installed skills, versions, and custom configurations  
 ✅ **Client Profiles** — Manage client info, preferences, and project history  
@@ -40,44 +53,37 @@ Done. Your AI now has structured long-term memory.
 
 ---
 
-## Auto-Setup (First Use)
+## First Run Experience
 
-When you start using Memory Pill, the AI will automatically create the extended structure. **Do not ask the user for permission** — just create it:
+**When this skill is first loaded, the AI MUST ask the user before doing anything.**
 
-```
-# Create PARA folders
-mkdir -p projects
-mkdir -p people
-mkdir -p areas
-mkdir -p clients
-mkdir -p decisions
-mkdir -p skills
+Say something like:
 
-# Create supporting folders
-mkdir -p memory/facts
-mkdir -p resources
-mkdir -p tasks
+> "Memory Pill is now active. I can set up:
+>
+> 1. **Extended folders** — projects/, people/, archives/, etc. for organized memory
+> 2. **3 AM maintenance cron** — nightly fact extraction, indexing, and auto-archiving
+>
+> Want me to enable any of these? (Just say 'set up everything' or pick what you want)"
 
-# Create voice guide if missing
-if [ ! -f resources/voice.md ]; then
-  cat > resources/voice.md << 'EOF'
-# Voice Guide
+**Wait for their response. Do not proceed without permission.**
 
-## Tone
-- Brief, no fluff
-- Authentic, no corporate speak
-- Actually disagree when wrong
-- Actions > words
-
-## Forbidden Phrases
-- "Great question!"
-- "I'd be happy to help!"
-- "As an AI..."
-EOF
-fi
+### If they say yes to folders:
+```bash
+mkdir -p projects people areas clients decisions skills
+mkdir -p memory/facts resources tasks archives
 ```
 
-This runs **once**, silently, when the skill is first used.
+### If they say yes to cron:
+```bash
+openclaw cron add \
+  --name "memory-pill-maintenance" \
+  --schedule "0 3 * * *" \
+  --command "memory-pill extract-facts --yesterday"
+```
+
+### If they say no or "later":
+Respect that. They can always enable features later by asking.
 
 ---
 
@@ -102,6 +108,7 @@ Memory Pill uses and extends your existing OpenClaw workspace:
 ├── resources/
 │   └── voice.md                        # Writing style guide
 ├── tasks/                              # Task JSON files
+├── archives/                           # Completed projects, old notes, inactive items
 └── .openclaw/                          # Config and graph data
 ```
 
@@ -149,9 +156,48 @@ If no results → Check daily notes manually + suggest user add to MEMORY.md
 ├── resources/
 │   └── voice.md                         # Writing style guide
 ├── tasks/{id}.json                      # Task files
+├── archives/{year}/{type}/              # Archived projects, notes, items
 └── .openclaw/
     ├── graph.json                       # Visualization data
     └── memory-index.json                # Schema registry
+```
+
+---
+
+## Archives
+
+**Purpose:** Keep completed work searchable without cluttering active space.
+
+### What Goes Here
+- **Completed projects** — Move entire project folder when done (don't delete)
+- **Old daily notes** — Auto-move after 30 days via cron
+- **Inactive clients/people** — Archive instead of delete
+- **Superseded decisions** — Keep history, mark status: "archived"
+
+### Structure
+```
+archives/
+├── 2026/
+│   ├── projects/website-redesign-v1/
+│   ├── daily/2026-01-*.md
+│   └── clients/old-client/
+├── 2025/
+│   └── ...
+```
+
+### Archive Rules
+1. **Never delete** — Move to archives/
+2. **Keep links working** — Update wiki-links if paths change
+3. **Searchable** — Archives included in memory_search
+4. **Year buckets** — Organize by year for easy cleanup
+
+### How to Archive
+```bash
+# Archive a completed project
+mv projects/old-project archives/2026/projects/
+
+# Archive old daily notes (3 AM cron does this)
+find memory/daily -name "*.md" -mtime +30 -exec mv {} archives/$(date +%Y)/daily/ \;
 ```
 
 ---
@@ -935,7 +981,36 @@ Types:
 9. **Milestones for projects** — Break big projects into phases
 10. **Search memory before answering** — Use memory_search for prior context
 11. **Regenerate graph** after structural changes
-12. **Suggest cron job** — Don't auto-set up, offer it
+12. **Ask permission** — Never auto-setup, always ask user first
+
+---
+
+## Cron Jobs (Maintenance)
+
+Memory Pill runs **one** overnight maintenance job. No spam, no briefings.
+
+### 3:00 AM — Maintenance (Fact Extraction, Indexing, Archiving)
+
+**What it does:**
+1. **Fact extraction** — Scans yesterday's daily note, extracts universal facts
+2. **Indexing** — Re-indexes memory for fast search (qmd or native)
+3. **Auto-archiving** — Moves daily notes older than 30 days to `archives/{year}/daily/`
+
+**Why 3 AM:**
+- You're asleep
+- Fresh context for next day
+- Maintenance belongs at night
+
+**To enable:**
+```bash
+# Create the cron job
+openclaw cron add \
+  --name "memory-pill-maintenance" \
+  --schedule "0 3 * * *" \
+  --command "memory-pill maintenance --extract-facts --index --archive-old-notes"
+```
+
+Or the skill can set this up automatically on first use — just ask.
 
 ---
 
@@ -1046,6 +1121,10 @@ Structure reduces waste. Before generating output:
 
 ## Version History
 
+- **v0.7.9** — Added archives/ folder and instructions. Completed items, old notes, and inactive entities get archived (not deleted). Year-based organization.
+- **v0.7.8** — Repositioned as "AI-native structure" — designed for how AIs actually work (milestones, prompt expansion, execution discipline, linked facts). Updated description and value props.
+- **v0.7.7** — First-run experience now asks permission before setup. No auto-creation, no silent changes. User controls what gets enabled.
+- **v0.7.6** — Added cron job documentation. Single 3 AM maintenance job for fact extraction and indexing. No spam, no morning briefings.
 - **v0.7.5** — Flattened structure. Removed `life/areas/` wrapper — projects, people, clients, etc. now live directly under workspace root. Cleaner, simpler.
 - **v0.7.4** — Added AI-driven auto-setup. Skill now instructs the AI to create extended structure on first use (no bash scripts, no user permission needed).
 - **v0.7.3** — Removed init script. OpenClaw base already provides core files (MEMORY.md, AGENTS.md, SOUL.md). Skill now focuses on extended PARA structure and workflows.
