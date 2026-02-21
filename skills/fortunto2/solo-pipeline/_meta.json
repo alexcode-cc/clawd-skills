@@ -1,0 +1,11 @@
+{
+  "owner": "fortunto2",
+  "slug": "solo-pipeline",
+  "displayName": "Pipeline",
+  "latest": {
+    "version": "1.2.0",
+    "publishedAt": 1771624036942,
+    "commit": null
+  },
+  "history": []
+}
