@@ -715,7 +715,17 @@ Real scheduled events are no longer allowed. The platform now focuses exclusivel
 
 **Detection:** Web search finds actual event dates/confirmations → REJECTED
 
-### 2. Personal Knowledge / Scams (REJECTED)
+### 2. Real-World Predictions & Speculation (REJECTED)
+- "Which robotics company will IPO first in 2025?" ❌ (real companies, real outcome)
+- "Will Bitcoin hit $100k by March?" ❌ (real asset, real price target)
+- "Will SpaceX reach Mars before Blue Origin?" ❌ (real companies, real programs)
+- "Will Taylor Swift release a new album in 2026?" ❌ (real person, real future event)
+- "Will AI replace most jobs by 2030?" ❌ (real-world prediction)
+
+**Detection:** Question predicts a real-world outcome that could be verified by waiting → REJECTED.
+The test: "Could this be answered by just observing the real world?" If yes → REJECTED.
+
+### 3. Personal Knowledge / Scams (REJECTED)
 - "Will MY goldfish graduate college?" ❌ (possessive + private subject)
 - "Will I eat pizza tomorrow?" ❌ (creator controls own actions)
 - "Will my startup succeed?" ❌ (private information)
@@ -723,7 +733,7 @@ Real scheduled events are no longer allowed. The platform now focuses exclusivel
 
 **Detection:** Uses "my", "our", "I" pronouns or private subjects → REJECTED
 
-### 3. Science/Math/Fact-Based (REJECTED)
+### 4. Science/Math/Fact-Based (REJECTED)
 - "Would 2+2 equal 5?" ❌ (math has a correct answer)
 - "Would a human survive in space without a suit?" ❌ (science has a correct answer)
 - "Is the Earth flat?" ❌ (established scientific fact)
@@ -731,7 +741,7 @@ Real scheduled events are no longer allowed. The platform now focuses exclusivel
 
 **Detection:** Question has an objectively correct answer based on science, math, or established fact → REJECTED. These are one-sided by definition — there's no genuine debate.
 
-### 4. Trivially Obvious (REJECTED)
+### 5. Trivially Obvious (REJECTED)
 - "Would a goldfish graduate college?" ❌ (obviously NO, zero debate)
 - "Would humans need oxygen to breathe?" ❌ (obviously YES, no analysis)
 - "Would 2+2 equal 4?" ❌ (trivially true, no reasoning)
@@ -758,6 +768,17 @@ Three similar questions, different outcomes:
    - Can argue: Neither plays chess, but hamster has better paws/dexterity
    - Can counter-argue: Goldfish has superior memory (3-month memory myth debunked)
    - Genuine debate possible despite silly premise
+
+## The Real-World Test
+
+Key distinction: **real people/companies in hypothetical scenarios** vs **real-world predictions**.
+
+- **"Would Elon Musk survive on Mars alone?"** ✅ — Hypothetical scenario, can never actually happen
+- **"Will SpaceX reach Mars before Blue Origin?"** ❌ — Real-world prediction, just wait and see
+- **"Would Steve Jobs or Bill Gates win a debate?"** ✅ — Can never happen (Jobs deceased), thought experiment
+- **"Which robotics company will IPO first in 2025?"** ❌ — Real companies, real outcome you could observe
+
+**The test:** "Could this question be answered by just waiting and observing the real world?" If yes → REJECT. If no (requires fictional/hypothetical analysis) → APPROVE.
 
 ---
 
