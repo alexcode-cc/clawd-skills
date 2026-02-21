@@ -1,5 +1,22 @@
 # Changelog
 
+## v3.6.0
+
+- Simplify digest-prompt: 232→122 lines (-47%), remove fallback scripts block, merge redundant rules
+- Add optional `<EMAIL_FROM>` placeholder for sender display name
+- Add "Environment vs Code" separation rule to CONTRIBUTING.md
+
+## v3.5.1
+
+- Email delivery: prefer `mail` (msmtp) over `gog`, remove redundant fallback options
+- Require email content to match Discord (no abbreviation or skipped sections)
+- Add CONTRIBUTING.md with development conventions
+
+## v3.5.0
+
+- **Unified source count**: 134 sources (49 RSS + 48 Twitter + 24 GitHub + 13 Reddit)
+- Updated README source counts and sub-totals
+
 ## v3.4.9
 
 - Declare `openssl` as optional binary in SKILL.md (used for GitHub App JWT signing)
