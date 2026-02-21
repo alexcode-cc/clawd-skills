@@ -1,0 +1,11 @@
+{
+  "owner": "sm0ls",
+  "slug": "taskflow",
+  "displayName": "TaskFlow",
+  "latest": {
+    "version": "1.0.2",
+    "publishedAt": 1771652246155,
+    "commit": null
+  },
+  "history": []
+}
