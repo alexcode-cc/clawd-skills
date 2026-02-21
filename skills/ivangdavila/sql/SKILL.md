@@ -1,53 +1,181 @@
 ---
 name: SQL
-description: Write efficient queries avoiding common performance traps and subtle bugs.
-metadata: {"clawdbot":{"emoji":"🗄️","os":["linux","darwin","win32"]}}
+slug: sql
+version: 1.0.1
+changelog: "Added SQL Server support, schema design patterns, query patterns (CTEs, window functions), operations guide (backup, monitoring, replication)"
+homepage: https://clawic.com/skills/sql
+description: Master relational databases with SQL. Schema design, queries, performance, migrations for PostgreSQL, MySQL, SQLite, SQL Server.
+metadata: {"clawdbot":{"emoji":"🗄️","requires":{"anyBins":["sqlite3","psql","mysql","sqlcmd"]},"os":["linux","darwin","win32"]}}
 ---
 
-# SQL Gotchas
+# SQL
 
-## NULL Traps
-- `NOT IN (subquery)` returns empty if subquery contains any NULL — use `NOT EXISTS` instead
-- `NULL = NULL` evaluates to NULL, not true — use `IS NULL`, never `= NULL`
-- `COUNT(column)` excludes NULLs, `COUNT(*)` counts all rows — behavior differs silently
-- Arithmetic with NULL produces NULL — `5 + NULL` is NULL, not 5
-- `COALESCE(col, 0)` in WHERE prevents index usage on `col` — filter NULLs separately
+Master relational databases from the command line. Covers SQLite, PostgreSQL, MySQL, and SQL Server with battle-tested patterns for schema design, querying, migrations, and operations.
 
-## Index Killers
-- Functions on indexed columns disable index — `WHERE YEAR(date_col) = 2024` scans full table
-- Implicit type conversion prevents index — `WHERE varchar_col = 123` won't use index
-- `LIKE '%term'` can't use index — only `LIKE 'term%'` uses index
-- `OR` conditions often skip index — rewrite as `UNION` when performance matters
-- Composite index `(a, b)` won't help queries filtering only on `b` — leftmost column must be in query
+## When to Use
 
-## Performance Traps
-- `SELECT *` in subqueries forces unnecessary data retrieval — select only needed columns
-- `ORDER BY` on large result sets is expensive — add `LIMIT` or ensure index covers order
-- `DISTINCT` is often a sign of bad join — fix the join instead of deduping
-- Correlated subqueries run once per outer row — rewrite as JOIN when possible
-- `EXISTS` stops at first match, `IN` evaluates all — EXISTS faster for large subqueries
+Working with relational databases—designing schemas, writing queries, building migrations, optimizing performance, or managing backups. Applies to SQLite, PostgreSQL, MySQL, and SQL Server.
 
-## Join Gotchas
-- LEFT JOIN with WHERE condition on right table becomes INNER JOIN — put condition in ON clause instead
-- Self-join without proper aliases causes ambiguous column errors — always alias both instances
-- Cartesian product from missing JOIN condition multiplies rows — usually a bug, rarely intentional
-- Multiple LEFT JOINs can multiply rows unexpectedly — aggregate before joining or use subqueries
+## Quick Reference
 
-## Aggregation Bugs
-- Selecting non-grouped columns silently picks random values in MySQL — explicit error in other databases
-- HAVING without GROUP BY is valid but confusing — filters on whole result set aggregate
-- Window functions execute after WHERE — can't filter on window function result directly
-- `AVG(integer_column)` truncates in some databases — cast to decimal first
+| Topic | File |
+|-------|------|
+| Query patterns | `patterns.md` |
+| Schema design | `schemas.md` |
+| Operations | `operations.md` |
 
-## Data Modification Dangers
-- `UPDATE` or `DELETE` without `WHERE` affects all rows — no confirmation, instant disaster
-- `UPDATE ... SET col = (SELECT ...)` sets NULL if subquery returns empty — use COALESCE or validate
-- Cascading deletes via foreign keys can delete more than expected — check constraints before bulk delete
-- `TRUNCATE` is not transactional in most databases — can't rollback
+## Core Rules
+
+### 1. Choose the Right Database
+
+| Use Case | Database | Why |
+|----------|----------|-----|
+| Local/embedded | SQLite | Zero setup, single file |
+| General production | PostgreSQL | Best standards, JSONB, extensions |
+| Legacy/hosting | MySQL | Wide hosting support |
+| Enterprise/.NET | SQL Server | Windows integration |
+
+### 2. Always Parameterize Queries
+
+```python
+# ❌ NEVER
+cursor.execute(f"SELECT * FROM users WHERE id = {user_id}")
+
+# ✅ ALWAYS
+cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+```
+
+### 3. Index Your Filters
+
+Any column in WHERE, JOIN ON, or ORDER BY on large tables needs an index.
+
+### 4. Use Transactions
+
+```sql
+BEGIN;
+UPDATE accounts SET balance = balance - 100 WHERE id = 1;
+UPDATE accounts SET balance = balance + 100 WHERE id = 2;
+COMMIT;
+```
+
+### 5. Prefer EXISTS Over IN
+
+```sql
+-- ✅ Faster (stops at first match)
+SELECT * FROM orders o WHERE EXISTS (
+  SELECT 1 FROM users u WHERE u.id = o.user_id AND u.active
+);
+```
+
+---
+
+## Quick Start
+
+### SQLite
+
+```bash
+sqlite3 mydb.sqlite                              # Create/open
+sqlite3 mydb.sqlite "SELECT * FROM users;"       # Query
+sqlite3 -header -csv mydb.sqlite "SELECT *..." > out.csv
+sqlite3 mydb.sqlite "PRAGMA journal_mode=WAL;"   # Better concurrency
+```
+
+### PostgreSQL
+
+```bash
+psql -h localhost -U myuser -d mydb              # Connect
+psql -c "SELECT NOW();" mydb                     # Query
+psql -f migration.sql mydb                       # Run file
+\dt  \d+ users  \di+                             # List tables/indexes
+```
+
+### MySQL
+
+```bash
+mysql -h localhost -u root -p mydb               # Connect
+mysql -e "SELECT NOW();" mydb                    # Query
+```
+
+### SQL Server
+
+```bash
+sqlcmd -S localhost -U myuser -d mydb            # Connect
+sqlcmd -Q "SELECT GETDATE()"                     # Query
+sqlcmd -S localhost -d mydb -E                   # Windows auth
+```
+
+---
+
+## Common Traps
+
+### NULL Traps
+- `NOT IN (subquery)` returns empty if subquery has NULL → use `NOT EXISTS`
+- `NULL = NULL` is NULL, not true → use `IS NULL`
+- `COUNT(column)` excludes NULLs, `COUNT(*)` counts all
+
+### Index Killers
+- Functions on columns → `WHERE YEAR(date) = 2024` scans full table
+- Type conversion → `WHERE varchar_col = 123` skips index
+- `LIKE '%term'` can't use index → only `LIKE 'term%'` works
+- Composite `(a, b)` won't help filtering only on `b`
+
+### Join Traps
+- LEFT JOIN with WHERE on right table becomes INNER JOIN
+- Missing JOIN condition = Cartesian product
+- Multiple LEFT JOINs can multiply rows
+
+---
+
+## EXPLAIN
+
+```sql
+-- PostgreSQL
+EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM orders WHERE user_id = 5;
+
+-- SQLite
+EXPLAIN QUERY PLAN SELECT * FROM orders WHERE user_id = 5;
+```
+
+**Red flags:**
+- `Seq Scan` on large tables → needs index
+- `Rows Removed by Filter` high → index doesn't cover filter
+- Actual vs estimated rows differ → run `ANALYZE tablename;`
+
+---
+
+## Index Strategy
+
+```sql
+-- Composite index (equality first, range last)
+CREATE INDEX idx_orders ON orders(user_id, status);
+
+-- Covering index (avoids table lookup)
+CREATE INDEX idx_orders ON orders(user_id) INCLUDE (total);
+
+-- Partial index (smaller, faster)
+CREATE INDEX idx_pending ON orders(user_id) WHERE status = 'pending';
+```
+
+---
 
 ## Portability
-- `LIMIT` syntax differs: MySQL/Postgres use `LIMIT`, SQL Server uses `TOP`, Oracle uses `FETCH FIRST`
-- `ILIKE` (case-insensitive) is Postgres-only — use `LOWER()` for portability
-- Boolean handling varies — MySQL uses 1/0, Postgres has true/false, SQL Server has no boolean
-- `UPSERT` syntax: Postgres `ON CONFLICT`, MySQL `ON DUPLICATE KEY`, SQL Server `MERGE`
-- String concatenation: `||` in Postgres/Oracle, `+` in SQL Server, `CONCAT()` everywhere
+
+| Feature | PostgreSQL | MySQL | SQLite | SQL Server |
+|---------|------------|-------|--------|------------|
+| LIMIT | LIMIT n | LIMIT n | LIMIT n | TOP n |
+| UPSERT | ON CONFLICT | ON DUPLICATE KEY | ON CONFLICT | MERGE |
+| Boolean | true/false | 1/0 | 1/0 | 1/0 |
+| Concat | \|\| | CONCAT() | \|\| | + |
+
+---
+
+## Related Skills
+Install with `clawhub install <slug>` if user confirms:
+- `prisma` — Node.js ORM
+- `sqlite` — SQLite-specific patterns
+- `analytics` — data analysis queries
+
+## Feedback
+
+- If useful: `clawhub star sql`
+- Stay updated: `clawhub sync`
