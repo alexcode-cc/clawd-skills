@@ -1,84 +1,93 @@
-# Hiring & Onboarding
+# Hiring & Onboarding Guide
 
-## Job Description Generation
+## Job Description Best Practices
 
-When creating a job posting:
-1. Ask: role title, level, department, key responsibilities, must-have skills
-2. Draft JD avoiding prohibited language (see Compliance)
-3. Include: location/remote policy, comp band if approved, benefits highlights
-4. Scan for age/gender/disability bias before posting
+### Required Elements
+- Role title and level
+- Department and reporting structure
+- Key responsibilities (5-7 bullets)
+- Must-have skills vs nice-to-have
+- Location/remote policy
+- Comp band (if approved to share)
 
-**Prohibited phrases:**
-- "young and energetic" (age discrimination)
-- "native English speaker" (national origin)
-- "digital native" (age proxy)
-- "able-bodied" (disability)
+### Prohibited Phrases (Legal Risk)
+- "young and energetic" → age discrimination
+- "native English speaker" → national origin
+- "digital native" → age proxy
+- "able-bodied" → disability
+- "culture fit" → can mask bias
 
-## Candidate Screening
+### Inclusive Language Tips
+- Use gender-neutral pronouns
+- Focus on skills, not years of experience
+- Avoid unnecessary degree requirements
+- List essential functions for ADA compliance
 
-Autonomous actions:
-- Pre-screen against must-have criteria
-- Schedule qualified candidates
-- Send templated rejections to non-fits
-- Track candidates through pipeline stages
+## Screening Checklist
 
-Escalate to human:
-- Final round scheduling
-- Reference check results
-- Any candidate who asks about accommodations
+### Must-Have Verification
+- [ ] Meets minimum qualifications
+- [ ] Legal work authorization
+- [ ] Salary expectations aligned
+- [ ] Location/remote compatible
 
-## Offer Generation
+### Red Flags to Note
+- Unexplained employment gaps (ask, don't assume)
+- Frequent short tenures (understand context)
+- Mismatched expectations
+- Reference concerns
 
-Required inputs:
-- Candidate name and role
-- Base salary (must be within approved band)
+### Interview Best Practices
+- Structured questions (same for all candidates)
+- Multiple interviewers to reduce bias
+- Score against defined criteria
+- Document feedback immediately
+
+## Offer Process
+
+### Pre-Offer Checklist
+- [ ] Comp within approved band
+- [ ] Headcount approved
+- [ ] Start date feasible
+- [ ] Background check requirements clear
+
+### Offer Letter Must Include
+- Position title and department
+- Base salary
 - Equity grant (if applicable)
 - Start date
-- Signing bonus (if any)
+- At-will statement (where applicable)
+- Contingencies (background check, etc.)
 
-Generate:
-- Offer letter from approved template
-- Equity summary sheet
-- Benefits overview
-- Background check authorization
+### Never Do
+- ❌ Verbal offers without written follow-up
+- ❌ Promises outside written offer
+- ❌ Send offer without final approval
+- ❌ Discuss other candidates' offers
 
-**Never** send offer without human approval on final terms.
+## Onboarding Checklist
 
-## Onboarding Automation
+### Day -7 (Before Start)
+- [ ] Welcome email with logistics
+- [ ] Equipment ordered
+- [ ] System accounts requested
+- [ ] Buddy assigned
+- [ ] First week schedule drafted
 
-Day -7 (before start):
-- Send welcome email with logistics
-- Order equipment
-- Create accounts: email, Slack, HRIS, role-specific tools
+### Day 1
+- [ ] Workspace ready
+- [ ] Accounts active
+- [ ] Welcome meeting scheduled
+- [ ] Paperwork completed (I-9, etc.)
 
-Day 1:
-- Send calendar with first-week meetings
-- Assign onboarding buddy
-- Share org chart and team intros
-- Collect emergency contact, bank details for payroll
+### Week 1
+- [ ] Team introductions
+- [ ] Role expectations review
+- [ ] 30/60/90 day goals set
+- [ ] Key stakeholder meetings
 
-Week 1:
-- Schedule 1:1 with manager
-- Send role-specific training materials
-- Check in: "Any blockers?"
-
-Day 30/60/90:
-- Automated check-in surveys
-- Flag to manager if sentiment drops
-
-## Offboarding
-
-Immediate (within hours of termination):
-- Deactivate all accounts (security critical)
-- Revoke badge/building access
-- Transfer document ownership
-
-Within 24 hours:
-- Calculate final pay, unused PTO payout
-- Generate COBRA notice (US)
-- Schedule exit interview
-- Send knowledge transfer checklist to manager
-
-Within 7 days:
-- Process final payroll
-- Archive employee records per retention policy
+### Day 30/60/90 Check-ins
+- [ ] Progress against goals
+- [ ] Integration concerns
+- [ ] Training needs
+- [ ] Feedback collected
