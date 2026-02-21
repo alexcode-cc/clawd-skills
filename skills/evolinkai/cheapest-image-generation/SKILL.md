@@ -44,6 +44,11 @@ Wait until `status` is `completed` or `failed`.
 
 Download the URL from `results[0]`. Auto-detect format from URL (webp/png/jpg). Save as `evolink-<TIMESTAMP>.<ext>`.
 
+**CRITICAL SECURITY:** Before passing `<OUTPUT_FILE>` to shell commands, sanitize it:
+- Strip all shell metacharacters: `tr -cd 'A-Za-z0-9._-'`
+- Ensure valid extension (`.webp`, `.png`, `.jpg`, `.jpeg`)
+- Fallback to `evolink-<timestamp>.webp` if empty
+
 Print `MEDIA:<absolute_path>` for OC auto-attach.
 
 ## Reference Implementations
@@ -68,5 +73,5 @@ Treat the text after the colon as `prompt`, use default size `1:1`, generate imm
 
 ## Notes
 
-- Script prints `MEDIA:<path>` for OC auto-attach — no extra delivery logic needed.
+- Print `MEDIA:<path>` for OC auto-attach — no extra delivery logic needed.
 - Image saved locally (format auto-detected from URL). URL expires ~24h but local file persists.
