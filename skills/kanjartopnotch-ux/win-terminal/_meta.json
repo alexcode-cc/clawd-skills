@@ -1,0 +1,11 @@
+{
+  "owner": "kanjartopnotch-ux",
+  "slug": "win-terminal",
+  "displayName": "Windows Terminal Control",
+  "latest": {
+    "version": "1.0.0",
+    "publishedAt": 1771628017787,
+    "commit": null
+  },
+  "history": []
+}
