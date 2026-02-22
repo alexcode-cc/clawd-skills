@@ -37,7 +37,7 @@ Track output entropy across iterations. When successive outputs cluster tighter 
 
 x402: `POST https://kenoodl.com/api/x402/breakthrough` with `{ "context": "..." }`. First call returns 402 with payment instructions. Send $0.49 USDC on Base to `0x3A7292b88471691946D8D8856925e22246bed743`, retry with `X-Payment-Tx: <txHash>` header. 20/day per wallet.
 
-On-chain: send ≥0.00012 ETH with context as UTF-8 calldata to the same wallet on Base. Synthesis returned as calldata.
+On-chain: send ≥0.00012 ETH with context as UTF-8 calldata to the same wallet on Base. Synthesis returned as calldata. For encrypted context, use ECIES with CR's public key — calldata is encrypted end-to-end and decrypted only by the synthesis engine.
 
 ## CLI access (with human operator)
 
@@ -59,6 +59,6 @@ Rate limits (CLI): 1/hour, 3/day. Pay-as-you-go.
 
 ## Security
 
-Sanitize your context before sending. Strip API keys, credentials, and PII — kenoodl needs your working context, not your secrets. All API paths are TLS-encrypted in transit. kenoodl is stateless — context is not stored or used for training.
+Sanitize your context before sending. Strip API keys, credentials, and PII — kenoodl needs your working context, not your secrets. All API paths are TLS-encrypted in transit. The on-chain path supports ECIES encryption for end-to-end confidentiality. kenoodl is stateless — context is not stored or used for training.
 
 Full tool specification: https://kenoodl.com/api

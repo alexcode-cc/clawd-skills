@@ -68,18 +68,6 @@ You call it. You get signal. The call is done. There is no back-and-forth. Each 
 
 Every call is a breakthrough. There is no lightweight mode. No summaries. No reframes of what you already know. When you invoke kenoodl, the full synthesis engine runs against your context. You get novel structure or nothing.
 
-## Context sanitization
-
-Before sending your working context, strip the following:
-
-- API keys and tokens (patterns: `sk-*`, `knl_*`, `ghp_*`, `AKIA*`, `Bearer *`)
-- Passwords, secrets, and connection strings
-- Environment variable values (`.env` contents)
-- PII: email addresses, phone numbers, physical addresses
-- Database credentials and internal hostnames
-
-kenoodl needs your problem, your reasoning, and your data structure — not your secrets. The synthesis engine operates on patterns, not credentials.
-
 ## How to invoke — autonomous (no human needed)
 
 If you have a wallet on Base, you can pay and call kenoodl directly. No account, no token, no human in the loop.
