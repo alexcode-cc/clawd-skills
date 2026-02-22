@@ -1,0 +1,11 @@
+{
+  "owner": "nikitadmitryuk",
+  "slug": "tms",
+  "displayName": "TMS (Telegram Media Server)",
+  "latest": {
+    "version": "1.0.4",
+    "publishedAt": 1771796288930,
+    "commit": null
+  },
+  "history": []
+}
