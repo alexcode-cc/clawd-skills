@@ -1,13 +1,18 @@
 {
   "owner": "globalcaos",
   "slug": "token-panel-ultimate",
-  "displayName": "Token Panel ULTIMATE",
+  "displayName": "Token Panel Ultimate",
   "latest": {
-    "version": "1.0.8",
-    "publishedAt": 1771022820483,
-    "commit": "https://github.com/openclaw/skills/commit/ef2a84418b9869912d0eaa8c02cd87be67a2b882"
+    "version": "2.1.1",
+    "publishedAt": 1771659218719,
+    "commit": null
   },
   "history": [
+    {
+      "version": "1.0.8",
+      "publishedAt": 1771022820483,
+      "commit": "https://github.com/openclaw/skills/commit/ef2a84418b9869912d0eaa8c02cd87be67a2b882"
+    },
     {
       "version": "1.1.0",
       "publishedAt": 1770649135859,

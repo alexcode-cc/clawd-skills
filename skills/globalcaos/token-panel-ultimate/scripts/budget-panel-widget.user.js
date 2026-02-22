@@ -10,30 +10,30 @@
 // @connect      file://*
 // ==/UserScript==
 
-(function() {
-  'use strict';
+(function () {
+  "use strict";
 
   // Paths to usage JSON files (update if different)
   const USAGE_FILES = {
-    claude: '/home/globalcaos/.openclaw/workspace/memory/claude-usage.json',
-    gemini: '/home/globalcaos/.openclaw/workspace/memory/gemini-usage.json',
-    manus: '/home/globalcaos/.openclaw/workspace/memory/manus-usage.json'
+    claude: "/home/globalcaos/.openclaw/workspace/memory/claude-usage.json",
+    gemini: "/home/globalcaos/.openclaw/workspace/memory/gemini-usage.json",
+    manus: "/home/globalcaos/.openclaw/workspace/memory/manus-usage.json",
   };
 
   // Gemini models in fallback order (performance-ranked)
   const GEMINI_MODELS = [
-    { key: 'gemini-3-pro', name: '3 Pro', rpm: 25, tpm: 1000000, rpd: 250 },
-    { key: 'gemini-2.5-pro', name: '2.5 Pro', rpm: 25, tpm: 1000000, rpd: 250 },
-    { key: 'gemini-2.5-flash', name: '2.5 Flash', rpm: 2000, tpm: 4000000, rpd: null },
-    { key: 'gemini-3-flash', name: '3 Flash', rpm: 1000, tpm: 1000000, rpd: 10000 },
-    { key: 'gemini-2.0-flash', name: '2.0 Flash', rpm: 2000, tpm: 4000000, rpd: null },
-    { key: 'gemini-2.0-flash-lite', name: '2.0 Lite', rpm: 2000, tpm: 4000000, rpd: null }
+    { key: "gemini-3-pro", name: "3 Pro", rpm: 25, tpm: 1000000, rpd: 250 },
+    { key: "gemini-2.5-pro", name: "2.5 Pro", rpm: 25, tpm: 1000000, rpd: 250 },
+    { key: "gemini-2.5-flash", name: "2.5 Flash", rpm: 2000, tpm: 4000000, rpd: null },
+    { key: "gemini-3-flash", name: "3 Flash", rpm: 1000, tpm: 1000000, rpd: 10000 },
+    { key: "gemini-2.0-flash", name: "2.0 Flash", rpm: 2000, tpm: 4000000, rpd: null },
+    { key: "gemini-2.0-flash-lite", name: "2.0 Lite", rpm: 2000, tpm: 4000000, rpd: null },
   ];
 
   function init() {
-    if (document.getElementById('budget-panel-widget')) return;
+    if (document.getElementById("budget-panel-widget")) return;
 
-    const style = document.createElement('style');
+    const style = document.createElement("style");
     style.textContent = `
       #budget-panel-widget {
         position: fixed;
@@ -117,8 +117,8 @@
     `;
     document.head.appendChild(style);
 
-    const panel = document.createElement('div');
-    panel.id = 'budget-panel-widget';
+    const panel = document.createElement("div");
+    panel.id = "budget-panel-widget";
     panel.innerHTML = `
       <div class="bpw-header">
         <span class="bpw-title">🎛️ Resources</span>
@@ -132,55 +132,69 @@
     document.body.appendChild(panel);
 
     let collapsed = false;
-    panel.querySelector('.bpw-toggle').onclick = () => {
+    panel.querySelector(".bpw-toggle").onclick = () => {
       collapsed = !collapsed;
-      panel.classList.toggle('collapsed', collapsed);
-      panel.querySelector('.bpw-toggle').textContent = collapsed ? '+' : '−';
+      panel.classList.toggle("collapsed", collapsed);
+      panel.querySelector(".bpw-toggle").textContent = collapsed ? "+" : "−";
     };
-    panel.querySelector('.bpw-refresh').onclick = () => refresh();
+    panel.querySelector(".bpw-refresh").onclick = () => refresh();
 
     // Dragging
-    let drag = false, ox = 0, oy = 0;
-    panel.querySelector('.bpw-header').onmousedown = (e) => {
-      if (e.target.classList.contains('bpw-btn')) return;
-      drag = true; ox = e.clientX - panel.offsetLeft; oy = e.clientY - panel.offsetTop;
+    let drag = false,
+      ox = 0,
+      oy = 0;
+    panel.querySelector(".bpw-header").onmousedown = (e) => {
+      if (e.target.classList.contains("bpw-btn")) return;
+      drag = true;
+      ox = e.clientX - panel.offsetLeft;
+      oy = e.clientY - panel.offsetTop;
     };
-    document.onmousemove = (e) => { if (drag) { panel.style.left = (e.clientX - ox) + 'px'; panel.style.top = (e.clientY - oy) + 'px'; panel.style.bottom = 'auto'; }};
-    document.onmouseup = () => { drag = false; };
+    document.onmousemove = (e) => {
+      if (drag) {
+        panel.style.left = e.clientX - ox + "px";
+        panel.style.top = e.clientY - oy + "px";
+        panel.style.bottom = "auto";
+      }
+    };
+    document.onmouseup = () => {
+      drag = false;
+    };
 
     function getColor(pct) {
-      if (pct >= 100) return '#ef4444';
-      if (pct >= 90) return '#f97316';
-      if (pct >= 70) return '#eab308';
-      if (pct >= 50) return '#84cc16';
-      return '#22c55e';
+      if (pct >= 100) return "#ef4444";
+      if (pct >= 90) return "#f97316";
+      if (pct >= 70) return "#eab308";
+      if (pct >= 50) return "#84cc16";
+      return "#22c55e";
     }
 
     function formatResetTime(isoStr) {
-      if (!isoStr) return '';
+      if (!isoStr) return "";
       try {
         const d = new Date(isoStr);
         const now = new Date();
         const diffMs = d - now;
-        if (diffMs < 0) return 'now';
+        if (diffMs < 0) return "now";
         const hours = Math.floor(diffMs / 3600000);
         const mins = Math.floor((diffMs % 3600000) / 60000);
-        if (hours > 24) return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+        if (hours > 24) return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
         if (hours > 0) return `${hours}h ${mins}m`;
         return `${mins}m`;
-      } catch { return ''; }
+      } catch {
+        return "";
+      }
     }
 
-    function renderBar(name, pct, detail = '', resetTime = '') {
+    function renderBar(name, pct, detail = "", resetTime = "") {
       const color = getColor(pct);
-      const resetHtml = resetTime ? `<div class="bpw-reset">↻ ${resetTime}</div>` : '';
+      const resetHtml = resetTime ? `<div class="bpw-reset">↻ ${resetTime}</div>` : "";
       return `<div class="bpw-row">
         <div class="bpw-label">
           <span class="bpw-name">${name}</span>
-          <span class="bpw-value ${pct >= 100 ? 'bpw-exceeded' : ''}" style="color:${color}">${pct.toFixed(0)}%</span>
+          <span class="bpw-value ${pct >= 100 ? "bpw-exceeded" : ""}" style="color:${color}">${pct.toFixed(0)}%</span>
         </div>
         <div class="bpw-bar"><div class="bpw-fill" style="width:${Math.min(pct, 100)}%;background:${color}"></div></div>
-        ${detail ? `<div class="bpw-detail">${detail}</div>` : ''}
+        ${detail ? `<div class="bpw-detail">${detail}</div>` : ""}
         ${resetHtml}
       </div>`;
     }
@@ -193,25 +207,25 @@
     }
 
     function render(data) {
-      let html = '';
+      let html = "";
 
       // CLAUDE - Real data from OAuth API
       const c = data.claude || {};
-      const plan = c.plan || 'max';
-      const tier = c.rateLimitTier || '';
+      const plan = c.plan || "max";
+      const tier = c.rateLimitTier || "";
       const fiveHour = c.limits?.five_hour || {};
       const sevenDay = c.limits?.seven_day || {};
-      
-      const isLive = c.fetchedAt && (Date.now() - new Date(c.fetchedAt).getTime() < 600000); // 10 min
-      const liveIndicator = isLive ? '<span class="bpw-live">● LIVE</span>' : '';
-      
+
+      const isLive = c.fetchedAt && Date.now() - new Date(c.fetchedAt).getTime() < 600000; // 10 min
+      const liveIndicator = isLive ? '<span class="bpw-live">● LIVE</span>' : "";
+
       html += `<div class="bpw-section">
         <div class="bpw-section-header">
           <span>Claude<span class="bpw-plan">${plan.toUpperCase()}</span></span>
           ${liveIndicator}
         </div>
-        ${renderBar('5h Window', fiveHour.utilization || 0, '', formatResetTime(fiveHour.resets_at))}
-        ${renderBar('7-Day', sevenDay.utilization || 0, '', formatResetTime(sevenDay.resets_at))}
+        ${renderBar("5h Window", fiveHour.utilization || 0, "", formatResetTime(fiveHour.resets_at))}
+        ${renderBar("7-Day", sevenDay.utilization || 0, "", formatResetTime(sevenDay.resets_at))}
       </div>`;
 
       // GEMINI - show active + exhausted chain
@@ -225,15 +239,18 @@
         const g = geminiUsage[model.key] || {};
         const usage = g.usage || {};
         const limits = g.limits || {};
-        
+
         // Calculate max percentage across RPM, TPM, RPD
         const metrics = [
-          { name: 'RPD', used: usage.rpd || 0, limit: limits.rpd },
-          { name: 'RPM', used: usage.rpm || 0, limit: limits.rpm },
-          { name: 'TPM', used: usage.tpm || 0, limit: limits.tpm },
+          { name: "RPD", used: usage.rpd || 0, limit: limits.rpd },
+          { name: "RPM", used: usage.rpm || 0, limit: limits.rpm },
+          { name: "TPM", used: usage.tpm || 0, limit: limits.tpm },
         ];
-        
-        let pct = 0, metric = 'RPD', used = 0, limit = 0;
+
+        let pct = 0,
+          metric = "RPD",
+          used = 0,
+          limit = 0;
         for (const m of metrics) {
           if (m.limit && m.limit > 0) {
             const p = (m.used / m.limit) * 100;
@@ -245,15 +262,18 @@
             }
           }
         }
-        
+
         const isUnlimited = limits.rpd === null && pct === 0;
         const isExhausted = pct >= 100;
 
         if (isExhausted || !foundActive) {
-          const statusClass = isExhausted ? 'bpw-exhausted' : 'bpw-active';
-          const statusIcon = isExhausted ? '🔴' : '🟢';
-          const detail = limit > 0 ? `${Number(used).toLocaleString()}/${Number(limit).toLocaleString()} ${metric}` : '';
-          
+          const statusClass = isExhausted ? "bpw-exhausted" : "bpw-active";
+          const statusIcon = isExhausted ? "🔴" : "🟢";
+          const detail =
+            limit > 0
+              ? `${Number(used).toLocaleString()}/${Number(limit).toLocaleString()} ${metric}`
+              : "";
+
           html += `<div class="bpw-model ${statusClass}">
             <div class="bpw-model-name">${statusIcon} ${model.name}</div>
             ${isUnlimited ? renderUnlimited(metric) : renderBar(metric, pct, detail)}
@@ -261,7 +281,7 @@
 
           if (!isExhausted) foundActive = true;
         }
-        
+
         if (foundActive && !isExhausted) break;
       }
 
@@ -271,22 +291,22 @@
       const m = data.manus || {};
       const mDaily = m.daily || {};
       const mMonthly = m.monthly || {};
-      
+
       html += `<div class="bpw-section">
         <div class="bpw-section-header"><span>Manus Pro</span><span style="font-size:8px;color:#666">↻ 01:00</span></div>
-        ${renderBar('Daily', mDaily.pct || 0, `${mDaily.used || 0}/${mDaily.limit || 300}`)}
-        ${renderBar('Monthly', mMonthly.pct || 0, `${mMonthly.used || 0}/${mMonthly.limit || 4000}`)}
-        ${m.addon ? `<div class="bpw-detail" style="margin-top:4px;">💰 ${m.addon.toLocaleString()} addon credits</div>` : ''}
+        ${renderBar("Daily", mDaily.pct || 0, `${mDaily.used || 0}/${mDaily.limit || 300}`)}
+        ${renderBar("Monthly", mMonthly.pct || 0, `${mMonthly.used || 0}/${mMonthly.limit || 4000}`)}
+        ${m.addon ? `<div class="bpw-detail" style="margin-top:4px;">💰 ${m.addon.toLocaleString()} addon credits</div>` : ""}
       </div>`;
 
       // CHATGPT / OPENAI — only show models in our fallback chain
       const chatgpt = data.chatgpt;
-      if (chatgpt && chatgpt.api_key_status !== 'missing') {
+      if (chatgpt && chatgpt.api_key_status !== "missing") {
         // Our configured fallback models (edit this list to match your setup)
-        const OUR_MODELS = ['gpt-4o'];
+        const OUR_MODELS = ["gpt-4o"];
         const chatModels = chatgpt.models || {};
         const showModels = Object.entries(chatModels).filter(([m]) => OUR_MODELS.includes(m));
-        
+
         if (showModels.length > 0) {
           html += `<div class="bpw-section">
             <div class="bpw-section-header"><span>ChatGPT</span><span style="font-size:8px;color:#666">API</span></div>`;
@@ -301,10 +321,12 @@
       }
 
       // Footer
-      const updateTime = data.claude?.fetchedAt ? new Date(data.claude.fetchedAt).toLocaleTimeString() : new Date().toLocaleTimeString();
+      const updateTime = data.claude?.fetchedAt
+        ? new Date(data.claude.fetchedAt).toLocaleTimeString()
+        : new Date().toLocaleTimeString();
       html += `<div style="font-size:8px;color:#888;text-align:center;margin-top:6px;">Updated: ${updateTime}</div>`;
 
-      panel.querySelector('.bpw-content').innerHTML = html;
+      panel.querySelector(".bpw-content").innerHTML = html;
     }
 
     // Read local JSON file using fetch to local server or fallback to defaults
@@ -313,20 +335,30 @@
         claude: { limits: { five_hour: { utilization: 0 }, seven_day: { utilization: 0 } } },
         gemini: {},
         manus: { daily: { pct: 0 }, monthly: { pct: 0 } },
-        chatgpt: null
+        chatgpt: null,
       };
 
       // Try to fetch from OpenClaw's plugin endpoint
       try {
-        const app = document.querySelector('openclaw-app');
-        console.log('[Budget] app:', !!app, 'client:', !!app?.client, 'request:', !!app?.client?.request);
+        const app = document.querySelector("openclaw-app");
+        console.log(
+          "[Budget] app:",
+          !!app,
+          "client:",
+          !!app?.client,
+          "request:",
+          !!app?.client?.request,
+        );
         if (app?.client?.request) {
-          const result = await app.client.request('budget.usage', {}).catch((e) => {
-            console.error('[Budget] Request failed:', e);
+          const result = await app.client.request("budget.usage", {}).catch((e) => {
+            console.error("[Budget] Request failed:", e);
             return null;
           });
-          console.log('[Budget] Raw result:', JSON.stringify(result, null, 2));
-          console.log('[Budget] Gemini keys:', result?.gemini ? Object.keys(result.gemini) : 'none');
+          console.log("[Budget] Raw result:", JSON.stringify(result, null, 2));
+          console.log(
+            "[Budget] Gemini keys:",
+            result?.gemini ? Object.keys(result.gemini) : "none",
+          );
           if (result) {
             if (result.claude) data.claude = result.claude;
             if (result.gemini) data.gemini = result.gemini;
@@ -335,7 +367,7 @@
           }
         }
       } catch (e) {
-        console.error('[Budget] Gateway fetch failed:', e);
+        console.error("[Budget] Gateway fetch failed:", e);
       }
 
       return data;
@@ -346,17 +378,18 @@
         const data = await loadUsageFiles();
         render(data);
       } catch (e) {
-        console.error('[Budget]', e);
-        panel.querySelector('.bpw-content').innerHTML = '<div style="color:#ef4444;">Error loading data</div>';
+        console.error("[Budget]", e);
+        panel.querySelector(".bpw-content").innerHTML =
+          '<div style="color:#ef4444;">Error loading data</div>';
       }
     }
 
     // Initial load and periodic refresh
     setTimeout(refresh, 1500);
     setInterval(refresh, 30000);
-    console.log('[Budget Panel] v4.0.0 - Claude + ChatGPT + Gemini + Manus');
+    console.log("[Budget Panel] v4.0.0 - Claude + ChatGPT + Gemini + Manus");
   }
 
-  if (document.readyState === 'complete') setTimeout(init, 800);
-  else window.addEventListener('load', () => setTimeout(init, 800));
+  if (document.readyState === "complete") setTimeout(init, 800);
+  else window.addEventListener("load", () => setTimeout(init, 800));
 })();
