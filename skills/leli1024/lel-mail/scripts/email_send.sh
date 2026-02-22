@@ -133,7 +133,7 @@ BODY      = "${BODY}"
 CC_RAW    = "${CC}"
 BCC_RAW   = "${BCC}"
 
-QUEUE_PATH = os.path.expanduser("~/.openclaw/workspace/skills/lel-mail/queue.json")
+QUEUE_PATH = os.path.expanduser("~/.config/lel-mail/queue.json")
 
 def parse_recipients(raw: str):
     """

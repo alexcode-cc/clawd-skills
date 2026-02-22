@@ -1,6 +1,6 @@
 ---
 name: lel-mail
-description: Send email, read email, Manage email  
+description: Send and read email via a combination of python and bash scripts which makes use of the main agent for reasoning and logic
 metadata: {"clawdbot":{"emoji":"📧","requires":{"bins":["python3"]}}}
 ---
 

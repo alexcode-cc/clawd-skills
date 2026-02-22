@@ -11,7 +11,7 @@ from email.message import EmailMessage
 import random
 import time
 
-QUEUE_FILE  = os.path.expanduser("~/.openclaw/workspace/skills/lel-mail/queue.json")
+QUEUE_FILE  = os.path.expanduser("~/.config/lel-mail/queue.json")
 CONFIG_FILE = os.path.expanduser("~/.config/lel-mail/config.json")
 
 
@@ -31,7 +31,7 @@ def save_json_atomic(path, data):
 
 # --- Load queue ---
 if not os.path.exists(QUEUE_FILE):
-    print("Queue file not found")
+    print("Queue file not found, terminating")
     sys.exit(1)
 
 QUEUE_DATA = load_json(QUEUE_FILE)
@@ -65,7 +65,7 @@ for i, entry in enumerate(remaining):
         continue
     acct = find_account_for_sender(sender)
 
-    if (acct.get("can_send", false) == false):
+    if (acct.get("can_send", False) == False):
         continue
 
     if acct is not None:
