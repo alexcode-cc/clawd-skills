@@ -3,11 +3,16 @@
   "slug": "guardrail-smart-accounts",
   "displayName": "Guardrail Smart Accounts",
   "latest": {
-    "version": "1.0.7",
-    "publishedAt": 1771785198582,
-    "commit": "https://github.com/openclaw/skills/commit/bd44e50ffd3998e0bc9ce958451281959d0196ad"
+    "version": "1.0.8",
+    "publishedAt": 1771787144338,
+    "commit": null
   },
   "history": [
+    {
+      "version": "1.0.7",
+      "publishedAt": 1771785198582,
+      "commit": "https://github.com/openclaw/skills/commit/bd44e50ffd3998e0bc9ce958451281959d0196ad"
+    },
     {
       "version": "1.0.1",
       "publishedAt": 1771781903971,
