@@ -3,11 +3,16 @@
   "slug": "gemini-image-generator",
   "displayName": "Gemini Image Generator",
   "latest": {
-    "version": "1.0.2",
-    "publishedAt": 1771591634178,
-    "commit": "https://github.com/openclaw/skills/commit/6cc0a2ef2ddc6b9a54178d504009c1976e8c7071"
+    "version": "1.0.3",
+    "publishedAt": 1771612293365,
+    "commit": null
   },
   "history": [
+    {
+      "version": "1.0.2",
+      "publishedAt": 1771591634178,
+      "commit": "https://github.com/openclaw/skills/commit/6cc0a2ef2ddc6b9a54178d504009c1976e8c7071"
+    },
     {
       "version": "1.0.0",
       "publishedAt": 1771527755990,

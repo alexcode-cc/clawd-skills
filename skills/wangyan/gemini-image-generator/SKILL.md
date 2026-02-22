@@ -12,7 +12,6 @@ metadata:
         - python3
         - uv
       env:
-        - GEMINI_API_KEY
         - GEMINI_BASE_URL
     primaryEnv: GEMINI_API_KEY
     tags:
@@ -24,7 +23,7 @@ metadata:
       - openai-compatible
 ---
 
-# Gemini Image Gen
+# Gemini Image Generator
 
 通过 Gemini 模型实现文生图、图片编辑与多图合成，支持 OpenAI 兼容和 Google 原生两种 API 格式，可自定义端点和密钥。
 
@@ -52,6 +51,16 @@ clawhub install gemini-image-generator --workdir ~/.openclaw
 - `{workspace}/skills/gemini-image-generator/` — 仅当前工作区可用
 - 自定义目录 — 需在 `openclaw.json` 中配置 `skills.load.extraDirs`（见下方说明）
 
+```jsonc
+{
+  "skills": {
+    "load": {
+      "extraDirs": ["/path/to/your/skills"]  // 数组，可配多个目录
+    }
+  }
+}
+```
+
 ### 2. 安装依赖
 
 - `python3`（>=3.10）
@@ -66,6 +75,8 @@ sudo apt install python3
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
+> 国内用户安装 `uv` 可能会遇到网络问题，请自行[下载安装](https://github.com/astral-sh/uv/releases)。
+
 ### 3. 配置
 
 编辑 `~/.openclaw/openclaw.json`，在 `skills.entries` 中添加：
@@ -76,33 +87,19 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
     "entries": {
       "gemini-image-generator": {
         "enabled": true,
+        "apiKey": "your-api-key",                  // 必填：Gemini API 密钥
         "env": {
-          "GEMINI_API_KEY": "your-api-key",       // 必填：API 密钥
           "GEMINI_BASE_URL": "https://your-provider.com/v1", // 必填：API 端点
-          "GEMINI_MODEL": "gemini-2.5-flash-image",          // 可选：模型名称
+          "GEMINI_MODEL": "gemini-3-pro-preview",             // 可选：模型名称
           "GEMINI_API_FORMAT": "openai",           // 可选：openai（默认）或 google
           "GEMINI_TIMEOUT": "300",                 // 可选：超时秒数
-          "GEMINI_OUTPUT_DIR": "images"            // 可选：输出目录
+          "GEMINI_OUTPUT_DIR": "images"            // 可选：输出目录，
         }
       }
     }
   }
 }
 ```
-
-`env` 中的环境变量会在 agent 运行时自动注入，无需手动 export。
-
-> **自定义技能目录**：如果技能放在非默认位置，需额外配置 `extraDirs`：
->
-> ```jsonc
-> {
->   "skills": {
->     "load": {
->       "extraDirs": ["/path/to/your/skills"]  // 数组，可配多个目录
->     }
->   }
-> }
-> ```
 
 ### 4. 验证安装
 
@@ -136,7 +133,7 @@ uv run {baseDir}/scripts/generate_image.py --prompt "合成指令" --filename "c
 
 ```bash
 uv run {baseDir}/scripts/generate_image.py --prompt "描述" --filename "output.png" \
-  --base-url "https://example.com/v1" --api-key "sk-xxx" --model "gemini-2.5-flash-image"
+  --base-url "https://example.com/v1" --api-key "sk-xxx" --model "gemini-3-pro-preview"
 ```
 
 ### 使用 Google 原生格式
@@ -151,9 +148,9 @@ uv run {baseDir}/scripts/generate_image.py --prompt "描述" --filename "output.
 
 | 参数 | 环境变量 | 说明 |
 |------|---------|------|
-| `--api-key` / `-k` | `GEMINI_API_KEY` | API 密钥（必填） |
+| `--api-key` / `-k` | `apiKey`（通过 primaryEnv 注入） | API 密钥（必填） |
 | `--base-url` / `-b` | `GEMINI_BASE_URL` | API 端点 URL（必填） |
-| `--model` / `-m` | `GEMINI_MODEL` | 模型名称（默认 `gemini-3-pro-image-preview`） |
+| `--model` / `-m` | `GEMINI_MODEL` | 模型名称（默认 `gemini-3-pro-preview`） |
 | `--api-format` / `-F` | `GEMINI_API_FORMAT` | `openai`（默认）或 `google` |
 | `--timeout` / `-t` | `GEMINI_TIMEOUT` | 超时秒数（默认 300） |
 | `--resolution` / `-r` | `GEMINI_RESOLUTION` | `1K`（默认）、`2K`、`4K` |

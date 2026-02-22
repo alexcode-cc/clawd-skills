@@ -40,7 +40,7 @@ def get_config(args) -> dict:
         "base_url": args.base_url or os.environ.get("GEMINI_BASE_URL"),
         "model": (
             args.model
-            or os.environ.get("GEMINI_MODEL", "gemini-3-pro-image-preview")
+            or os.environ.get("GEMINI_MODEL", "gemini-3-pro-preview")
         ),
         "api_format": (
             args.api_format
@@ -340,6 +340,7 @@ def main():
         print("  2. GEMINI_API_KEY 环境变量", file=sys.stderr)
         print("  3. ~/.openclaw/openclaw.json → skills.entries.gemini-image-generator.apiKey",
               file=sys.stderr)
+        print("     (通过 primaryEnv 自动注入为 GEMINI_API_KEY)", file=sys.stderr)
         sys.exit(1)
 
     if not config["base_url"]:
