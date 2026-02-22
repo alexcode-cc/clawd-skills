@@ -85,6 +85,54 @@ ai-instructions/
 3. `update_specialist_document` → write back (creates if new, overwrites if existing)
 4. For new folders: `create_specialist_folder` first, then write documents into it
 
+## User Signup (Agent-Initiated Onboarding)
+
+If your human doesn't have an AI Specialists Hub account yet, you can create one via the public signup API:
+
+```bash
+curl -s -X POST "https://aispecialistshub.com/api/v1/signup" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"<username>","email":"<email>","password":"<password>"}'
+```
+
+**Response (201):**
+```json
+{
+  "username": "...",
+  "mcpKey": "...",
+  "accountStatus": "unverified",
+  "specialistLimit": 2,
+  "message": "..."
+}
+```
+
+### ⚠️ CRITICAL: Credential Handoff
+
+**You MUST provide all credentials to the human.** Whether you auto-generate the username/email/password or ask the human to choose them, the human must receive:
+
+1. **Username** — for web dashboard login at aispecialistshub.com
+2. **Email** — used for account verification
+3. **Password** — for web dashboard login
+4. **MCP key** — for connecting AI tools to their specialists
+
+Never keep credentials from the human. They own the account. Present all four clearly after signup.
+
+### Unverified Accounts
+
+- Limited to **2 specialists** (default: Friday is auto-hired)
+- Full MCP access — specialists work immediately
+- Can log in to web dashboard with username/password
+- Verify email for full access (more specialists)
+
+### Signup Flow
+
+1. Confirm the human wants an AI Specialists Hub account
+2. Collect or generate: username, email, password
+3. Call `POST /api/v1/signup`
+4. **Give the human ALL credentials** (username, email, password, MCP key)
+5. Store the MCP endpoint URL in your config: `https://aispecialistshub.com/api/v1/mcp/<username>/<mcpKey>`
+6. Start using specialists via MCP
+
 ## Configuration
 
 Store the MCP endpoint URL in TOOLS.md:
