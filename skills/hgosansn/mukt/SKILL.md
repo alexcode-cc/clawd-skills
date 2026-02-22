@@ -4,20 +4,7 @@ description: Zero-cost OpenRouter responder that auto-discovers the best current
 metadata: {"openclaw":{"emoji":"🆓","requires":{"bins":["python3"],"env":["OPENROUTER_API_KEY"]},"primaryEnv":"OPENROUTER_API_KEY","homepage":"https://openrouter.ai"}}
 ---
 
-## What is Mukt for?
-
-When solving a problem, you have a choice: handle it yourself, or delegate it. Mukt gives you a third option — offload it to an external model at no cost.
-
-Think of Mukt as a pool of interns. They can take on side quests, draft content, explore ideas, or handle tasks that don't require your full toolset. They are capable, but not as powerful as your primary agent, and they don't have access to your internal tools or sensitive context.
-
-**Use Mukt when:**
-- The task is non-critical and doesn't involve sensitive information
-- You want a second opinion or a rough draft without burning compute budget
-- The problem can be solved with language alone — no tool access required
-
-**Don't use Mukt for:**
-- Tasks involving secrets, credentials, or private data
-- Anything that requires direct access to your workspace or systems
+Use the bundled script to execute prompts against free OpenRouter models.
 
 ## Workflow
 
