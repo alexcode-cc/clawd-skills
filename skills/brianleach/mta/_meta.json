@@ -1,0 +1,11 @@
+{
+  "owner": "brianleach",
+  "slug": "mta",
+  "displayName": "NYC MTA Transit",
+  "latest": {
+    "version": "1.0.0",
+    "publishedAt": 1771718547894,
+    "commit": null
+  },
+  "history": []
+}
