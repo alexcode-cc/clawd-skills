@@ -29,7 +29,7 @@ Use `scripts/smartbill_cli.py` for deterministic SmartBill API calls instead of 
 5. Retrieve PDF once series and number are known:
    - `python scripts/smartbill_cli.py download-invoice-pdf --series-name <SERIES> --number <NO> --output <file.pdf>`
    - **Use the exact `number` string returned by SmartBill (zero-padded, e.g. `"0123"`). Do not strip leading zeros or convert to an integer.**
-   - **`--output` must be a relative path beneath the current working directory and must end in `.pdf` (e.g. `invoices/TST-0123.pdf`). Absolute paths and `../` traversals are rejected.**
+   - **`--output` accepts absolute or relative paths and must end in `.pdf`.**
 
 ## Required Environment
 
@@ -60,7 +60,7 @@ Optional overrides:
   - Query available SmartBill series via `GET /series`.
 - `download-invoice-pdf`
   - Fetch PDF via `GET /invoice/pdf` using CIF + series + number.
-  - `--output` must be a relative `.pdf` path beneath the current working directory (e.g. `invoices/TST-0123.pdf`). Absolute paths and `../` traversals are rejected. The calling agent should `cd` to the desired output directory first if needed.
+  - `--output` accepts an absolute or relative `.pdf` path. Relative paths are resolved against the current working directory. The resolved path must fall within an OpenClaw-allowed media root or the current working directory.
 
 ## Payload Format
 

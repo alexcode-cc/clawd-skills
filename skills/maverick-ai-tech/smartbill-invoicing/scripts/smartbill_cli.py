@@ -432,33 +432,67 @@ def _safe_output_path(output: Path) -> Path:
 
     1. Must have a .pdf suffix — prevents overwriting files that can never
        legitimately be PDFs (/etc/passwd, ~/.ssh/authorized_keys, …).
-    2. Must resolve within the current working directory — prevents a
-       prompt-injected agent from being instructed to write to arbitrary
-       locations such as ~/.ssh/authorized_keys.pdf or /tmp/evil.pdf even
-       when the extension check alone would pass.
+    2. Must resolve within an OpenClaw-allowed media root or the current
+       working directory — prevents a prompt-injected agent from writing to
+       arbitrary locations (e.g. ~/.ssh/authorized_keys.pdf) even when the
+       extension check alone would pass.
 
-    Callers that need a specific output directory should chdir there first,
-    or provide a path relative to their working directory.
+    OpenClaw allowed roots (mirrors src/media/local-roots.ts):
+      - /tmp/openclaw (and /tmp/openclaw-<uid> fallback)
+      - ~/.openclaw/media
+      - ~/.openclaw/agents
+      - ~/.openclaw/workspace  (and ~/.openclaw/workspace-<profile> variants)
+      - ~/.openclaw/sandboxes
+      - current working directory (supports relative paths and agent workspaces
+        that OpenClaw sets as CWD)
 
     Raises CliError for any path that violates either constraint.
+
+    Reference:
+    * https://github.com/openclaw/openclaw/blob/main/src/media/local-roots.ts
+    * https://github.com/openclaw/openclaw/blob/main/src/infra/tmp-openclaw-dir.ts
     """
     cwd = Path.cwd().resolve()
     resolved = (cwd / output).resolve()
-
-    try:
-        resolved.relative_to(cwd)
-    except ValueError:
-        raise CliError(
-            f"Output path '{output}' resolves outside the current working "
-            "directory. Provide a relative path beneath the current directory."
-        )
 
     if resolved.suffix.lower() != ".pdf":
         raise CliError(
             f"Output path '{output}' must have a .pdf extension."
         )
 
+    state_dir = Path(
+        os.environ.get("OPENCLAW_STATE_DIR", Path.home() / ".openclaw")
+    ).resolve()
+
+    allowed_roots = [
+        cwd,
+        Path("/tmp/openclaw"),
+        Path(f"/tmp/openclaw-{os.getuid()}"),
+        state_dir / "media",
+        state_dir / "agents",
+        state_dir / "workspace",
+        state_dir / "sandboxes",
+    ]
+
+    if not any(
+        _is_relative_to(resolved, root.resolve()) for root in allowed_roots
+    ):
+        raise CliError(
+            f"Output path '{output}' is not under an allowed directory. "
+            "Use a path beneath the current working directory or an "
+            "OpenClaw media root (/tmp/openclaw, ~/.openclaw/workspace, etc.)."
+        )
+
     return resolved
+
+
+def _is_relative_to(path: Path, root: Path) -> bool:
+    """Return True if path is equal to or beneath root (Python 3.8 compat)."""
+    try:
+        path.relative_to(root)
+        return True
+    except ValueError:
+        return False
 
 
 def run_download_invoice_pdf(args: argparse.Namespace) -> int:
